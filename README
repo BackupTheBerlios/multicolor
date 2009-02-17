@@ -1,0 +1,6 @@
+
+Features:
+- Can load Koala and Amica, file type is detected independently from file name
+
+Know bugs:
+- Inactive icons look strange on Windows
