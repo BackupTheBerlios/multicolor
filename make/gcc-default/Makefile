@@ -1,4 +1,9 @@
 
+# Where to install on "make install"?
+inst_prefix   := /usr
+bin_inst_dir  := $(inst_prefix)/bin
+res_inst_dir  := $(inst_prefix)/share/multicolor
+
 cxx           := c++
 
 ifeq ($(DEBUG), YES)
@@ -12,10 +17,17 @@ endif
 include ../common/filelist.mk
 
 ###############################################################################
-# Main target
+# Main targets
 #
 .PHONY: all
 all: $(outdir)/multicolor $(outres)
+
+.PHONY: install
+install: all
+	mkdir -p $(bin_inst_dir)
+	cp $(outdir)/multicolor $(bin_inst_dir)
+	mkdir -p $(res_inst_dir)
+	cp -r  $(outdir)/res $(res_inst_dir)
 
 ###############################################################################
 # This rule can link <here>/out/obj/*.o to <here>/out/MultiColor/MultiColor.exe
