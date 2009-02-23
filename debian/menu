@@ -1,0 +1,3 @@
+?package(multicolor):needs="X11" section="Applications/Graphics" \
+icon="/usr/share/multicolor/res/24x24/clone.png" \
+title="MultiColor" command="/usr/bin/multicolor"

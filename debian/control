@@ -1,0 +1,23 @@
+Source: multicolor
+Section: graphics
+Priority: extra
+Maintainer: Thomas Giesel <skoe@directbox.com>
+Build-Depends: debhelper (>= 7), libwxgtk2.8-dev (>= 2.8.8.0)
+Standards-Version: 3.8.0
+Homepage: http://multicolor.berlios.de
+
+Package: multicolor
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: image manipulation for Commodore 8-bit computers' graphics
+ MultiColor is an image manipulation tool for Commodore 8-bit computers'
+ graphics formats. 
+ .
+ MultiColor is an old-school painting program for graphicians. It is not
+ an image converter.
+ .
+ Currently following image formats are implemented: 
+ VIC-II multicolor 
+ .
+ Images can be loaded and saved in following file formats:
+ Koala, Amica Paint
