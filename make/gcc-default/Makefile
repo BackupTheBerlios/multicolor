@@ -3,6 +3,7 @@
 inst_prefix   := /usr
 bin_inst_dir  := $(inst_prefix)/bin
 res_inst_dir  := $(inst_prefix)/share/multicolor
+desktop_inst_dir := $(inst_prefix)/share/applications
 
 cxx           := c++
 
@@ -10,7 +11,7 @@ ifeq ($(DEBUG), YES)
 cxxflags      := -g `wx-config --cxxflags`
 ldflags       := -g
 else
-cxxflags      := -O3 `wx-config --cxxflags`
+cxxflags      := -O2 `wx-config --cxxflags`
 ldflags       :=
 endif
 
@@ -28,6 +29,8 @@ install: all
 	cp $(outdir)/multicolor $(bin_inst_dir)
 	mkdir -p $(res_inst_dir)
 	cp -r  $(outdir)/res $(res_inst_dir)
+	mkdir -p $(desktop_inst_dir)
+	cp $(srcdir)/../res/multicolor.desktop $(desktop_inst_dir)
 
 ###############################################################################
 # This rule can link <here>/out/obj/*.o to <here>/out/MultiColor/MultiColor.exe
