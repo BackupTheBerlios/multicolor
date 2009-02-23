@@ -133,6 +133,10 @@ MCToolBase* MCApp::GetActiveDrawingTool()
 }
 
 /*****************************************************************************/
+/*
+ * Load a bitmap from our ressources. If our executable is located in $(X),
+ * search in $(X)/res first and then in $(X)/../share/multicolor.
+ */
 wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
 {
     wxStandardPaths paths;
@@ -143,6 +147,17 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
     fileName.AppendDir(wxT("res"));
     fileName.AppendDir(dir);
     fileName.SetFullName(name);
+
+    if (!fileName.IsFileReadable())
+    {
+        fileName.Assign(paths.GetExecutablePath());
+        fileName.RemoveLastDir();
+        fileName.AppendDir(wxT("share"));
+        fileName.AppendDir(wxT("multicolor"));
+        fileName.AppendDir(wxT("res"));
+        fileName.AppendDir(dir);
+        fileName.SetFullName(name);
+    }
 
     return wxBitmap(wxImage(fileName.GetFullPath(), wxBITMAP_TYPE_PNG));
 }
