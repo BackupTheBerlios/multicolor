@@ -38,9 +38,9 @@
 /*****************************************************************************/
 MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title)
     : wxMDIParentFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600))
-    , m_pPalettePanel(NULL)
+    , m_pToolPanel(NULL)
 {
-    m_pPalettePanel = new PalettePanel(this);
+    m_pToolPanel = new MCToolPanel(this);
 
     InitMenuBar();
     InitToolBar();
@@ -394,8 +394,8 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
     int w, h, minWidth;
     GetClientSize(&w, &h);
 
-    minWidth = m_pPalettePanel->GetMinWidth();
-    m_pPalettePanel->SetSize(0, 0, minWidth, h);
+    minWidth = m_pToolPanel->GetMinWidth();
+    m_pToolPanel->SetSize(0, 0, minWidth, h);
     GetClientWindow()->SetSize(minWidth, 0, w - minWidth, h);
 
     // FIXME: On wxX11, we need the MDI frame to process this

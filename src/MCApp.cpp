@@ -43,8 +43,7 @@ IMPLEMENT_APP(MCApp);
 
 /*****************************************************************************/
 MCApp::MCApp()
-    : m_pDocManager(NULL)
-    , m_pMainFrame(NULL)
+    : m_pMainFrame(NULL)
     , m_idDrawingTool(0)
     , m_listTools()
 {
@@ -59,20 +58,6 @@ MCApp::~MCApp()
 bool MCApp::OnInit()
 {
     wxInitAllImageHandlers();
-
-    m_pDocManager = new wxDocManager;
-
-#if 0
-    new wxDocTemplate(
-        m_pDocManager, _T("Koala Image"), _T("*.koa"), _T(""), _T("koa"), _T("MCDoc"), _T("MCView"),
-          CLASSINFO(MCDoc), CLASSINFO(MCView));
-    new wxDocTemplate(
-        m_pDocManager, _T("Amica Paint Image"), _T("*.ami"), _T(""), _T("ami"), _T("MCDoc"), _T("MCView"),
-          CLASSINFO(MCDoc), CLASSINFO(MCView));
-    new wxDocTemplate(
-        m_pDocManager, _T("All Files"), _T("*"), _T(""), _T("ami"), _T("MCDoc"), _T("MCView"),
-          CLASSINFO(MCDoc), CLASSINFO(MCView));
-#endif
 
     m_pMainFrame = new MCMainFrame(m_pMainFrame, _("MultiColor"));
 
@@ -132,6 +117,7 @@ MCToolBase* MCApp::GetActiveDrawingTool()
     return NULL;
 }
 
+
 /*****************************************************************************/
 /*
  * Load a bitmap from our ressources. If our executable is located in $(X),
@@ -161,3 +147,15 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
 
     return wxBitmap(wxImage(fileName.GetFullPath(), wxBITMAP_TYPE_PNG));
 }
+
+
+/*****************************************************************************/
+/*
+ * Set the active child window which shall be used to update the preview
+ * and so on from now.
+ */
+void MCApp::SetActiveChild(MCChildFrame* pFrame)
+{
+    m_pMainFrame->GetToolPanel()->SetActiveChild(pFrame);
+}
+

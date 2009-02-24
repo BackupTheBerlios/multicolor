@@ -93,7 +93,7 @@ void MCToolCloneBrush::Move(int x, int y)
         // prepare start point for next segment
         m_xStart = x;
         m_yStart = y;
-        m_pDoc->GetFrame()->Refresh(false);
+        m_pDoc->Refresh();
     }
 }
 

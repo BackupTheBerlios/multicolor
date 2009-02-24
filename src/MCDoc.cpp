@@ -33,7 +33,6 @@
 #include "MCChildFrame.h"
 
 #define AMICA_SIG_BYTE 0xc2
-#define AMICA_COL_ROT_TAB_SIZE 0
 #define MC_MAX_FILE_BUFF_SIZE 0x10000
 
 /* File structure of a Koala image including start address */
@@ -71,6 +70,7 @@ MCDoc::MCDoc()
 void MCDoc::Refresh()
 {
     m_pFrame->Refresh(false);
+    wxGetApp().GetMainFrame()->GetToolPanel()->Refresh();
 }
 
 /******************************************************************************
@@ -360,8 +360,6 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
         delete[] pSource;
         return 0;
     }
-    // add 256 bytes color rotation tab behind it, all black
-    memset(pSource + sizeof(KOALA_T), 0, AMICA_COL_ROT_TAB_SIZE);
 
     // save start address
     p = pBuff;
@@ -403,7 +401,7 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
             ++nCount;
         }
     }
-    while (nPos < (sizeof(KOALA_T) + AMICA_COL_ROT_TAB_SIZE));
+    while (nPos < (sizeof(KOALA_T)));
 
     // end mark
     *p++ = AMICA_SIG_BYTE;

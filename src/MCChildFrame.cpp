@@ -25,7 +25,6 @@
 
 #include <wx/mdi.h>
 #include <wx/dc.h>
-#include <wx/splitter.h>
 #include <wx/msgdlg.h>
 
 #include "MCApp.h"
@@ -41,24 +40,14 @@ MCChildFrame::MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id
     m_bTVMode(true),
     m_bMousePosDrawn(false)
 {
-    wxSplitterWindow* pSplitter = new wxSplitterWindow(this, -1);
+    m_pCanvas = new MCCanvas(this, this, 0);
 
-    m_pCanvas1 = new MCCanvas(this, pSplitter, wxPoint(0, 0), wxSize(100, 100));
-    m_pCanvas2 = new MCCanvas(this, pSplitter, wxPoint(0, 0), wxSize(100, 100));
+    m_pCanvas->SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
+    m_pCanvas->SetScrollRate(10 * m_nScale, 10 * m_nScale);
+    m_pCanvas->SetScale(m_nScale);
+    m_pCanvas->SetEmulateTV(m_bTVMode);
 
-    m_pCanvas1->SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
-    m_pCanvas1->SetScrollRate(10 * m_nScale, 10 * m_nScale);
-
-    // Canvas 2 is always scaled 1:1
-    m_pCanvas2->SetVirtualSize(MC_X * 2, MC_Y);
-    m_pCanvas2->SetScrollRate(10, 10);
-
-    pSplitter->SetMinimumPaneSize(MC_X * 2);
-    pSplitter->SplitVertically(m_pCanvas1, m_pCanvas2, 100);
-    pSplitter->SetSashGravity(1.0);
-
-    m_pCanvas1->CreateCache(m_nScale, m_bTVMode);
-    m_pCanvas2->CreateCache(m_nScale, m_bTVMode);
+    Connect(wxEVT_ACTIVATE, wxActivateEventHandler(MCChildFrame::OnActivate));
 }
 
 MCChildFrame::~MCChildFrame()
@@ -74,16 +63,14 @@ MCChildFrame::~MCChildFrame()
 void MCChildFrame::SetMousePos(int x, int y)
 {
     // Refresh prev mouse pos
-    m_pCanvas1->InvalidateMouseRect();
-    m_pCanvas2->InvalidateMouseRect();
+    m_pCanvas->InvalidateMouseRect();
 
     // set new pos
     m_pointMousePos.x = x;
     m_pointMousePos.y = y;
 
     // Refresh new mouse pos
-    m_pCanvas1->InvalidateMouseRect();
-    m_pCanvas2->InvalidateMouseRect();
+    m_pCanvas->InvalidateMouseRect();
 }
 
 
@@ -94,8 +81,7 @@ void MCChildFrame::SetMousePos(int x, int y)
 void MCChildFrame::SetTVMode(bool b)
 {
     m_bTVMode = b;
-    m_pCanvas1->DestroyCache();
-    m_pCanvas1->CreateCache(m_nScale, m_bTVMode);
+    m_pCanvas->SetEmulateTV(m_bTVMode);
 }
 
 
@@ -106,8 +92,7 @@ void MCChildFrame::SetTVMode(bool b)
 void MCChildFrame::SetScale(int nScale)
 {
     m_nScale = nScale;
-    m_pCanvas1->DestroyCache();
-    m_pCanvas1->CreateCache(m_nScale, m_bTVMode);
+    m_pCanvas->SetScale(m_nScale);
 }
 
 
@@ -117,3 +102,11 @@ void MCChildFrame::OnDraw(wxDC* pDC)
 {
 }
 
+/*****************************************************************************/
+/*
+ * Called when this window is activated.
+ */
+void MCChildFrame::OnActivate(wxActivateEvent& event)
+{
+    wxGetApp().SetActiveChild(this);
+}

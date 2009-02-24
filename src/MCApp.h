@@ -34,6 +34,7 @@
 
 class PalettePanel;
 class MCToolBase;
+class MCChildFrame;
 
 class MCApp : public wxApp
 {
@@ -46,17 +47,18 @@ public:
 
     void SetActiveDrawingTool(int id);
     MCToolBase* GetActiveDrawingTool();
-    
+
+    void SetActiveChild(MCChildFrame* pFrame);
+
     MCMainFrame* GetMainFrame();
     PalettePanel* GetPalettePanel();
 
 protected:
-    wxDocManager*   m_pDocManager;
     MCMainFrame*    m_pMainFrame;
 
     int             m_idDrawingTool;
     std::list<MCToolBase*> m_listTools;
-    
+
 private:
     void AllocateTools();
     void FreeTools();
@@ -73,7 +75,7 @@ inline void MCApp::SetActiveDrawingTool(int id)
 /*****************************************************************************/
 inline PalettePanel* MCApp::GetPalettePanel()
 {
-    return m_pMainFrame->GetPalettePanel();
+    return m_pMainFrame->GetToolPanel()->GetPalettePanel();
 }
 
 /*****************************************************************************/
@@ -94,7 +96,7 @@ enum MultiColorId
     MC_ID_TILE,
     MC_ID_CASCADE,
     MC_ID_NEW_VIEW,
-    
+
     MC_ID_TOOL_DOTS,
     MC_ID_TOOL_FREEHAND,
     MC_ID_TOOL_LINES,

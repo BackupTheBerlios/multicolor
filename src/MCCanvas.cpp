@@ -45,9 +45,8 @@
 
 /*****************************************************************************/
 MCCanvas::MCCanvas(
-    MCChildFrame* pFrame, wxWindow* pParent,
-    const wxPoint& pos, const wxSize& size) :
-    wxScrolledWindow(pParent, wxID_ANY, pos, size),
+    MCChildFrame* pFrame, wxWindow* pParent, int nStyle) :
+    wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition, wxDefaultSize, nStyle),
     m_pFrame(pFrame),
     m_pActiveTool(NULL),
     m_bEmulateTV(true),
@@ -60,6 +59,11 @@ MCCanvas::MCCanvas(
     Connect(wxEVT_MOTION, wxMouseEventHandler(MCCanvas::OnMouseMove));
 
     Connect(wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(MCCanvas::OnEraseBackground));
+
+    // set min size incl. borders so the preview won't get scroll bars
+    wxSize size(GetWindowBorderSize());
+    size.IncBy(2 * MC_X * m_nScale, MC_Y * m_nScale);
+    SetMinSize(size);
 }
 
 /*****************************************************************************/
@@ -68,22 +72,61 @@ MCCanvas::~MCCanvas()
 }
 
 /*****************************************************************************/
+/*
+ * Set the ChildFrame this view refers to.
+ */
+void MCCanvas::SetChildFrame(MCChildFrame* pFrame)
+{
+    m_pFrame = pFrame;
+    Refresh(false);
+}
+
+/*****************************************************************************/
+/*
+ * Enable/Disable TV emulation and delete the cache.
+ */
+void MCCanvas::SetEmulateTV(bool bTV)
+{
+    m_bEmulateTV = bTV;
+    DestroyCache();
+    Refresh(false);
+}
+
+/*****************************************************************************/
+/*
+ * Set zoom factor and delete the cache.
+ */
+void MCCanvas::SetScale(int nScale)
+{
+    m_nScale = nScale;
+    DestroyCache();
+    Refresh(false);
+}
+
+/*****************************************************************************/
 void MCCanvas::OnDraw(wxDC& rDC)
 {
-    //m_pFrame->OnDraw(&rDC);
+    // create a cache if we don't have one
+    if (!m_image.IsOk())
+    {
+        CreateCache();
+    }
 
-    MCDoc* pDoc = (MCDoc*) m_pFrame->GetDocument();
-    Paint(&pDoc->m_bitmap);
+    if (m_pFrame)
+    {
+        MCDoc* pDoc = (MCDoc*) m_pFrame->GetDocument();
+        Paint(&pDoc->m_bitmap);
+    }
 
     rDC.DrawBitmap(*(GetImage()), 0, 0, false);
 
     // fixme: Do it better!
     rDC.SetPen(*wxTRANSPARENT_PEN);
     rDC.SetBrush(*wxGREY_BRUSH);
-    rDC.DrawRectangle(0, MC_Y * m_nScale,
-            GetSize().GetWidth(), GetSize().GetHeight());
-    rDC.DrawRectangle(2 * MC_X * m_nScale, 0,
-            GetSize().GetWidth(), GetSize().GetHeight());
+    rDC.DrawRectangle(0, MC_Y * m_nScale, GetSize().GetWidth(),
+            GetSize().GetHeight());
+    rDC.DrawRectangle(2 * MC_X * m_nScale, 0, GetSize().GetWidth(),
+            GetSize().GetHeight());
 
     DrawMousePos(&rDC);
 }
@@ -91,15 +134,12 @@ void MCCanvas::OnDraw(wxDC& rDC)
 /******************************************************************************
  * Erzeugt die Bitmap.
  */
-void MCCanvas::CreateCache(int nScale, bool bEmulateTV)
+void MCCanvas::CreateCache()
 {
     int x, y;
     unsigned char* pPixels;
     unsigned char* p;
     int            nPitch;
-
-    m_nScale = nScale;
-    m_bEmulateTV = bEmulateTV;
 
     m_image.Create(2 * MC_X * m_nScale, MC_Y * m_nScale, false);
 
@@ -111,13 +151,12 @@ void MCCanvas::CreateCache(int nScale, bool bEmulateTV)
         p = pPixels + y * nPitch;
         for (x = 0; x < MC_X * 2 * m_nScale; ++x)
         {
-            *p++ = 0x44;
-            *p++ = 0x22;
-            *p++ = 0x22;
+            *p++ = 0;
+            *p++ = 0;
+            *p++ = 0;
         } /* x */
     } /* y */
     UpdateVirtualSize();
-    Refresh(false);
 }
 
 /******************************************************************************
@@ -360,36 +399,43 @@ void MCCanvas::ToCanvasCoord(int* px, int* py, int x, int y)
 /*****************************************************************************/
 void MCCanvas::OnButtonDown(wxMouseEvent& event)
 {
-    int         x, y;
-    MCDoc*      pDoc = (MCDoc*) m_pFrame->GetDocument();
-    MCDrawingMode mode = MCDrawingModeLeast;
+    int x, y;
 
-    ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-    m_pActiveTool = wxGetApp().GetActiveDrawingTool();
-
-    if (m_pActiveTool)
+    if (m_pFrame)
     {
-        m_pActiveTool->SetColors(
-                wxGetApp().GetPalettePanel()->GetColorA(),
-                wxGetApp().GetPalettePanel()->GetColorB());
-        m_pActiveTool->SetDoc(pDoc);
-        m_pActiveTool->Start(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
+        MCDoc* pDoc = (MCDoc*) m_pFrame->GetDocument();
+        MCDrawingMode mode = MCDrawingModeLeast;
+
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+
+        m_pActiveTool = wxGetApp().GetActiveDrawingTool();
+
+        if (m_pActiveTool)
+        {
+            m_pActiveTool->SetColors(wxGetApp().GetPalettePanel()->GetColorA(),
+                    wxGetApp().GetPalettePanel()->GetColorB());
+            m_pActiveTool->SetDoc(pDoc);
+            m_pActiveTool->Start(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
+        }
     }
 }
 
 /*****************************************************************************/
 void MCCanvas::OnButtonUp(wxMouseEvent& event)
 {
-    int         x, y;
-    MCDoc*      pDoc = (MCDoc*) m_pFrame->GetDocument();
+    int x, y;
 
-    ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-    if (m_pActiveTool)
+    if (m_pFrame)
     {
-        m_pActiveTool->End(x, y);
-        m_pActiveTool = NULL;
+        MCDoc* pDoc = (MCDoc*) m_pFrame->GetDocument();
+
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+
+        if (m_pActiveTool)
+        {
+            m_pActiveTool->End(x, y);
+            m_pActiveTool = NULL;
+        }
     }
 }
 
@@ -399,24 +445,28 @@ void MCCanvas::OnButtonUp(wxMouseEvent& event)
  */
 void MCCanvas::OnMouseMove(wxMouseEvent& event)
 {
-    int         x, y;
-    wxString    strPosition;
+    int x, y;
 
-    ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+    if (m_pFrame)
+    {
+        wxString strPosition;
+
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
 
 #warning da fehlt was
-    //m_pView->SetMousePos(x, y);
+        //m_pView->SetMousePos(x, y);
 
-    strPosition = wxString::Format(wxT("%d:%d"), x, y);
-    wxGetApp().GetMainFrame()->SetStatusText(strPosition, 1);
+        strPosition = wxString::Format(wxT("%d:%d"), x, y);
+        wxGetApp().GetMainFrame()->SetStatusText(strPosition, 1);
 
-    if (m_pActiveTool)
-    {
-        m_pActiveTool->Move(x, y);
+        if (m_pActiveTool)
+        {
+            m_pActiveTool->Move(x, y);
+        }
+
+        x = event.GetX();
+        y = event.GetY();
     }
-
-    x = event.GetX();
-    y = event.GetY();
 }
 
 /******************************************************************************/

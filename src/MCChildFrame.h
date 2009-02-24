@@ -50,11 +50,12 @@ public:
     int  GetScale();
     void SetScale(int nScale);
 
+    void OnActivate(wxActivateEvent& event);
+
 protected:
     MCDoc*      m_pDoc;
 
-    MCCanvas*   m_pCanvas1;
-    MCCanvas*   m_pCanvas2;
+    MCCanvas*   m_pCanvas;
     int         m_nScale;
 
     bool        m_bTVMode;

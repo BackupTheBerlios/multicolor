@@ -39,19 +39,22 @@ class MCChildFrame;
 class MCCanvas: public wxScrolledWindow
 {
 public:
-    MCCanvas(MCChildFrame* pFrame, wxWindow* pParent, const wxPoint& pos, const wxSize& size);
+    MCCanvas(MCChildFrame* pFrame, wxWindow* pParent, int nStyle);
     virtual ~MCCanvas(void);
 
     virtual void OnDraw(wxDC& dc);
+
+    void SetChildFrame(MCChildFrame* pFrame);
 
     void OnButtonDown(wxMouseEvent& event);
     void OnButtonUp(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
 	void OnEraseBackground(wxEraseEvent& event);
 
-    void CreateCache(int nScale, bool bEmulateTV);
-    void DestroyCache(void);
-    void SetEmulateTV(bool bTV) { m_bEmulateTV = bTV; };
+    void CreateCache();
+    void DestroyCache();
+    void SetEmulateTV(bool bTV);
+    void SetScale(int nScale);
     void Paint(const MCBitmap* pMCB);
     void InvalidateMouseRect();
 

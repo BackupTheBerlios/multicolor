@@ -28,6 +28,8 @@
 
 #include <wx/docmdi.h>
 
+#include "MCToolPanel.h"
+
 class PalettePanel;
 class MCDoc;
 
@@ -37,7 +39,7 @@ public:
     MCMainFrame(wxFrame* parent,
             const wxString& title);
 
-    PalettePanel* GetPalettePanel();
+    MCToolPanel* GetToolPanel();
     MCDoc* GetActiveDocument();
 
 protected:
@@ -75,14 +77,13 @@ protected:
     void OnUpdateZoom(wxUpdateUIEvent& event);
     void OnUpdateTVMode(wxUpdateUIEvent& event);
 
-    PalettePanel* m_pPalettePanel;
+    MCToolPanel* m_pToolPanel;
 };
 
 /*****************************************************************************/
-inline PalettePanel* MCMainFrame::GetPalettePanel()
+inline MCToolPanel* MCMainFrame::GetToolPanel()
 {
-    return m_pPalettePanel;
+    return m_pToolPanel;
 }
-
 
 #endif // MCMAINFRAME_H
