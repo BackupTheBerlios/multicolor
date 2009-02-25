@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) Thomas Giesel
+ * (c) 2003-2008 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,32 +22,30 @@
  *
  * Thomas Giesel skoe@directbox.com
  */
+#ifndef MCBLOCKPANEL_H_
+#define MCBLOCKPANEL_H_
 
-#ifndef MCTOOLCLONEBRUSH_H
-#define MCTOOLCLONEBRUSH_H
+#include <wx/panel.h>
+#include <wx/stattext.h>
+#include "MCBlock.h"
 
-#include "MCToolBase.h"
-
-class MCToolCloneBrush : public MCToolBase
+class MCBlockPanel : public wxPanel
 {
 public:
-	MCToolCloneBrush();
-	virtual ~MCToolCloneBrush();
-    virtual int GetToolId();
-    virtual void Start(int x, int y, bool bSecondaryFunction);
-    virtual void Move(int x, int y);
-    virtual void End(int x, int y);
+    MCBlockPanel(wxWindow* pParent);
+    virtual ~MCBlockPanel();
+
+    void ShowBlock(MCDoc* pDoc, unsigned x, unsigned y);
 
 protected:
-    MCDoc* m_pDocSource;
-    MCDoc* m_pDocDest;
-    int    m_xSource;
-    int    m_ySource;
-    int    m_dx;
-    int    m_dy;
+    static const int m_nPixelHeight = 8;
 
-    void CloneLine(int x1, int y1, int x2, int y2);
-    void ClonePixel(int x, int y);
+    /* 8x4 Panels for Pixels */
+    wxPanel* m_apPixelPanel[MCBLOCK_HEIGHT][MCBLOCK_WIDTH];
+
+    /* 4 Colors */
+    wxStaticText* m_apUsageStaticText[4];
+    wxPanel* m_apUsagePanel[4];
 };
 
-#endif /* MCTOOLCLONEBRUSH_H */
+#endif /* MCBLOCKPANEL_H_ */

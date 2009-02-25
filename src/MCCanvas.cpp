@@ -31,7 +31,9 @@
 #include "MCCanvas.h"
 #include "MCDoc.h"
 #include "PalettePanel.h"
+#include "MCDrawingModePanel.h"
 #include "MCToolBase.h"
+#include "MCMainFrame.h"
 #include "MCChildFrame.h"
 
 #define FIXP_SHIFT 16
@@ -50,7 +52,8 @@ MCCanvas::MCCanvas(
     m_pFrame(pFrame),
     m_pActiveTool(NULL),
     m_bEmulateTV(true),
-    m_nScale(1)
+    m_nScale(1),
+    m_pointLastMousePos(-1, -1)
 {
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
@@ -120,7 +123,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
 
     rDC.DrawBitmap(*(GetImage()), 0, 0, false);
 
-    // fixme: Do it better!
+    // FIXME: Do it better!
     rDC.SetPen(*wxTRANSPARENT_PEN);
     rDC.SetBrush(*wxGREY_BRUSH);
     rDC.DrawRectangle(0, MC_Y * m_nScale, GetSize().GetWidth(),
@@ -151,9 +154,9 @@ void MCCanvas::CreateCache()
         p = pPixels + y * nPitch;
         for (x = 0; x < MC_X * 2 * m_nScale; ++x)
         {
-            *p++ = 0;
-            *p++ = 0;
-            *p++ = 0;
+            *p++ = 0x22;
+            *p++ = 0x22;
+            *p++ = 0x22;
         } /* x */
     } /* y */
     UpdateVirtualSize();
@@ -208,7 +211,7 @@ void MCCanvas::PaintScaleSmall(const MCBitmap* pMCB)
         {
             if (x % (2 * m_nScale) == 0)
             {
-                col = pMCB->GetColor(x / (2 * m_nScale), y / m_nScale).GetRGB();
+                col = pMCB->GetColor(x / (2 * m_nScale), y / m_nScale)->GetRGB();
                 tmpr = (col & 0xff) << FIXP_SHIFT;
                 tmpg = ((col >> 8) & 0xff) << FIXP_SHIFT;
                 tmpb = ((col >> 16) & 0xff) << FIXP_SHIFT;
@@ -254,7 +257,7 @@ void MCCanvas::PaintScaleMedium(const MCBitmap* pMCB)
             rect.width  = 2 * m_nScale - 1;
             rect.y      = m_nScale * y;
             rect.height = m_nScale - 1;
-            col = pMCB->GetColor(x, y).GetRGB();
+            col = pMCB->GetColor(x, y)->GetRGB();
 
             FillRectangle(pPixels, nPitch, &rect, col);
         }
@@ -265,7 +268,7 @@ void MCCanvas::PaintScaleMedium(const MCBitmap* pMCB)
         for (x = 0; x < 320 * m_nScale; x += 8 * m_nScale)
         {
             col = pMCB->GetColor(
-                x / (2 * m_nScale), y / m_nScale).GetContrastRGB();
+                x / (2 * m_nScale), y / m_nScale)->GetContrastRGB();
 
             rect.x      = x - 1;
             rect.width  = 1;
@@ -301,7 +304,7 @@ void MCCanvas::PaintScaleBig(const MCBitmap* pMCB)
             rect.width  = 2 * m_nScale - 1;
             rect.y      = m_nScale * y;
             rect.height = m_nScale - 1;
-            FillRectangle(pPixels, nPitch, &rect, pMCB->GetColor(x, y).GetRGB());
+            FillRectangle(pPixels, nPitch, &rect, pMCB->GetColor(x, y)->GetRGB());
         }
     }
 
@@ -311,7 +314,7 @@ void MCCanvas::PaintScaleBig(const MCBitmap* pMCB)
         for (x = 0; x < 320 * m_nScale; x += 8 * m_nScale)
         {
             col = pMCB->GetColor(
-                x / (2 * m_nScale), y / m_nScale).GetContrastRGB();
+                x / (2 * m_nScale), y / m_nScale)->GetContrastRGB();
 
             rect.x      = x - 6;
             rect.width  = 10;
@@ -387,6 +390,7 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
     if (*py > MC_Y - 1) *py = MC_Y - 1;
 }
 
+
 /******************************************************************************
  * Convert bitmap point to canvas coordinates.
  */
@@ -395,6 +399,81 @@ void MCCanvas::ToCanvasCoord(int* px, int* py, int x, int y)
     *px = x * (2 * m_nScale);
     *py = y * m_nScale;
 }
+
+
+/******************************************************************************/
+/*
+ * Move the mouse pointer, update the view.
+ */
+void MCCanvas::SetMousePos(int x, int y)
+{
+    InvalidateMouseRect();
+    m_pointLastMousePos.x = x;
+    m_pointLastMousePos.y = y;
+    InvalidateMouseRect();
+}
+
+/******************************************************************************/
+/*
+ * Invalidate the rectangle around the current mouse position.
+ */
+void MCCanvas::InvalidateMouseRect()
+{
+    int    x, y;
+    wxRect rect;
+
+    // Calculate the rectangle around the cursor
+    x = m_pointLastMousePos.x;
+    y = m_pointLastMousePos.y;
+    ToCanvasCoord(&x, &y, x, y);
+
+    rect.SetLeft(x - 8 * m_nScale);
+    rect.SetTop(y - 8 * m_nScale);
+    rect.SetWidth(16 * m_nScale);
+    rect.SetHeight(16 * m_nScale);
+    RefreshRect(rect, false);
+    Refresh(false);
+}
+
+/******************************************************************************/
+/*
+ * Draw the mouse position or remove the drawing.
+ */
+void MCCanvas::DrawMousePos(wxDC* pDC)
+{
+    int x, y;
+
+    x = m_pointLastMousePos.x;
+    y = m_pointLastMousePos.y;
+    ToCanvasCoord(&x, &y, x, y);
+
+    pDC->SetBrush(*wxTRANSPARENT_BRUSH);
+    pDC->SetPen(*wxWHITE_PEN);
+
+    if (m_nScale >= 4)
+    {
+        pDC->DrawRectangle(x, y, 2 * m_nScale, m_nScale);
+    }
+
+    pDC->DrawLine(x - 3, y + m_nScale / 2, x, y + m_nScale / 2);
+    pDC->DrawLine(x + 2 * m_nScale, y + m_nScale / 2, x + 2 * m_nScale + 3, y
+            + m_nScale / 2);
+    pDC->DrawLine(x + m_nScale, y - 3, x + m_nScale, y);
+    pDC->DrawLine(x + m_nScale, y + m_nScale, x + m_nScale, y + m_nScale + 3);
+}
+
+
+/*****************************************************************************/
+/*
+ * Calculate and set the virtual size to get the scrollbars to the right size.
+ */
+void MCCanvas::UpdateVirtualSize()
+{
+    SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
+    SetScrollRate(10 * m_nScale, 10 * m_nScale);
+    //Refresh();
+}
+
 
 /*****************************************************************************/
 void MCCanvas::OnButtonDown(wxMouseEvent& event)
@@ -415,10 +494,15 @@ void MCCanvas::OnButtonDown(wxMouseEvent& event)
             m_pActiveTool->SetColors(wxGetApp().GetPalettePanel()->GetColorA(),
                     wxGetApp().GetPalettePanel()->GetColorB());
             m_pActiveTool->SetDoc(pDoc);
+
+            m_pActiveTool->SetDrawingMode(
+                    wxGetApp().GetMainFrame()->GetToolPanel()->GetDrawingModePanel()->GetDrawingMode());
+
             m_pActiveTool->Start(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
         }
     }
 }
+
 
 /*****************************************************************************/
 void MCCanvas::OnButtonUp(wxMouseEvent& event)
@@ -439,6 +523,7 @@ void MCCanvas::OnButtonUp(wxMouseEvent& event)
     }
 }
 
+
 /******************************************************************************
  * Bei jeder Bewegung der Maus werden die Pixel-Koordinaten in der Statuszeile
  * angezeigt. Ausserdem wird der aktuelle Block in der linken Toolbar angezeigt.
@@ -449,15 +534,8 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
 
     if (m_pFrame)
     {
-        wxString strPosition;
-
         ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-#warning da fehlt was
-        //m_pView->SetMousePos(x, y);
-
-        strPosition = wxString::Format(wxT("%d:%d"), x, y);
-        wxGetApp().GetMainFrame()->SetStatusText(strPosition, 1);
+        m_pFrame->SetMousePos(x, y);
 
         if (m_pActiveTool)
         {
@@ -469,72 +547,12 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
     }
 }
 
-/******************************************************************************/
-/*
- * Invalidate the rectangle around the current mouse position.
- */
-void MCCanvas::InvalidateMouseRect()
-{
-#if 0
-    int    x, y;
-    wxRect rect;
-
-    // Calculate the rectangle around the cursor
-    x = m_pFrame->GetMousePos().x;
-    y = m_pFrame->GetMousePos().y;
-    ToCanvasCoord(&x, &y, x, y);
-
-    rect.SetLeft(x - 8 * m_nScale);
-    rect.SetTop(y - 8 * m_nScale);
-    rect.SetWidth(16 * m_nScale);
-    rect.SetHeight(16 * m_nScale);
-    RefreshRect(rect, false);
-    Refresh(false);
-#endif
-}
-
-/******************************************************************************/
-/* Draw the mouse position or remove the drawing.
- *
- * bDraw     true = draw the position, false = remove the mouse position drawing
- */
-void MCCanvas::DrawMousePos(wxDC* pDC)
-{
-#if 0
-    int x, y;
-
-    x = m_pFrame->GetMousePos().x;
-    y = m_pFrame->GetMousePos().y;
-    ToCanvasCoord(&x, &y, x, y);
-
-    pDC->SetBrush(*wxTRANSPARENT_BRUSH);
-    pDC->SetPen(*wxWHITE_PEN);
-
-    pDC->DrawRectangle(x, y, 2 * m_nScale, m_nScale);
-
-    pDC->DrawLine(x - 3, y + m_nScale / 2, x, y + m_nScale / 2);
-    pDC->DrawLine(x + 2 * m_nScale, y + m_nScale / 2, x + 2 * m_nScale + 3, y
-            + m_nScale / 2);
-    pDC->DrawLine(x + m_nScale, y - 3, x + m_nScale, y);
-    pDC->DrawLine(x + m_nScale, y + m_nScale, x + m_nScale, y + m_nScale + 3);
-#endif
-}
 
 /*****************************************************************************/
 /*
- * Catch the redraw background event to avoid flickering.
+ * Catch the erase background event to avoid flickering.
  */
 void MCCanvas::OnEraseBackground(wxEraseEvent& event)
 {
-}
-
-/*****************************************************************************/
-/*
- * Calculate and set the virtual size to get the scrollbars to the right size.
- */
-void MCCanvas::UpdateVirtualSize()
-{
-    SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
-    SetScrollRate(10 * m_nScale, 10 * m_nScale);
-    //Refresh();
+    // do nothing
 }

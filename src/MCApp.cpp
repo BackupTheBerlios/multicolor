@@ -156,6 +156,18 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
  */
 void MCApp::SetActiveChild(MCChildFrame* pFrame)
 {
-    m_pMainFrame->GetToolPanel()->SetActiveChild(pFrame);
+    m_pMainFrame->GetToolPanel()->SetActiveView(pFrame);
 }
 
+/*****************************************************************************/
+/*
+ * Set the current mouse position which shall be used to update the preview
+ * and so on from now.
+ */
+void MCApp::SetMousePos(int x, int y)
+{
+    wxString strPosition(wxString::Format(wxT("%d:%d"), x, y));
+
+    m_pMainFrame->GetToolPanel()->SetMousePos(x, y);
+    m_pMainFrame->SetStatusText(strPosition, 1);
+}

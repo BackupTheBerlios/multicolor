@@ -46,10 +46,7 @@ public:
 
     void SetChildFrame(MCChildFrame* pFrame);
 
-    void OnButtonDown(wxMouseEvent& event);
-    void OnButtonUp(wxMouseEvent& event);
-    void OnMouseMove(wxMouseEvent& event);
-	void OnEraseBackground(wxEraseEvent& event);
+    void SetMousePos(int x, int y);
 
     void CreateCache();
     void DestroyCache();
@@ -82,12 +79,20 @@ protected:
     void DrawMousePos(wxDC* pDC);
     void UpdateVirtualSize();
 
+    void OnButtonDown(wxMouseEvent& event);
+    void OnButtonUp(wxMouseEvent& event);
+    void OnMouseMove(wxMouseEvent& event);
+    void OnEraseBackground(wxEraseEvent& event);
+
     // Points to the currently active tool or NULL
     MCToolBase* m_pActiveTool;
 
     bool      m_bEmulateTV;
     int       m_nScale;
     wxImage   m_image;
+
+    // Position where the mouse has been drawn (bitmap coord), -1/-1 for none
+    wxPoint   m_pointLastMousePos;
 };
 
 

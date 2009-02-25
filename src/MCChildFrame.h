@@ -37,18 +37,16 @@ public:
     MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id, const wxString& title);
     virtual ~MCChildFrame();
 
-    virtual void OnDraw(wxDC* pDC);  // overridden to draw this view
-    //virtual bool OnCreate(wxDocument* pDoc, long flags);
-
     MCDoc* GetDocument();
 
-    void SetMousePos(int x, int y);
     const wxPoint& GetMousePos();
 
     bool GetTVMode();
     void SetTVMode(bool b);
     int  GetScale();
     void SetScale(int nScale);
+
+    void SetMousePos(int x, int y);
 
     void OnActivate(wxActivateEvent& event);
 

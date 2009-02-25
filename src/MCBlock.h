@@ -50,17 +50,18 @@ public:
     void SetBitmapRAM(unsigned y, unsigned char val);
     unsigned char GetBitmapRAM(unsigned y) const;
 
-    const C64Color& GetMCColor(int index) const;
+    const C64Color* GetMCColor(int index) const;
     int CountMCIndex(int index) const;
-    bool SetPixel(unsigned x, unsigned y, const C64Color& col, 
+    bool SetPixel(unsigned x, unsigned y, const C64Color& col,
             MCDrawingMode mode = MCDrawingModeIgnore);
 
-    inline const C64Color& GetColor(unsigned x, unsigned y) const
-    {
-        //ASSERT(m_aBitmap[y][x] < 4);
-
-        return m_c64Color[m_aBitmap[y][x]];
-    }
+    const C64Color* GetColor(unsigned x, unsigned y) const;
 };
+
+
+inline const C64Color* MCBlock::GetColor(unsigned x, unsigned y) const
+{
+    return &(m_c64Color[m_aBitmap[y][x]]);
+}
 
 #endif

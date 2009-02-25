@@ -28,6 +28,10 @@
 #include "MCBitmap.h"
 #include "MCToolBase.h"
 
+
+const C64Color MCBitmap::black;
+
+
 /*****************************************************************************/
 MCBitmap::MCBitmap(void)
 {
@@ -49,7 +53,7 @@ void MCBitmap::SetBackground(C64Color col)
 /*****************************************************************************/
 unsigned char MCBitmap::GetBackground() const
 {
-    return (unsigned char) m_aMCBlock[0][0].GetMCColor(0).GetColor();
+    return (unsigned char) m_aMCBlock[0][0].GetMCColor(0)->GetColor();
 }
 
 /*****************************************************************************/
@@ -74,8 +78,8 @@ unsigned char MCBitmap::GetScreenRAM(unsigned offset) const
 
     if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
     {
-        v  = m_aMCBlock[0][offset].GetMCColor(1).GetColor() << 4;
-        v |= m_aMCBlock[0][offset].GetMCColor(2).GetColor();
+        v  = m_aMCBlock[0][offset].GetMCColor(1)->GetColor() << 4;
+        v |= m_aMCBlock[0][offset].GetMCColor(2)->GetColor();
     }
     return v;
 }
@@ -99,7 +103,7 @@ unsigned char MCBitmap::GetColorRAM(unsigned offset) const
 
     if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
     {
-        v = m_aMCBlock[0][offset].GetMCColor(3).GetColor();
+        v = m_aMCBlock[0][offset].GetMCColor(3)->GetColor();
     }
     return v;
 }
@@ -122,11 +126,18 @@ unsigned char MCBitmap::GetBitmapRAM(unsigned offset)
 }
 
 /*****************************************************************************/
-const MCBlock& MCBitmap::GetMCBlock(unsigned x, unsigned y) const
+/*
+ * Get a const reference to the block containing the given coordinates.
+ * Return NULL if the coordinates are out of range
+ */
+const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
 {
-    //ASSERT ((x < MC_X) && (y < MC_Y));
-
-    return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH];
+    if ((x < MC_X) && (y < MC_Y))
+    {
+        return &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
+    }
+    else
+        return NULL;
 }
 
 /*****************************************************************************
@@ -163,7 +174,7 @@ bool MCBitmap::FloodFill(unsigned x, unsigned y,
     //ASSERT ((x < MC_X) && (y < MC_Y));
 
     memset(&state, FF_UNCHECKED, sizeof(state));
-    colOld = GetColor(x, y);
+    colOld = *GetColor(x, y);
     state[y][x] = FF_TOCHECK;
 
     do
@@ -176,16 +187,16 @@ bool MCBitmap::FloodFill(unsigned x, unsigned y,
                 if (state[y][x] == FF_TOCHECK)
                 {
                     if (x > 0 && state[y][x - 1] == FF_UNCHECKED &&
-                        GetColor(x - 1, y) == colOld)
+                        *GetColor(x - 1, y) == colOld)
                         state[y][x - 1] = FF_TOCHECK;
                     if (x + 1 < MC_X && state[y][x + 1] == FF_UNCHECKED &&
-                        GetColor(x + 1, y) == colOld)
+                        *GetColor(x + 1, y) == colOld)
                         state[y][x + 1] = FF_TOCHECK;
                     if (y > 0 && state[y - 1][x] == FF_UNCHECKED &&
-                        GetColor(x, y - 1) == colOld)
+                        *GetColor(x, y - 1) == colOld)
                         state[y - 1][x] = FF_TOCHECK;
                     if (y + 1 < MC_Y && state[y + 1][x] == FF_UNCHECKED &&
-                        GetColor(x, y + 1) == colOld)
+                        *GetColor(x, y + 1) == colOld)
                         state[y + 1][x] = FF_TOCHECK;
                     state[y][x] = FF_CHECKED;
                     SetPixel(x, y, col, mode);

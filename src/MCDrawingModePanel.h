@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) Thomas Giesel
+ * (c) 2003-2009 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,31 +23,36 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLCLONEBRUSH_H
-#define MCTOOLCLONEBRUSH_H
+#ifndef MCDRAWINGMODEPANEL_H_
+#define MCDRAWINGMODEPANEL_H_
 
+#include <wx/panel.h>
 #include "MCToolBase.h"
 
-class MCToolCloneBrush : public MCToolBase
+class wxRadioButton;
+
+class MCDrawingModePanel : public wxPanel
 {
 public:
-	MCToolCloneBrush();
-	virtual ~MCToolCloneBrush();
-    virtual int GetToolId();
-    virtual void Start(int x, int y, bool bSecondaryFunction);
-    virtual void Move(int x, int y);
-    virtual void End(int x, int y);
+    MCDrawingModePanel(wxWindow* pParent);
+    virtual ~MCDrawingModePanel();
+    MCDrawingMode GetDrawingMode();
+
+    void OnRadioButtonSelected(wxCommandEvent& event);
 
 protected:
-    MCDoc* m_pDocSource;
-    MCDoc* m_pDocDest;
-    int    m_xSource;
-    int    m_ySource;
-    int    m_dx;
-    int    m_dy;
+    wxRadioButton* m_pButtonIgnore;
+    wxRadioButton* m_pButtonReplaceCurrent;
+    wxRadioButton* m_pButtonReplaceLeastUsed;
 
-    void CloneLine(int x1, int y1, int x2, int y2);
-    void ClonePixel(int x, int y);
+    MCDrawingMode  m_drawingMode;
 };
 
-#endif /* MCTOOLCLONEBRUSH_H */
+
+/*****************************************************************************/
+inline MCDrawingMode MCDrawingModePanel::GetDrawingMode()
+{
+    return m_drawingMode;
+}
+
+#endif /* MCDRAWINGMODEPANEL_H_ */

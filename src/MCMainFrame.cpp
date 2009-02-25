@@ -61,7 +61,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title)
             wxCommandEventHandler(MCMainFrame::OnSave));
 
     Connect(wxID_SAVEAS, wxEVT_UPDATE_UI,
-            wxUpdateUIEventHandler(MCMainFrame::OnUpdateSaveAs));
+            wxUpdateUIEventHandler(MCMainFrame::OnUpdateSave));
     Connect(wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler(MCMainFrame::OnSaveAs));
 
@@ -257,12 +257,12 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
 
 /*****************************************************************************/
 /*
- * Save can only be used if the document has a path.
+ * "Save" and "Save as" can only be used if there is a document.
  */
 void MCMainFrame::OnUpdateSave(wxUpdateUIEvent& event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDocument();
-    event.Enable(pDoc && (pDoc->GetFileName().GetPath().Length() > 0));
+    event.Enable(pDoc != NULL);
 }
 
 
@@ -274,19 +274,16 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDocument();
 
+
     if (pDoc)
-        pDoc->Save(wxString());
-}
-
-
-/*****************************************************************************/
-/*
- * "Save as" can only be used if there is a document.
- */
-void MCMainFrame::OnUpdateSaveAs(wxUpdateUIEvent& event)
-{
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
-    event.Enable(pDoc != NULL);
+    {
+        if (pDoc->GetFileName().GetPath().Length() == 0)
+        {
+            OnSaveAs(event);
+        }
+        else
+            pDoc->Save(wxString());
+    }
 }
 
 
@@ -295,6 +292,7 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDocument();
 
+    /* !!! Keep the filter list in sync with the code below !!! */
     wxFileDialog* pFileDialog = new wxFileDialog(
             this, wxT("Save File"), wxT(""), wxT(""),
             wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"
@@ -302,11 +300,24 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
                 "Amica files (*.ami)|*.ami|"
                 "All files (*)|*|"
                ), wxFD_SAVE | wxFD_CHANGE_DIR | wxFD_OVERWRITE_PROMPT);
+    /* !!! Keep the filter list in sync with the code below !!! */
 
     if (pDoc && (pFileDialog->ShowModal() == wxID_OK))
     {
+        wxFileName name(pFileDialog->GetPath());
+
+        // didn't the user supply an extension?
+        if (name.GetExt() == wxT(""))
+        {
+            // then add .koa, except if he has .ami chosen
+            if (pFileDialog->GetFilterIndex() == 2)
+                name.SetExt(wxT("ami"));
+            else
+                name.SetExt(wxT("koa"));
+        }
+
         // Try to save the file
-        pDoc->Save(pFileDialog->GetPath());
+        pDoc->Save(name.GetFullPath());
     }
     delete pFileDialog;
 }

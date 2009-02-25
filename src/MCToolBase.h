@@ -42,15 +42,17 @@ MCDrawingMode;
 class MCToolBase
 {
 public:
-    
+
     MCToolBase();
     virtual ~MCToolBase();
-	
+
     // Set the primary and secondary color for the tool before starting it
     void SetColors(int nColorPrimary, int nColorSecondary);
 
     // Set the document we have to work with
     void SetDoc(MCDoc* pDoc);
+
+    void SetDrawingMode(MCDrawingMode drawingMode);
 
     // Return the ID for this tool
     virtual int GetToolId() = 0;
@@ -60,7 +62,7 @@ public:
 
     // Mouse has been moved while the button was kept pressed
     virtual void Move(int x, int y);
-	
+
     // Finish the tool at the given coordinates (i.e. Mouse button up)
     virtual void End(int x, int y);
 
@@ -73,6 +75,17 @@ protected:
     MCDrawingMode m_drawingMode;
     MCDoc* m_pDoc;
 };
+
+
+/*****************************************************************************/
+/*
+ * Set the drawing mode to be used.
+ */
+inline void MCToolBase::SetDrawingMode(MCDrawingMode drawingMode)
+{
+    m_drawingMode = drawingMode;
+}
+
 
 /*****************************************************************************/
 /*

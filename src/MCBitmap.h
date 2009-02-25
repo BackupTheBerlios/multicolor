@@ -54,17 +54,9 @@ public:
     void SetBitmapRAM(unsigned offset, unsigned char val);
     unsigned char GetBitmapRAM(unsigned offset);
 
-    inline const C64Color& GetColor(unsigned x, unsigned y) const
-    {
-        static C64Color black(MC_BLACK);
+    const C64Color* GetColor(unsigned x, unsigned y) const;
 
-        if ((x < MC_X) && (y < MC_Y))
-            return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
-        else
-            return black;
-    };
-
-    const MCBlock&  GetMCBlock(unsigned x, unsigned y) const;
+    const MCBlock* GetMCBlock(unsigned x, unsigned y) const;
     bool SetPixel(unsigned x, unsigned y, const C64Color& col,
             MCDrawingMode mode = MCDrawingModeIgnore);
     bool FloodFill(unsigned x, unsigned y, const C64Color& col,
@@ -72,8 +64,19 @@ public:
     bool Line(int x1, int y1, int x2, int y2,
             const C64Color& col, MCDrawingMode mode);
 
+    static const C64Color black;
+
 protected:
     MCBlock m_aMCBlock[MCBITMAP_YBLOCKS][MCBITMAP_XBLOCKS];
+};
+
+
+inline const C64Color* MCBitmap::GetColor(unsigned x, unsigned y) const
+{
+    if ((x < MC_X) && (y < MC_Y))
+        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
+    else
+        return &black;
 };
 
 #endif

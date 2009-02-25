@@ -49,6 +49,7 @@ public:
     MCToolBase* GetActiveDrawingTool();
 
     void SetActiveChild(MCChildFrame* pFrame);
+    void SetMousePos(int x, int y);
 
     MCMainFrame* GetMainFrame();
     PalettePanel* GetPalettePanel();

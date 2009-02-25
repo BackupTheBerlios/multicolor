@@ -10,14 +10,19 @@ Package: multicolor
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: image manipulation for Commodore 8-bit computers' graphics
- MultiColor is an image manipulation tool for Commodore 8-bit computers'
- graphics formats. 
+ MultiColor is an image manipulation tool for Commodore 8-bit computers' 
+ graphics formats. It is an old-school painting program for graphicians but not
+ an image converter. Currently VIC-II multicolor bitmap is the only supported
+ image format.
  .
- MultiColor is an old-school painting program for graphicians. It is not
- an image converter.
+ Features:
+ - Written in C++, so it's quite fast and no special runtime is required
+ - Can be compiled for many platforms, because it uses wxWidgets
+ - Can load Koala and Amica, file type is detected independently from file name
+ - Behaviour when hitting the color-per-cell-limit can be selected
+ - Undo/redo
+ - Tools with realtime preview (e.g. Line)
+ - Basic TV emulation
+ - Zoom, with grid at higher zoom factors
  .
- Currently following image formats are implemented: 
- VIC-II multicolor 
- .
- Images can be loaded and saved in following file formats:
- Koala, Amica Paint
+ Latest versions can be found on multicolor.berlios.de.

@@ -1,3 +1,12 @@
+multicolor (0.1.1-1) unstable; urgency=low
+
+  * Current Cell view added
+  * Files get an extension if the user didn't supply one
+  * Drawing mode can be chosen, this allows the user to select the behaviour
+    when the color limit is hit
+
+ -- Thomas Giesel <skoe@directbox.com>  Wed, 25 Feb 2009 11:39:15 +0100
+
 multicolor (0.1.0-1) unstable; urgency=low
 
   * Initial release

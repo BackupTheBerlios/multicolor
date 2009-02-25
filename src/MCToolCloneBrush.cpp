@@ -28,17 +28,22 @@
 #include "MCChildFrame.h"
 #include "MCApp.h"
 
-MCToolCloneBrush::MCToolCloneBrush()
-    : m_pDocSource(NULL)
-    , m_pDocDest(NULL)
-    , m_dx(0)
-    , m_dy(0)
+
+/*****************************************************************************/
+MCToolCloneBrush::MCToolCloneBrush() :
+    m_pDocSource(NULL),
+    m_pDocDest(NULL),
+    m_dx(0),
+    m_dy(0)
 {
 }
 
+
+/*****************************************************************************/
 MCToolCloneBrush::~MCToolCloneBrush()
 {
 }
+
 
 /*****************************************************************************/
 /*
@@ -176,6 +181,6 @@ void MCToolCloneBrush::ClonePixel(int x, int y)
         m_dy = y - m_ySource;
     }
 
-    col = m_pDocSource->m_bitmap.GetColor(x - m_dx, y - m_dy);
+    col = *m_pDocSource->m_bitmap.GetColor(x - m_dx, y - m_dy);
     m_pDocDest->m_bitmap.SetPixel(x, y, col, m_drawingMode);
 }

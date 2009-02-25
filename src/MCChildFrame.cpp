@@ -55,24 +55,6 @@ MCChildFrame::~MCChildFrame()
     // TODO Auto-generated destructor stub
 }
 
-/*****************************************************************************/
-/*
- * Draw the given mouse positions in both Canvas'.
- * The mouse has been moved to these bitmap coordinates.
- */
-void MCChildFrame::SetMousePos(int x, int y)
-{
-    // Refresh prev mouse pos
-    m_pCanvas->InvalidateMouseRect();
-
-    // set new pos
-    m_pointMousePos.x = x;
-    m_pointMousePos.y = y;
-
-    // Refresh new mouse pos
-    m_pCanvas->InvalidateMouseRect();
-}
-
 
 /*****************************************************************************/
 /*
@@ -95,11 +77,16 @@ void MCChildFrame::SetScale(int nScale)
     m_pCanvas->SetScale(m_nScale);
 }
 
-
-/*****************************************************************************/
-// MCChildFrame drawing
-void MCChildFrame::OnDraw(wxDC* pDC)
+/******************************************************************************/
+/*
+ * Move the mouse, update all views and previews.
+ *
+ * x, y are bitmap coordinates
+ */
+void MCChildFrame::SetMousePos(int x, int y)
 {
+    m_pCanvas->SetMousePos(x, y);
+    wxGetApp().SetMousePos(x, y);
 }
 
 /*****************************************************************************/

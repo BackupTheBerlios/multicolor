@@ -28,9 +28,11 @@
 
 #include <wx/panel.h>
 
-class PalettePanel;
 class MCChildFrame;
 class MCCanvas;
+class PalettePanel;
+class MCDrawingModePanel;
+class MCBlockPanel;
 
 class MCToolPanel : public wxPanel
 {
@@ -38,13 +40,20 @@ public:
     MCToolPanel(wxWindow* parent);
     virtual ~MCToolPanel();
 
-    void SetActiveChild(MCChildFrame* pFrame);
+    void SetActiveView(MCChildFrame* pFrame);
+    void SetMousePos(int x, int y);
+
     void Refresh();
     PalettePanel* GetPalettePanel();
+    MCDrawingModePanel* GetDrawingModePanel();
 
 protected:
     MCCanvas*     m_pCanvas;
     PalettePanel* m_pPalettePanel;
+    MCDrawingModePanel* m_pDrawingModePanel;
+    MCBlockPanel* m_pBlockPanel;
+
+    MCChildFrame* m_pActiveView;
 };
 
 /*****************************************************************************/
@@ -52,5 +61,13 @@ inline PalettePanel* MCToolPanel::GetPalettePanel()
 {
     return m_pPalettePanel;
 }
+
+
+/*****************************************************************************/
+inline MCDrawingModePanel* MCToolPanel::GetDrawingModePanel()
+{
+    return m_pDrawingModePanel;
+}
+
 
 #endif /* MCTOOLPANEL_H_ */

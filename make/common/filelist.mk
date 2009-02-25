@@ -24,6 +24,8 @@ src += MCToolLines.cpp
 src += MCToolPanel.cpp
 src += MCChildFrame.cpp
 src += PalettePanel.cpp
+src += MCDrawingModePanel.cpp
+src += MCBlockPanel.cpp
 
 ###############################################################################
 # This is a list of resource file to be copied

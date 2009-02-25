@@ -49,11 +49,12 @@ void MCBlock::SetMCColor(int index, C64Color col)
 }
 
 /*****************************************************************************/
-const C64Color& MCBlock::GetMCColor(int index) const
+const C64Color* MCBlock::GetMCColor(int index) const
 {
-//    ASSERT(index < 4);
-
-    return m_c64Color[index];
+    if (index < 4)
+        return &m_c64Color[index];
+    else
+        return NULL;
 }
 
 
