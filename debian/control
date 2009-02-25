@@ -16,13 +16,13 @@ Description: image manipulation for Commodore 8-bit computers' graphics
  image format.
  .
  Features:
- - Written in C++, so it's quite fast and no special runtime is required
- - Can be compiled for many platforms, because it uses wxWidgets
- - Can load Koala and Amica, file type is detected independently from file name
- - Behaviour when hitting the color-per-cell-limit can be selected
- - Undo/redo
- - Tools with realtime preview (e.g. Line)
- - Basic TV emulation
- - Zoom, with grid at higher zoom factors
+  - Written in C++, so it's quite fast and no special runtime is required
+  - Can be compiled for many platforms, because it uses wxWidgets
+  - Can load Koala and Amica, file type is detected independently from file name
+  - Behaviour when hitting the color-per-cell-limit can be selected
+  - Undo/redo
+  - Tools with realtime preview (e.g. Line)
+  - Basic TV emulation
+  - Zoom, with grid at higher zoom factors
  .
  Latest versions can be found on multicolor.berlios.de.
