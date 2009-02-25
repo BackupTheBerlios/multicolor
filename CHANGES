@@ -1,0 +1,9 @@
+
+0.1.1 - 25.03.2009
+  * Current Cell view added
+  * Files get an extension if the user didn't supply one
+  * Drawing mode can be chosen, this allows the user to select the behaviour
+    when the color limit is hit
+
+0.1.0 - 23.03.2009
+  * First release, used internally only
