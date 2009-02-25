@@ -24,7 +24,6 @@
  */
 
 #include <wx/sizer.h>
-#include <wx/msgdlg.h>
 
 #include "MCToolPanel.h"
 #include "MCCanvas.h"
@@ -44,7 +43,6 @@ MCToolPanel::MCToolPanel(wxWindow* parent):
 
     m_pCanvas = new MCCanvas(NULL, this, wxBORDER_SUNKEN);
     pBoxSizerOuter->Add(m_pCanvas);
-	wxMessageBox(wxString::Format(wxT("canvas %p"), m_pCanvas));
 
     pBoxSizerOuter->AddSpacer(4);
     pGridSizerColors = new wxGridSizer(2, 1, 10);

@@ -304,7 +304,7 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
     /* !!! Keep the filter list in sync with the code below !!! */
 
     wxFileDialog* pFileDialog = new wxFileDialog(
-            this, wxT("Save File"), wxT(""), wxT(""), stringFilter, 
+            this, wxT("Save File"), wxT(""), wxT(""), stringFilter,
 			wxFD_SAVE | wxFD_CHANGE_DIR | wxFD_OVERWRITE_PROMPT);
 
     if (pDoc && (pFileDialog->ShowModal() == wxID_OK))
@@ -424,7 +424,7 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
 /*****************************************************************************/
 void MCMainFrame::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox(_("MultiColor"), _("Welcome to..."));
+    wxMessageBox(_("MultiColor 0.1.1"), _("Welcome to..."));
 }
 
 /*****************************************************************************/

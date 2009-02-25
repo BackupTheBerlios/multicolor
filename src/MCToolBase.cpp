@@ -24,7 +24,6 @@
  */
 
 #include <wx/string.h>
-#include <wx/msgdlg.h>
 
 #include "MCToolBase.h"
 #include "MCDoc.h"
