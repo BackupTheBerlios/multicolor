@@ -134,6 +134,7 @@ void MCBlockPanel::ShowBlock(MCDoc* pDoc, unsigned x, unsigned y)
 
             pPanel = m_apPixelPanel[yy][xx];
             pPanel->SetBackgroundColour(pC64Color->GetWxColor());
+            pPanel->Refresh();
         }
     }
 
@@ -141,6 +142,7 @@ void MCBlockPanel::ShowBlock(MCDoc* pDoc, unsigned x, unsigned y)
     for (yy = 0; yy < 4; ++yy)
     {
         m_apUsagePanel[yy]->SetBackgroundColour(pBlock->GetMCColor(yy)->GetWxColor());
+        m_apUsagePanel[yy]->Refresh();
         m_apUsageStaticText[yy]->SetLabel(wxString::Format(wxT("%d x"), pBlock->CountMCIndex(yy)));
     }
 }

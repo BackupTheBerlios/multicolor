@@ -48,7 +48,8 @@ public:
     void SetActiveDrawingTool(int id);
     MCToolBase* GetActiveDrawingTool();
 
-    void SetActiveChild(MCChildFrame* pFrame);
+    void SetActiveWindow(MCChildFrame* pFrame);
+    MCChildFrame* GetActiveWindow();
     void SetMousePos(int x, int y);
 
     MCMainFrame* GetMainFrame();
@@ -56,6 +57,7 @@ public:
 
 protected:
     MCMainFrame*    m_pMainFrame;
+    MCChildFrame*   m_pActiveWindow;
 
     int             m_idDrawingTool;
     std::list<MCToolBase*> m_listTools;
@@ -84,6 +86,18 @@ inline MCMainFrame* MCApp::GetMainFrame()
 {
     return m_pMainFrame;
 }
+
+
+/*****************************************************************************/
+/*
+ * Return a pointer to the active child. This just returns the pointer saved
+ * in this object.
+ */
+inline MCChildFrame* MCApp::GetActiveWindow()
+{
+    return m_pActiveWindow;
+}
+
 
 /*****************************************************************************/
 enum MultiColorId

@@ -44,6 +44,7 @@ IMPLEMENT_APP(MCApp);
 /*****************************************************************************/
 MCApp::MCApp()
     : m_pMainFrame(NULL)
+    , m_pActiveWindow(NULL)
     , m_idDrawingTool(0)
     , m_listTools()
 {
@@ -154,10 +155,12 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
  * Set the active child window which shall be used to update the preview
  * and so on from now.
  */
-void MCApp::SetActiveChild(MCChildFrame* pFrame)
+void MCApp::SetActiveWindow(MCChildFrame* pFrame)
 {
     m_pMainFrame->GetToolPanel()->SetActiveView(pFrame);
+    m_pActiveWindow = pFrame;
 }
+
 
 /*****************************************************************************/
 /*

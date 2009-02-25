@@ -52,7 +52,8 @@ MCChildFrame::MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id
 
 MCChildFrame::~MCChildFrame()
 {
-    // TODO Auto-generated destructor stub
+    if (wxGetApp().GetActiveWindow() == this)
+        wxGetApp().SetActiveWindow(NULL);
 }
 
 
@@ -95,5 +96,5 @@ void MCChildFrame::SetMousePos(int x, int y)
  */
 void MCChildFrame::OnActivate(wxActivateEvent& event)
 {
-    wxGetApp().SetActiveChild(this);
+    wxGetApp().SetActiveWindow(this);
 }
