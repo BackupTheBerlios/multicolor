@@ -52,8 +52,10 @@ MCChildFrame::MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id
 
 MCChildFrame::~MCChildFrame()
 {
-    if (wxGetApp().GetActiveWindow() == this)
+#if 0
+	if (wxGetApp().GetActiveWindow() == this)
         wxGetApp().SetActiveWindow(NULL);
+#endif
 }
 
 
@@ -96,5 +98,14 @@ void MCChildFrame::SetMousePos(int x, int y)
  */
 void MCChildFrame::OnActivate(wxActivateEvent& event)
 {
-    wxGetApp().SetActiveWindow(this);
+	if (event.GetActive())
+	{
+		wxGetApp().SetActiveWindow(this);
+	}
+    else if (wxGetApp().GetActiveWindow() == this)
+	{
+        wxGetApp().SetActiveWindow(NULL);
+	}
+
+	event.Skip();
 }

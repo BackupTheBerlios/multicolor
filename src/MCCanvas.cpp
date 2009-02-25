@@ -81,6 +81,7 @@ MCCanvas::~MCCanvas()
 void MCCanvas::SetChildFrame(MCChildFrame* pFrame)
 {
     m_pFrame = pFrame;
+	DestroyCache();
     Refresh(false);
 }
 
@@ -119,19 +120,25 @@ void MCCanvas::OnDraw(wxDC& rDC)
     {
         MCDoc* pDoc = (MCDoc*) m_pFrame->GetDocument();
         Paint(&pDoc->m_bitmap);
-    }
 
-    rDC.DrawBitmap(*(GetImage()), 0, 0, false);
+        rDC.DrawBitmap(*(GetImage()), 0, 0, false);
 
-    // FIXME: Do it better!
-    rDC.SetPen(*wxTRANSPARENT_PEN);
-    rDC.SetBrush(*wxGREY_BRUSH);
-    rDC.DrawRectangle(0, MC_Y * m_nScale, GetSize().GetWidth(),
-            GetSize().GetHeight());
-    rDC.DrawRectangle(2 * MC_X * m_nScale, 0, GetSize().GetWidth(),
-            GetSize().GetHeight());
+        rDC.SetPen(*wxTRANSPARENT_PEN);
+        rDC.SetBrush(*wxGREY_BRUSH);
+        rDC.DrawRectangle(0, MC_Y * m_nScale, GetSize().GetWidth(),
+                GetSize().GetHeight());
+        rDC.DrawRectangle(2 * MC_X * m_nScale, 0, GetSize().GetWidth(),
+                GetSize().GetHeight());
 
-    DrawMousePos(&rDC);
+        DrawMousePos(&rDC);
+	}
+	else
+	{
+		// Simply draw a black box
+        rDC.SetPen(*wxTRANSPARENT_PEN);
+		rDC.SetBrush(*wxBLACK_BRUSH);
+        rDC.DrawRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight());
+	}
 }
 
 /******************************************************************************

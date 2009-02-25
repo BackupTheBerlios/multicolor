@@ -234,13 +234,16 @@ void MCMainFrame::OnNew(wxCommandEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
-    wxFileDialog* pFileDialog = new wxFileDialog(
-            this, wxT("Open File"), wxT(""), wxT(""),
-            wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"
-                "Koala files (*.koa)|*.koa|"
-                "Amica files (*.ami)|*.ami|"
-                "All files (*)|*|"
-               ), wxFD_OPEN | wxFD_CHANGE_DIR | wxFD_FILE_MUST_EXIST);
+	wxString stringFilter;
+
+	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
+    stringFilter.append(wxT("Koala files (*.koa)|*.koa|"));
+	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
+    stringFilter.append(wxT("All files (*)|*|"));
+
+	wxFileDialog* pFileDialog = new wxFileDialog(
+            this, wxT("Open File"), wxT(""), wxT(""), stringFilter,
+            wxFD_OPEN | wxFD_CHANGE_DIR | wxFD_FILE_MUST_EXIST);
 
     if (pFileDialog->ShowModal() == wxID_OK)
     {
@@ -291,16 +294,18 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
 void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+	wxString stringFilter;
 
     /* !!! Keep the filter list in sync with the code below !!! */
-    wxFileDialog* pFileDialog = new wxFileDialog(
-            this, wxT("Save File"), wxT(""), wxT(""),
-            wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"
-                "Koala files (*.koa)|*.koa|"
-                "Amica files (*.ami)|*.ami|"
-                "All files (*)|*|"
-               ), wxFD_SAVE | wxFD_CHANGE_DIR | wxFD_OVERWRITE_PROMPT);
+	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
+    stringFilter.append(wxT("Koala files (*.koa)|*.koa|"));
+	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
+    stringFilter.append(wxT("All files (*)|*|"));
     /* !!! Keep the filter list in sync with the code below !!! */
+
+    wxFileDialog* pFileDialog = new wxFileDialog(
+            this, wxT("Save File"), wxT(""), wxT(""), stringFilter, 
+			wxFD_SAVE | wxFD_CHANGE_DIR | wxFD_OVERWRITE_PROMPT);
 
     if (pDoc && (pFileDialog->ShowModal() == wxID_OK))
     {

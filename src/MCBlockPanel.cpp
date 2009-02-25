@@ -60,7 +60,6 @@ MCBlockPanel::MCBlockPanel(wxWindow* pParent) :
 {
     int x, y;
     wxPanel*     pPanel;
-    wxBoxSizer*  pBoxSizer;
     wxStaticText* pText;
     wxStaticBoxSizer* pSizerOuter = new wxStaticBoxSizer(wxHORIZONTAL, this, wxT("Current Cell"));
     wxFlexGridSizer* pRightGridSizer = new wxFlexGridSizer(3);
