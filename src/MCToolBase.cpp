@@ -31,6 +31,7 @@
 MCToolBase::MCToolBase()
     : m_nColorPrimary(1)
     , m_nColorSecondary(0)
+    , m_nColorSelected(1)
     , m_bSecondaryFunction(false)
     , m_xStart(0)
     , m_yStart(0)
@@ -61,8 +62,8 @@ void MCToolBase::SetColors(int nColorPrimary, int nColorSecondary)
 /*
  * Start the tool at the given coordinates (i.e. Mouse button down).
  *
- * The default implementation just saves the start point and creates a backup
- * of the documents bitmap.
+ * The default implementation just saves the start point, selects the primary
+ * or secondary color and and creates a backup of the document's bitmap.
  *
  * X and y are bitmap coordinates.
  * bSecondaryFunction is true if the tool was invoked with a
@@ -74,6 +75,7 @@ void MCToolBase::Start(int x, int y, bool bSecondaryFunction)
 
     m_xStart = x;
     m_yStart = y;
+    m_nColorSelected = bSecondaryFunction ? m_nColorSecondary : m_nColorPrimary;
 }
 
 /*****************************************************************************/

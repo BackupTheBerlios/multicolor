@@ -56,7 +56,7 @@ int MCToolLines::GetToolId()
 void MCToolLines::Move(int x, int y)
 {
     m_pDoc->m_bitmap = m_pDoc->m_bitmapToolCopy;
-    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorPrimary,
+    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorSelected,
             m_drawingMode);
 
     m_pDoc->Refresh();
@@ -71,7 +71,7 @@ void MCToolLines::Move(int x, int y)
  */
 void MCToolLines::End(int x, int y)
 {
-    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorPrimary,
+    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorSelected,
             m_drawingMode);
 
     m_pDoc->Refresh();

@@ -69,6 +69,7 @@ public:
 protected:
     int m_nColorPrimary;
     int m_nColorSecondary;
+    int m_nColorSelected;
     bool m_bSecondaryFunction;
     int m_xStart;
     int m_yStart;

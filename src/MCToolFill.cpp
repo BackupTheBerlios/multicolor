@@ -58,7 +58,7 @@ void MCToolFill::Start(int x, int y, bool bSecondaryFunction)
 {
     MCToolBase::Start(x, y, bSecondaryFunction);
 
-    m_pDoc->m_bitmap.FloodFill(x, y, m_nColorPrimary, m_drawingMode);
+    m_pDoc->m_bitmap.FloodFill(x, y, m_nColorSelected, m_drawingMode);
     m_pDoc->Refresh();
     m_pDoc->PrepareUndo();
 }
