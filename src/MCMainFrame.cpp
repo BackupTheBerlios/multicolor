@@ -239,7 +239,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
 	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
     stringFilter.append(wxT("Koala files (*.koa)|*.koa|"));
 	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
-    stringFilter.append(wxT("All files (*)|*|"));
+    stringFilter.append(wxT("All files (*)|*"));
 
 	wxFileDialog* pFileDialog = new wxFileDialog(
             this, wxT("Open File"), wxT(""), wxT(""), stringFilter,
@@ -300,7 +300,7 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
     stringFilter.append(wxT("Koala files (*.koa)|*.koa|"));
 	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
-    stringFilter.append(wxT("All files (*)|*|"));
+    stringFilter.append(wxT("All files (*)|*"));
     /* !!! Keep the filter list in sync with the code below !!! */
 
     wxFileDialog* pFileDialog = new wxFileDialog(
