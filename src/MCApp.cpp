@@ -23,6 +23,10 @@
  * Thomas Giesel skoe@directbox.com
  */
 
+#ifdef __WXMAC__
+#include <ApplicationServices/ApplicationServices.h>
+#endif // __WXMAC__
+
 #include <wx/menu.h>
 #include <wx/image.h>
 #include <wx/stdpaths.h>
@@ -48,6 +52,11 @@ MCApp::MCApp()
     , m_idDrawingTool(0)
     , m_listTools()
 {
+#ifdef __WXMAC__
+    ProcessSerialNumber psn;
+    GetCurrentProcess(&psn);
+    TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+#endif // __WXMAC__
 }
 
 /*****************************************************************************/
