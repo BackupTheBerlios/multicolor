@@ -31,6 +31,9 @@
 typedef unsigned long MC_RGB;
 
 #define MC_RGB_COLOR(r,g,b) (((r) << 16) | ((g) << 8) | (b))
+#define MC_RGB_R(rgb) (((rgb) >> 16) & 0xff)
+#define MC_RGB_G(rgb) (((rgb) >> 8) & 0xff)
+#define MC_RGB_B(rgb) ((rgb) & 0xff)
 
 #define MC_BLACK   0
 #define MC_WHITE   1
@@ -48,6 +51,10 @@ typedef unsigned long MC_RGB;
 #define MC_LGREEN 13
 #define MC_LBLUE  14
 #define MC_LGRAY  15
+
+#define MC_GRID_COL_R 0x22
+#define MC_GRID_COL_G 0x11
+#define MC_GRID_COL_B 0x11
 
 class C64Color
 {

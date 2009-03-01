@@ -31,6 +31,7 @@
 #include "MCApp.h"
 #include "MCDoc.h"
 #include "MCChildFrame.h"
+#include "DocRenderer.h"
 
 #define AMICA_SIG_BYTE 0xc2
 #define MC_MAX_FILE_BUFF_SIZE 0x10000
@@ -63,15 +64,155 @@ MCDoc::MCDoc()
     //SetDocumentName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
 }
 
+std::list<DocRenderer*>::iterator i;
+
+/******************************************************************************
+/*
+ * Tell it all my renderers.
+ */
+MCDoc::~MCDoc()
+{
+    std::list<DocRenderer*>::iterator i;
+
+    for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
+    {
+        (*i)->OnDocDestroy(this);
+    }
+}
+
 /******************************************************************************/
 /*
  * Refresh the frame associated with this document.
  */
-void MCDoc::Refresh()
+void MCDoc::Refresh(unsigned x1, unsigned y1, unsigned x2, unsigned y2)
 {
-    m_pFrame->Refresh(false);
-    wxGetApp().GetMainFrame()->GetToolPanel()->Refresh();
+    std::list<DocRenderer*>::iterator i;
+
+    for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
+    {
+        (*i)->OnDocChanged(x1, y1, x2, y2);
+    }
 }
+
+/******************************************************************************/
+/*
+ * Save the current bitmap as undo step.
+ */
+void MCDoc::PrepareUndo()
+{
+    unsigned i;
+
+    // if we are not at the end of the undo list, discard the rest
+    while (m_nRedoPos < m_listUndo.size())
+        m_listUndo.pop_back();
+
+    // if the list is full, remove the first entry
+    if (m_listUndo.size() >= MC_UNDO_LEN)
+    {
+        for (i = 1; i < m_listUndo.size(); ++i)
+        {
+            m_listUndo[i - 1] = m_listUndo[i];
+        }
+        m_listUndo.pop_back();
+        --m_nRedoPos;
+    }
+
+    // append current state
+    m_listUndo.push_back(m_bitmap);
+    m_nRedoPos++;
+
+}
+
+/******************************************************************************/
+/*
+ * Undo, if possible.
+ */
+void MCDoc::Undo()
+{
+   if (CanUndo())
+   {
+      m_nRedoPos--;
+      m_bitmap = m_listUndo[m_nRedoPos - 1];
+   }
+   Refresh();
+}
+
+/******************************************************************************/
+/*
+ * Redo, if possible.
+ */
+void MCDoc::Redo()
+{
+   if (CanRedo())
+   {
+      m_bitmap = m_listUndo[m_nRedoPos];
+      m_nRedoPos++;
+   }
+   Refresh();
+}
+
+/******************************************************************************
+ * Return true if we can undo.
+ */
+bool MCDoc::CanUndo()
+{
+    return m_nRedoPos > 1;
+};
+
+/******************************************************************************
+ *
+ * Return true if we can redo.
+ */
+bool MCDoc::CanRedo()
+{
+    return m_nRedoPos < m_listUndo.size();
+};
+
+
+/******************************************************************************
+ *
+ * Add the renderer to the list of renderers showing this document.
+ * Make sure it is only in the list once.
+ */
+void MCDoc::AddRenderer(DocRenderer* pRenderer)
+{
+    m_listDocRenderers.remove(pRenderer);
+    m_listDocRenderers.push_back(pRenderer);
+}
+
+
+/******************************************************************************
+ *
+ * Remove the renderer from the list if it is in there.
+ */
+void MCDoc::RemoveRenderer(DocRenderer* pRenderer)
+{
+    m_listDocRenderers.remove(pRenderer);
+}
+
+
+/******************************************************************************
+/*
+ * Set the current mouse position to a point in this document. This allows
+ * all Renderers to display the current position. The coordinates must be
+ * in bitmap coordinates.
+ */
+void MCDoc::SetMousePos(int x, int y)
+{
+    std::list<DocRenderer*>::iterator i;
+
+    m_pointMousePos.x = x;
+    m_pointMousePos.y = y;
+
+    wxGetApp().GetMainFrame()->ShowMousePos(x, y);
+    for (i  = m_listDocRenderers.begin();
+         i != m_listDocRenderers.end();
+         ++i)
+    {
+        (*i)->OnDocMouseMoved(x, y);
+    }
+}
+
 
 /******************************************************************************
  */
@@ -119,6 +260,7 @@ bool MCDoc::Load(const wxString& stringFilename)
 
     m_fileName.Assign(stringFilename);
     m_pFrame->SetTitle(m_fileName.GetName());
+    Refresh();
     return true;
 }
 
@@ -409,77 +551,4 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
 
     delete[] pSource;
     return p - pBuff;
-}
-
-/******************************************************************************
- * Return true if we can undo.
- */
-bool MCDoc::CanUndo()
-{
-    return m_nRedoPos > 1;
-};
-
-/******************************************************************************
- * Return true if we can redo.
- */
-bool MCDoc::CanRedo()
-{
-    return m_nRedoPos < m_listUndo.size();
-};
-
-/******************************************************************************/
-/*
- * Save the current bitmap as undo step.
- */
-void MCDoc::PrepareUndo()
-{
-    unsigned i;
-
-    // if we are not at the end of the undo list, discard the rest
-    while (m_nRedoPos < m_listUndo.size())
-        m_listUndo.pop_back();
-
-    // if the list is full, remove the first entry
-    if (m_listUndo.size() >= MC_UNDO_LEN)
-    {
-        for (i = 1; i < m_listUndo.size(); ++i)
-        {
-            m_listUndo[i - 1] = m_listUndo[i];
-        }
-        m_listUndo.pop_back();
-        --m_nRedoPos;
-    }
-
-    // append current state
-    m_listUndo.push_back(m_bitmap);
-    m_nRedoPos++;
-
-}
-
-/******************************************************************************/
-/*
- * Undo, if possible.
- */
-void MCDoc::Undo()
-{
-   if (CanUndo())
-   {
-      m_nRedoPos--;
-      m_bitmap = m_listUndo[m_nRedoPos - 1];
-   }
-   m_pFrame->Refresh(false);
-}
-
-/******************************************************************************/
-/*
- * Redo, if possible.
- */
-void MCDoc::Redo()
-{
-   if (CanRedo())
-   {
-      m_bitmap = m_listUndo[m_nRedoPos];
-      m_nRedoPos++;
-   }
-   m_pFrame->Refresh(false);
 }

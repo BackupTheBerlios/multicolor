@@ -30,6 +30,8 @@
 
 #include "MCToolPanel.h"
 
+#define MC_MAX_ZOOM 16
+
 class PalettePanel;
 class MCDoc;
 
@@ -41,6 +43,7 @@ public:
 
     MCToolPanel* GetToolPanel();
     MCDoc* GetActiveDocument();
+    void ShowMousePos(int x, int y);
 
 protected:
     void InitToolBar();

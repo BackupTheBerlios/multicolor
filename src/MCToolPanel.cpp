@@ -36,12 +36,13 @@
 MCToolPanel::MCToolPanel(wxWindow* parent):
     wxPanel(parent)
 {
-    wxBoxSizer*   pBoxSizerOuter;
-    wxGridSizer*  pGridSizerColors;
+    wxBoxSizer*       pBoxSizerOuter;
+    wxGridSizer*      pGridSizerColors;
+    wxStaticBoxSizer* pStaticBoxSizerBlock;
 
     pBoxSizerOuter = new wxBoxSizer(wxVERTICAL);
 
-    m_pCanvas = new MCCanvas(NULL, this, wxBORDER_SUNKEN);
+    m_pCanvas = new MCCanvas(this, wxBORDER_SUNKEN);
     pBoxSizerOuter->Add(m_pCanvas);
 
     pBoxSizerOuter->AddSpacer(4);
@@ -54,40 +55,46 @@ MCToolPanel::MCToolPanel(wxWindow* parent):
     m_pDrawingModePanel = new MCDrawingModePanel(this);
     pGridSizerColors->Add(m_pDrawingModePanel, 1, wxALIGN_CENTER_HORIZONTAL);
 
+    pStaticBoxSizerBlock = new
+        wxStaticBoxSizer(wxVERTICAL, this, wxT("Current Cell"));
+    pBoxSizerOuter->Add(pStaticBoxSizerBlock, wxSizerFlags().Expand());
+
     m_pBlockPanel = new MCBlockPanel(this);
-    pBoxSizerOuter->Add(m_pBlockPanel, wxSizerFlags().Expand());
+    pStaticBoxSizerBlock->Add(m_pBlockPanel, wxSizerFlags().Center());
 
     SetSizer(pBoxSizerOuter);
     pBoxSizerOuter->Fit(this);
     SetMinSize(GetSize());
 }
 
+
+/*****************************************************************************/
 MCToolPanel::~MCToolPanel()
 {
-    // TODO Auto-generated destructor stub
 }
+
 
 /*****************************************************************************/
 /*
  * Set the active child window which shall be used to update the preview
- * and so on from now.
+ * and so on from now. NULL means nothing to draw.
  */
 void MCToolPanel::SetActiveView(MCChildFrame* pFrame)
 {
     m_pActiveView = pFrame;
-    m_pCanvas->SetChildFrame(pFrame);
+
+    if (pFrame)
+    {
+        m_pCanvas->SetDoc(pFrame->GetDocument());
+        m_pBlockPanel->SetDoc(pFrame->GetDocument());
+    }
+    else
+    {
+        m_pCanvas->SetDoc(NULL);
+        m_pBlockPanel->SetDoc(NULL);
+    }
 }
 
-/*****************************************************************************/
-/*
- * Set the current mouse position which shall be used to update the preview
- * and so on from now.
- */
-void MCToolPanel::SetMousePos(int x, int y)
-{
-    m_pCanvas->SetMousePos(x, y);
-    m_pBlockPanel->ShowBlock(m_pActiveView->GetDocument(), x, y);
-}
 
 /******************************************************************************/
 /*

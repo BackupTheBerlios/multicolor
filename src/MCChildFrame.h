@@ -46,8 +46,6 @@ public:
     int  GetScale();
     void SetScale(int nScale);
 
-    void SetMousePos(int x, int y);
-
     void OnActivate(wxActivateEvent& event);
 
 protected:

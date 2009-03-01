@@ -23,7 +23,9 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include <wx/sizer.h>
+#include <wx/event.h>
+#include <wx/dcclient.h>
+#include <wx/dc.h>
 
 #include "MCBlock.h"
 #include "MCBlockPanel.h"
@@ -33,115 +35,192 @@
 /*****************************************************************************/
 /*
  * Create a palette panel.
- * This is constructed like this:
- *
- * PalettePanel::wxPanel:
- * -----------------------------------------------------------------------
- * |pSizerOuter                                                          |
- * |                     ----------------------------------------------- |
- * |                     |pRightGridSizer                              | |
- * |-------------------  | --------------------- --------------------- | |
- * ||pGridSizer       |  | |m_apUsagePanel[0]  | |m_apUsageStaticText| | |
- * ||                 |  | --------------------- --------------------- | |
- * ||                 |  | --------------------- --------------------- | |
- * ||                 |  | |m_apUsagePanel[1]  | |m_apUsageStaticText| | |
- * ||    4 x 8        |  | --------------------- --------------------- | |
- * ||  m_apPixelPanel |  | --------------------- --------------------- | |
- * ||                 |  | |m_apUsagePanel[2]  | |m_apUsageStaticText| | |
- * ||                 |  | --------------------- --------------------- | |
- * ||                 |  | --------------------- --------------------- | |
- * ||                 |  | |m_apUsagePanel[3]  | |m_apUsageStaticText| | |
- * |-------------------  | --------------------- --------------------- | |
- * |                     ----------------------------------------------- |
- * -----------------------------------------------------------------------
  */
 MCBlockPanel::MCBlockPanel(wxWindow* pParent) :
-    wxPanel(pParent)
+    wxWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(m_nWTotal, m_nHTotal)),
+    m_pDoc(NULL)
 {
-    int x, y;
-    wxPanel*     pPanel;
-    wxStaticText* pText;
-    wxStaticBoxSizer* pSizerOuter = new wxStaticBoxSizer(wxHORIZONTAL, this, wxT("Current Cell"));
-    wxFlexGridSizer* pRightGridSizer = new wxFlexGridSizer(3);
-    wxGridSizer* pGridSizer = new wxGridSizer(MCBLOCK_WIDTH);
-
-    pSizerOuter->AddStretchSpacer();
-    pSizerOuter->Add(pGridSizer);
-    pSizerOuter->Add(pRightGridSizer);
-
-    for (y = 0; y < MCBLOCK_HEIGHT; ++y)
-    {
-        for (x = 0; x < MCBLOCK_WIDTH; ++x)
-        {
-            pPanel = new wxPanel(this, wxID_ANY,
-                    wxPoint(2 * m_nPixelHeight * x, m_nPixelHeight * y),
-                    wxSize(2 * m_nPixelHeight, m_nPixelHeight),
-                    wxBORDER_SIMPLE);
-            pGridSizer->Add(pPanel);
-            pPanel->SetBackgroundColour(wxColor(0, 0, 0));
-            m_apPixelPanel[y][x] = pPanel;
-        }
-    }
-
-    for (y = 0; y < 4; ++y)
-    {
-        pText = new wxStaticText(this, wxID_ANY, wxString::Format(wxT("C%d"), y));
-        pRightGridSizer->Add(pText, 0, wxLEFT | wxRIGHT, 10);
-
-        pPanel = new wxPanel(this, wxID_ANY,
-                wxPoint(2 * m_nPixelHeight * x, m_nPixelHeight * y),
-                wxSize(2 * m_nPixelHeight, pText->GetSize().GetHeight()),
-                wxBORDER_SIMPLE);
-        pRightGridSizer->Add(pPanel);
-        m_apUsagePanel[y] = pPanel;
-
-        pText = new wxStaticText(this, wxID_ANY, wxT("0 x"));
-        pRightGridSizer->Add(pText, 0, wxLEFT, 10);
-        m_apUsageStaticText[y] = pText;
-    }
-
-    pSizerOuter->AddStretchSpacer();
-
-    SetSizer(pSizerOuter);
-    pSizerOuter->Fit(this);
     SetMinSize(GetSize());
+    SetMaxSize(GetSize());
+
+    Connect(wxEVT_PAINT, wxPaintEventHandler(MCBlockPanel::OnPaint));
 }
 
+
+/*****************************************************************************/
 MCBlockPanel::~MCBlockPanel()
 {
+    if (m_pDoc)
+        m_pDoc->RemoveRenderer(this);
 }
+
+/*****************************************************************************/
+/*
+ * This is called when the document contents has changed, the parameters
+ * report the area to be updated. Coordinates are in bitmap space.
+ */
+void MCBlockPanel::OnDocChanged(int x1, int y1, int x2, int y2)
+{
+    Refresh(false);
+}
+
+
+/*****************************************************************************/
+/*
+ * This is called when the mouse has been moved in one of the views.
+ * Coordinates are in bitmap space.
+ */
+void MCBlockPanel::OnDocMouseMoved(int x, int y)
+{
+    Refresh(false);
+}
+
+
+/*****************************************************************************/
+/*
+ * This is called when a document is destroyed which is rendered by me
+ */
+void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
+{
+    if (m_pDoc != pDoc)
+    {
+        m_pDoc = NULL;
+        Refresh(false);
+    }
+}
+
+
+/*****************************************************************************/
+/*
+ * Paint it.
+ */
+void MCBlockPanel::OnPaint(wxPaintEvent& event)
+{
+    wxPaintDC dc(this);
+
+    if (m_pDoc)
+        DrawBlock(&dc, m_pDoc, m_pDoc->GetMousePos().x, m_pDoc->GetMousePos().y);
+    else
+    {
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetBrush(*wxBLACK_BRUSH);
+        dc.DrawRectangle(
+                m_nWBorder, m_nWBorder,
+                MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
+    }
+}
+
+
+/*****************************************************************************/
+/*
+ * Set the Document this view refers to. If it is NULL, this preview just
+ * shows a black block from now.
+ */
+void MCBlockPanel::SetDoc(MCDoc* pDoc)
+{
+    // remove me from the previous document
+    if (m_pDoc)
+        m_pDoc->RemoveRenderer(this);
+
+    m_pDoc = pDoc;
+
+    // add me to the new document
+    if (m_pDoc)
+        m_pDoc->AddRenderer(this);
+
+    Refresh(false);
+}
+
 
 /*****************************************************************************/
 /*
  * Show the block which contains the given bitmap coordinates.
  */
-void MCBlockPanel::ShowBlock(MCDoc* pDoc, unsigned x, unsigned y)
+void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
 {
     unsigned  xx, yy;
-    const C64Color* pC64Color;
-    wxPanel*  pPanel;
+    MC_RGB    rgb;
+    wxRect    rect;
+    wxBrush   brush(*wxBLACK);
+    wxPen     pen(*wxBLACK);
+    wxString  str;
+    wxSize    textExtent;
 
-    const MCBlock* pBlock = pDoc->m_bitmap.GetMCBlock(x, y);
+    const MCBlock* pBlock = pDoc->m_bitmap.GetMCBlock(pDoc->GetMousePos().x, y);
     if (!pBlock)
         return;
 
+    pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
+
+    // draw the block of pixels
+    rect.width = m_nWBox;
+    rect.height = m_nHBox;
+    rect.y = m_nWBorder;
     for (yy = 0; yy < MCBLOCK_HEIGHT; ++yy)
     {
+        rect.x = m_nWBorder;
         for (xx = 0; xx < MCBLOCK_WIDTH; ++xx)
         {
-            pC64Color = pBlock->GetColor(xx, yy);
+            if ((xx == x % MCBLOCK_WIDTH) &&
+                (yy == y % MCBLOCK_HEIGHT))
+            {
+                pDC->SetPen(*wxWHITE_PEN);
+            }
+            else
+            {
+                pDC->SetPen(pen);
+            }
 
-            pPanel = m_apPixelPanel[yy][xx];
-            pPanel->SetBackgroundColour(pC64Color->GetWxColor());
-            pPanel->Refresh();
+            rgb = pBlock->GetColor(xx, yy)->GetRGB();
+            brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
+            pDC->SetBrush(brush);
+            pDC->DrawRectangle(rect);
+            rect.x += m_nWBox;
         }
+        rect.y += m_nHBox;
+    }
+
+    // 4 little strings C0..C3
+    pDC->SetTextForeground(*wxBLACK);
+    rect.height = 2 * m_nHBox;
+    rect.width = 2 * m_nWBox;
+    rect.x = m_nWBorder + MCBLOCK_WIDTH * m_nWBox + m_nWBorder;
+    rect.y = m_nWBorder;
+    for (yy = 0; yy < 4; ++yy)
+    {
+        str = wxString::Format(wxT("C%d"), yy);
+        textExtent = pDC->GetTextExtent(str);
+
+        pDC->DrawText(str, rect.x, rect.y + (rect.height - textExtent.y) / 2);
+        rect.y += 2 * m_nHBox;
     }
 
     // count the 4 colors
+    pDC->SetPen(*wxBLACK_PEN);
+    rect.x += textExtent.x + 1;
+    rect.y = m_nWBorder;
     for (yy = 0; yy < 4; ++yy)
     {
-        m_apUsagePanel[yy]->SetBackgroundColour(pBlock->GetMCColor(yy)->GetWxColor());
-        m_apUsagePanel[yy]->Refresh();
-        m_apUsageStaticText[yy]->SetLabel(wxString::Format(wxT("%d x"), pBlock->CountMCIndex(yy)));
+        rgb = pBlock->GetMCColor(yy)->GetRGB();
+        brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
+        pDC->SetBrush(brush);
+        pDC->DrawRectangle(rect);
+
+        if (MC_RGB_R(rgb) + MC_RGB_G(rgb) + MC_RGB_B(rgb) > 3 * 128)
+        {
+            pDC->SetTextForeground(*wxBLACK);
+        }
+        else
+        {
+            pDC->SetTextForeground(*wxWHITE);
+        }
+
+        str = wxString::Format(wxT("%dx"), pBlock->CountMCIndex(yy));
+        textExtent = pDC->GetTextExtent(str);
+
+        pDC->DrawText(str,
+                rect.x + (rect.width - textExtent.x) / 2,
+                rect.y + (rect.height - textExtent.y) / 2);
+        rect.y += 2 * m_nHBox;
     }
 }

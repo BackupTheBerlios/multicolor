@@ -49,7 +49,6 @@ public:
     MCToolBase* GetActiveDrawingTool();
 
     void SetActiveWindow(MCChildFrame* pFrame);
-    MCChildFrame* GetActiveWindow();
     void SetMousePos(int x, int y);
 
     MCMainFrame* GetMainFrame();
@@ -57,7 +56,6 @@ public:
 
 protected:
     MCMainFrame*    m_pMainFrame;
-    MCChildFrame*   m_pActiveWindow;
 
     int             m_idDrawingTool;
     std::list<MCToolBase*> m_listTools;
@@ -89,23 +87,13 @@ inline MCMainFrame* MCApp::GetMainFrame()
 
 
 /*****************************************************************************/
-/*
- * Return a pointer to the active child. This just returns the pointer saved
- * in this object.
- */
-inline MCChildFrame* MCApp::GetActiveWindow()
-{
-    return m_pActiveWindow;
-}
-
-
-/*****************************************************************************/
 enum MultiColorId
 {
     MC_ID_ZOOM_1 = wxID_HIGHEST + 1,
     MC_ID_ZOOM_2,
     MC_ID_ZOOM_4,
     MC_ID_ZOOM_8,
+    MC_ID_ZOOM_16,
     MC_ID_TV_MODE,
 
     MC_ID_TILE,

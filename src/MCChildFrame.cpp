@@ -40,8 +40,9 @@ MCChildFrame::MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id
     m_bTVMode(true),
     m_bMousePosDrawn(false)
 {
-    m_pCanvas = new MCCanvas(this, this, 0);
+    m_pCanvas = new MCCanvas(this, 0);
 
+    m_pCanvas->SetDoc(pDoc);
     m_pCanvas->SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
     m_pCanvas->SetScrollRate(10 * m_nScale, 10 * m_nScale);
     m_pCanvas->SetScale(m_nScale);
@@ -50,12 +51,9 @@ MCChildFrame::MCChildFrame(MCDoc* pDoc, wxMDIParentFrame* pParent, wxWindowID id
     Connect(wxEVT_ACTIVATE, wxActivateEventHandler(MCChildFrame::OnActivate));
 }
 
+/*****************************************************************************/
 MCChildFrame::~MCChildFrame()
 {
-#if 0
-	if (wxGetApp().GetActiveWindow() == this)
-        wxGetApp().SetActiveWindow(NULL);
-#endif
 }
 
 
@@ -80,17 +78,6 @@ void MCChildFrame::SetScale(int nScale)
     m_pCanvas->SetScale(m_nScale);
 }
 
-/******************************************************************************/
-/*
- * Move the mouse, update all views and previews.
- *
- * x, y are bitmap coordinates
- */
-void MCChildFrame::SetMousePos(int x, int y)
-{
-    m_pCanvas->SetMousePos(x, y);
-    wxGetApp().SetMousePos(x, y);
-}
 
 /*****************************************************************************/
 /*
@@ -101,10 +88,6 @@ void MCChildFrame::OnActivate(wxActivateEvent& event)
 	if (event.GetActive())
 	{
 		wxGetApp().SetActiveWindow(this);
-	}
-    else if (wxGetApp().GetActiveWindow() == this)
-	{
-        wxGetApp().SetActiveWindow(NULL);
 	}
 
 	event.Skip();

@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2008 Thomas Giesel
+ * (c) Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,41 +22,40 @@
  *
  * Thomas Giesel skoe@directbox.com
  */
-#ifndef MCBLOCKPANEL_H_
-#define MCBLOCKPANEL_H_
 
-#include <wx/window.h>
-#include <wx/dc.h>
+#ifndef DOCRENDERER_H_
+#define DOCRENDERER_H_
 
-#include "MCBlock.h"
-#include "DocRenderer.h"
+class MCDoc;
 
-
-class MCBlockPanel : public wxWindow, public DocRenderer
+/*****************************************************************************/
+/*
+ * This abstract class defines an interface for Classes which want to be
+ * notified if a document has changed.
+ *
+ * Objects implementing this type can register themselfes to get updates
+ * when the document view has to be updated.
+ */
+class DocRenderer
 {
 public:
-    MCBlockPanel(wxWindow* pParent);
-    virtual ~MCBlockPanel();
+    /*
+     * This is called when the document contents has changed, the parameters
+     * report the area to be updated. Coordinates are in bitmap space.
+     */
+    virtual void OnDocChanged(
+            int x1, int y1, int x2, int y2) = 0;
 
-    virtual void OnDocChanged(int x1, int y1, int x2, int y2);
-    virtual void OnDocMouseMoved(int x, int y);
-    virtual void OnDocDestroy(MCDoc* pDoc);
+    /*
+     * This is called when the mouse has been moved in one of the views.
+     * Coordinates are in bitmap space.
+     */
+    virtual void OnDocMouseMoved(int x, int y) = 0;
 
-    void SetDoc(MCDoc* pDoc);
-
-protected:
-    static const int m_nWTotal = 160;
-    static const int m_nHTotal = 80;
-
-    static const int m_nWBox = 16;
-    static const int m_nHBox = 8;
-
-    static const int m_nWBorder = (m_nHTotal - MCBLOCK_HEIGHT * m_nHBox) / 2;
-
-    MCDoc* m_pDoc;
-
-    void OnPaint(wxPaintEvent& event);
-    void DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y);
+    /*
+     * This is called when a document is destroyed which is rendered by me
+     */
+    virtual void OnDocDestroy(MCDoc* pDoc) = 0;
 };
 
-#endif /* MCBLOCKPANEL_H_ */
+#endif /*DOCRENDERER_H_*/

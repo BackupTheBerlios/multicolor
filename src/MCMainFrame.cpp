@@ -220,6 +220,16 @@ void MCMainFrame::InitMenuBar()
 
 /*****************************************************************************/
 /*
+ * Show the current mouse position in the status bar
+ */
+void MCMainFrame::ShowMousePos(int x, int y)
+{
+    wxString strPosition(wxString::Format(wxT("%d:%d"), x, y));
+    SetStatusText(strPosition, 1);
+}
+
+/*****************************************************************************/
+/*
  * Create a new file.
  */
 void MCMainFrame::OnNew(wxCommandEvent &event)
@@ -465,8 +475,12 @@ void MCMainFrame::OnZoom(wxCommandEvent& event)
         nScale = 8;
         break;
 
+    case MC_ID_ZOOM_16:
+        nScale = 16;
+        break;
+
     case wxID_ZOOM_IN:
-        if (nScale < 8)
+        if (nScale < MC_MAX_ZOOM)
         {
             nScale *= 2;
         }
@@ -498,7 +512,7 @@ void MCMainFrame::OnTVMode(wxCommandEvent& event)
 void MCMainFrame::OnUpdateZoomIn(wxUpdateUIEvent& event)
 {
     MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    event.Enable(pChild ? (pChild->GetScale() < 8) : false);
+    event.Enable(pChild ? (pChild->GetScale() < MC_MAX_ZOOM) : false);
 }
 
 
@@ -534,6 +548,10 @@ void MCMainFrame::OnUpdateZoom(wxUpdateUIEvent& event)
 
         case 8:
             event.Check(event.GetId() == MC_ID_ZOOM_8);
+            break;
+
+        case 16:
+            event.Check(event.GetId() == MC_ID_ZOOM_16);
             break;
         }
     }

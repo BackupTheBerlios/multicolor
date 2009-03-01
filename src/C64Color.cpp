@@ -68,28 +68,14 @@ MC_RGB C64Color::GetContrastRGB(void) const
 {
     switch (m_color)
     {
-    case MC_BLACK:
-    case MC_BROWN:
-    case MC_BLUE:
-    case MC_DGRAY:
-    case MC_GRAY:
-        return MC_RGB_COLOR(255, 64, 64);
-
     case MC_RED:
     case MC_ORANGE:
     case MC_PURPLE:
+    case MC_LRED:
         return MC_RGB_COLOR(64, 64, 255);
 
-    case MC_WHITE:
-    case MC_CYAN:
-    case MC_GREEN:
-    case MC_YELLOW:
-    case MC_LRED:
-    case MC_LGREEN:
-    case MC_LBLUE:
-    case MC_LGRAY:
     default:
-        return MC_RGB_COLOR(64, 64, 64);
+        return MC_RGB_COLOR(255, 64, 64);
     }
 }
 

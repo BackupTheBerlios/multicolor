@@ -78,7 +78,7 @@ void MCToolCloneBrush::Start(int x, int y, bool bSecondaryFunction)
     else
     {
         ClonePixel(x, y);
-        m_pDoc->Refresh();
+        m_pDoc->Refresh(x, y, x, y);
     }
 }
 
@@ -98,7 +98,7 @@ void MCToolCloneBrush::Move(int x, int y)
         // prepare start point for next segment
         m_xStart = x;
         m_yStart = y;
-        m_pDoc->Refresh();
+        m_pDoc->Refresh(m_xStart, m_yStart, x, y);
     }
 }
 
@@ -135,7 +135,7 @@ void MCToolCloneBrush::CloneLine(int x1, int y1, int x2, int y2)
         step = x2 == x1 ? 0.0 : (double)(y2 - y1) / (double)(x2 - x1);
         while (x1 <= x2)
         {
-            ClonePixel(x1++, (int) fy);
+            ClonePixel(x1++, (unsigned) fy);
             fy += step;
         }
     }

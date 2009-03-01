@@ -26,41 +26,37 @@
 #ifndef MCCANVAS_H
 #define MCCANVAS_H
 
-#include <wx/docview.h>
 #include <wx/scrolwin.h>
 #include <wx/image.h>
 #include <wx/gdicmn.h>
 
 #include "MCBitmap.h"
+#include "DocRenderer.h"
 
 class MCToolBase;
-class MCChildFrame;
+class MCDoc;
 
-class MCCanvas: public wxScrolledWindow
+class MCCanvas: public wxScrolledWindow, public DocRenderer
 {
 public:
-    MCCanvas(MCChildFrame* pFrame, wxWindow* pParent, int nStyle);
+    MCCanvas(wxWindow* pParent, int nStyle);
     virtual ~MCCanvas(void);
+
+    virtual void OnDocChanged(int x1, int y1, int x2, int y2);
+    virtual void OnDocMouseMoved(int x, int y);
+    virtual void OnDocDestroy(MCDoc* pDoc);
 
     virtual void OnDraw(wxDC& dc);
 
-    void SetChildFrame(MCChildFrame* pFrame);
+    void SetDoc(MCDoc* pDoc);
 
-    void SetMousePos(int x, int y);
-
-    void CreateCache();
-    void DestroyCache();
     void SetEmulateTV(bool bTV);
     void SetScale(int nScale);
-    void Paint(const MCBitmap* pMCB);
-    void InvalidateMouseRect();
-
-    wxImage* GetImage(void) { return &m_image; };
 
 protected:
 
-    // Pointer to MCChildFrame object owning this canvas
-    MCChildFrame *m_pFrame;
+    // Pointer to Document to be rendered or NULL
+    MCDoc* m_pDoc;
 
     typedef struct
     {
@@ -69,10 +65,12 @@ protected:
         unsigned char r;
     } RGBPixel;
 
-    void PaintScaleSmall(const MCBitmap* pMCB);
-    void PaintScaleMedium(const MCBitmap* pMCB);
-    void PaintScaleBig(const MCBitmap* pMCB);
-    void FillRectangle(unsigned char* pPixels, int nPitch, wxRect* pRect, int rgb);
+    void InvalidateMouseRect();
+
+    void DrawScaleSmall(wxDC* pDC,
+            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
+    void DrawScaleBig(wxDC* pDC,
+            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
 
     void ToBitmapCoord(int* px, int* py, int x, int y);
     void ToCanvasCoord(int* px, int* py, int x, int y);
@@ -80,19 +78,25 @@ protected:
     void UpdateVirtualSize();
 
     void OnButtonDown(wxMouseEvent& event);
-    void OnButtonUp(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
+    void OnButtonUp(wxMouseEvent& event);
     void OnEraseBackground(wxEraseEvent& event);
+    void OnMouseWheel(wxMouseEvent& event);
+
+    void FixCoordinates(int* px1, int* py1,
+            int* px2, int* py2);
 
     // Points to the currently active tool or NULL
     MCToolBase* m_pActiveTool;
 
     bool      m_bEmulateTV;
     int       m_nScale;
-    wxImage   m_image;
 
     // Position where the mouse has been drawn (bitmap coord), -1/-1 for none
     wxPoint   m_pointLastMousePos;
+
+    // This image is used as cache at zoom levels 1:1 and 2:1
+    wxImage   m_image;
 };
 
 

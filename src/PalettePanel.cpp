@@ -130,6 +130,7 @@ void PalettePanel::OnColorLeftDown(wxMouseEvent& event)
             m_nColorA = i;
             c64Color.SetColor(m_nColorA);
             m_pPanelSelA->SetBackgroundColour(c64Color.GetWxColor());
+            m_pPanelSelA->Refresh();
             break;
         }
     }
@@ -147,6 +148,7 @@ void PalettePanel::OnColorRightDown(wxMouseEvent& event)
             m_nColorB = i;
             c64Color.SetColor(m_nColorB);
             m_pPanelSelB->SetBackgroundColour(c64Color.GetWxColor());
+            m_pPanelSelB->Refresh();
             break;
         }
     }

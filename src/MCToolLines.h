@@ -34,8 +34,14 @@ public:
     MCToolLines();
     virtual ~MCToolLines();
     virtual int GetToolId();
+    virtual void Start(int x, int y, bool bSecondaryFunction);
     virtual void Move(int x, int y);
     virtual void End(int x, int y);
+
+protected:
+    // End point of previous line preview
+    int m_xOld;
+    int m_yOld;
 };
 
 #endif /* MCTOOLLINES_H */

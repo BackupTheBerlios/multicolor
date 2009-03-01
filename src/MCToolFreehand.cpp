@@ -47,11 +47,11 @@ void MCToolFreehand::Move(int x, int y)
     m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y,
             m_nColorSelected, m_drawingMode);
 
+    m_pDoc->Refresh(m_xStart, m_yStart, x, y);
+
     // prepare start point for next segment
     m_xStart = x;
     m_yStart = y;
-
-    m_pDoc->Refresh();
 }
 
 /*****************************************************************************/

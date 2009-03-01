@@ -48,7 +48,6 @@ IMPLEMENT_APP(MCApp);
 /*****************************************************************************/
 MCApp::MCApp()
     : m_pMainFrame(NULL)
-    , m_pActiveWindow(NULL)
     , m_idDrawingTool(0)
     , m_listTools()
 {
@@ -167,19 +166,5 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
 void MCApp::SetActiveWindow(MCChildFrame* pFrame)
 {
     m_pMainFrame->GetToolPanel()->SetActiveView(pFrame);
-    m_pActiveWindow = pFrame;
 }
 
-
-/*****************************************************************************/
-/*
- * Set the current mouse position which shall be used to update the preview
- * and so on from now.
- */
-void MCApp::SetMousePos(int x, int y)
-{
-    wxString strPosition(wxString::Format(wxT("%d:%d"), x, y));
-
-    m_pMainFrame->GetToolPanel()->SetMousePos(x, y);
-    m_pMainFrame->SetStatusText(strPosition, 1);
-}

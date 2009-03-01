@@ -57,8 +57,7 @@ void MCToolDots::Start(int x, int y, bool bSecondaryFunction)
 {
     MCToolBase::Start(x, y, bSecondaryFunction);
 
-    
     m_pDoc->m_bitmap.SetPixel(x, y, m_nColorSelected, m_drawingMode);
-    m_pDoc->Refresh();
+    m_pDoc->Refresh(x, y, x, y);
     m_pDoc->PrepareUndo();
 }

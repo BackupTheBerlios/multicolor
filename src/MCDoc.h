@@ -25,28 +25,39 @@
 #ifndef MCDOC_H
 #define MCDOC_H
 
+#include <list>
 #include <vector>
 #include <wx/filename.h>
+#include <wx/gdicmn.h>
 
 #include "MCBitmap.h"
 
 #define MC_UNDO_LEN 100
 
 class MCChildFrame;
+class DocRenderer;
 
 class MCDoc
 {
 public:
     MCDoc();
+    virtual ~MCDoc();
     void SetFrame(MCChildFrame* pFrame);
     MCChildFrame* GetFrame();
-    void Refresh();
+    void Refresh(
+            unsigned x1 = 0, unsigned y1 = 0,
+            unsigned x2 = MC_X - 1, unsigned y2 = MC_Y - 1);
     void PrepareUndo();
     void Undo();
     void Redo();
     bool CanUndo();
     bool CanRedo();
-    //const wxPoint& GetMousePos();
+
+    void AddRenderer(DocRenderer* pRenderer);
+    void RemoveRenderer(DocRenderer* pRenderer);
+
+    void SetMousePos(int x, int y);
+    const wxPoint& GetMousePos() const;
 
     const wxFileName& GetFileName() const;
     bool Load(const wxString& stringFilename);
@@ -66,8 +77,14 @@ protected:
     // the full path and file name
     wxFileName m_fileName;
 
+    // last mouse position reported by one of my views (bitmap coordinates)
+    wxPoint m_pointMousePos;
+
     // Points to the frame associated with this doc
     MCChildFrame* m_pFrame;
+
+    // A list of all Renderers for this document
+    std::list<DocRenderer*> m_listDocRenderers;
 
     bool LoadKoala(unsigned char* pBuff, unsigned nSize);
     bool LoadAmica(unsigned char* pBuff, unsigned nSize);
@@ -100,6 +117,15 @@ inline MCChildFrame* MCDoc::GetFrame()
 inline const wxFileName& MCDoc::GetFileName() const
 {
     return m_fileName;
+}
+
+/******************************************************************************/
+/*
+ * Get the last mouse position reported by one of my views (bitmap coordinates)
+ */
+inline const wxPoint& MCDoc::GetMousePos() const
+{
+    return m_pointMousePos;
 }
 
 #endif /* MCDOC_H */

@@ -23,6 +23,8 @@
  * Thomas Giesel skoe@directbox.com
  */
 
+#include <wx/gdicmn.h>
+
 #include "MCToolLines.h"
 #include "MCDoc.h"
 #include "MCApp.h"
@@ -46,6 +48,24 @@ int MCToolLines::GetToolId()
 
 /*****************************************************************************/
 /*
+ * Start the tool at the given coordinates (i.e. Mouse button down).
+ *
+ * Fill the area around the given point.
+ * X and y are bitmap coordinates.
+ * bSecondaryFunction is true if the tool was invoked with a
+ * secondary (i.e. right) mouse button.
+ */
+void MCToolLines::Start(int x, int y, bool bSecondaryFunction)
+{
+    MCToolBase::Start(x, y, bSecondaryFunction);
+
+    // initialise the "previous" preview line end coordinates
+    m_xOld = x;
+    m_yOld = y;
+}
+
+/*****************************************************************************/
+/*
  * Mouse has been moved while the button was kept pressed.
  *
  * Restory the documents bitmap from a saved one and draw a preview of the
@@ -55,11 +75,28 @@ int MCToolLines::GetToolId()
  */
 void MCToolLines::Move(int x, int y)
 {
+    int x1, y1, x2, y2;
+
     m_pDoc->m_bitmap = m_pDoc->m_bitmapToolCopy;
     m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorSelected,
             m_drawingMode);
 
-    m_pDoc->Refresh();
+    // redraw an area that includes the previous line preview and this line
+    x1 = x2 = m_xStart;
+    y1 = y2 = m_yStart;
+    if (x < x1) x1 = x;
+    if (x > x2) x2 = x;
+    if (y < y1) y1 = y;
+    if (y > y2) y2 = y;
+    if (m_xOld < x1) x1 = m_xOld;
+    if (m_xOld > x2) x2 = m_xOld;
+    if (m_yOld < y1) y1 = m_yOld;
+    if (m_yOld > y2) y2 = m_yOld;
+
+    m_pDoc->Refresh(x1, y1, x2, y2);
+
+    m_xOld = x;
+    m_yOld = y;
 }
 
 /*****************************************************************************/
@@ -71,9 +108,6 @@ void MCToolLines::Move(int x, int y)
  */
 void MCToolLines::End(int x, int y)
 {
-    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorSelected,
-            m_drawingMode);
-
-    m_pDoc->Refresh();
+    Move(x, y);
     m_pDoc->PrepareUndo();
 }

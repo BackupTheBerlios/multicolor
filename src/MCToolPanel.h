@@ -41,7 +41,6 @@ public:
     virtual ~MCToolPanel();
 
     void SetActiveView(MCChildFrame* pFrame);
-    void SetMousePos(int x, int y);
 
     void Refresh();
     PalettePanel* GetPalettePanel();
