@@ -84,6 +84,8 @@ protected:
     bool LoadAmica(unsigned char* pBuff, unsigned nSize);
     int SaveKoala(unsigned char* pBuff);
     int SaveAmica(unsigned char* pBuff);
+    unsigned char* SaveAmicaFlush(
+            unsigned char* pBuff, unsigned char nCount, unsigned char nVal);
 };
 
 
