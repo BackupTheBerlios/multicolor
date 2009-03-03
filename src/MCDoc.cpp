@@ -62,11 +62,15 @@ MCDoc::MCDoc()
 {
     PrepareUndo();
     //SetDocumentName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
+
+    if (sizeof(KOALA_T) != 10003)
+    {
+        wxMessageBox(wxT("Warning: Koala structure has wrong size. This is not good at all."));
+    }
 }
 
-std::list<DocRenderer*>::iterator i;
 
-/******************************************************************************
+/******************************************************************************/
 /*
  * Tell it all my renderers.
  */
@@ -151,7 +155,8 @@ void MCDoc::Redo()
    Refresh();
 }
 
-/******************************************************************************
+/******************************************************************************/
+/*
  * Return true if we can undo.
  */
 bool MCDoc::CanUndo()
@@ -159,8 +164,8 @@ bool MCDoc::CanUndo()
     return m_nRedoPos > 1;
 };
 
-/******************************************************************************
- *
+/******************************************************************************/
+/*
  * Return true if we can redo.
  */
 bool MCDoc::CanRedo()
@@ -169,8 +174,8 @@ bool MCDoc::CanRedo()
 };
 
 
-/******************************************************************************
- *
+/******************************************************************************/
+/*
  * Add the renderer to the list of renderers showing this document.
  * Make sure it is only in the list once.
  */
@@ -181,8 +186,8 @@ void MCDoc::AddRenderer(DocRenderer* pRenderer)
 }
 
 
-/******************************************************************************
- *
+/******************************************************************************/
+/*
  * Remove the renderer from the list if it is in there.
  */
 void MCDoc::RemoveRenderer(DocRenderer* pRenderer)
@@ -191,7 +196,7 @@ void MCDoc::RemoveRenderer(DocRenderer* pRenderer)
 }
 
 
-/******************************************************************************
+/******************************************************************************/
 /*
  * Set the current mouse position to a point in this document. This allows
  * all Renderers to display the current position. The coordinates must be
@@ -214,7 +219,8 @@ void MCDoc::SetMousePos(int x, int y)
 }
 
 
-/******************************************************************************
+/******************************************************************************/
+/*
  */
 bool MCDoc::Load(const wxString& stringFilename)
 {
@@ -388,7 +394,7 @@ bool MCDoc::LoadAmica(unsigned char* pBuff, unsigned nSize)
     nRead  = 2;
     p     += 2;
 
-    for(;;)
+    for (;;)
     {
         if (nRead >= nSize)
             return false; // EOF
@@ -434,6 +440,11 @@ bool MCDoc::LoadAmica(unsigned char* pBuff, unsigned nSize)
             if (p >= pEnd)
                 break;
         }
+    }
+
+    if (p < pEnd)
+    {
+        wxMessageBox(wxT("Warning: File too short or damaged"));
     }
 
     for (i = 0; i < 8000; ++i)
@@ -490,8 +501,8 @@ int MCDoc::SaveKoala(unsigned char* pBuff)
  */
 int MCDoc::SaveAmica(unsigned char* pBuff)
 {
-    int nPos, i;
-    int nVal, nCount, nNext;
+    unsigned       nPos;
+    unsigned       nVal, nCount, nNext;
     unsigned char* p;
     unsigned char* pSource;
 
@@ -517,24 +528,13 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
     do
     {
         nNext = pSource[nPos++];
+
         // is there a reason to write now?
         if ((nVal != nNext) || (nCount == 255))
         {
             // write compressed data if we have enough
             // or if we have the signal byte
-            if ((nCount > 3) || (nVal == AMICA_SIG_BYTE))
-            {
-                // write: SIG count val
-                *p++ = AMICA_SIG_BYTE;
-                *p++ = nCount;
-                *p++ = nVal;
-            }
-            else
-            {
-                // write literal data
-                for (i = 0; i < nCount; ++i)
-                    *p++ = nVal;
-            }
+            p = SaveAmicaFlush(p, nCount, nVal);
             nVal = nNext;
             nCount = 1;
         }
@@ -545,6 +545,10 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
     }
     while (nPos < (sizeof(KOALA_T)));
 
+    // save remaining bytes, if there are any
+    if (nCount)
+        p = SaveAmicaFlush(p, nCount, nVal);
+
     // end mark
     *p++ = AMICA_SIG_BYTE;
     *p++ = 0;
@@ -552,3 +556,32 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
     delete[] pSource;
     return p - pBuff;
 }
+
+
+/******************************************************************************
+ * Flush collected bytes to an RLE Amica sequence.
+ *
+ * Return the advanced target buffer pointer.
+ */
+unsigned char* MCDoc::SaveAmicaFlush(
+        unsigned char* pBuff, unsigned char nCount, unsigned char nVal)
+{
+    unsigned i;
+
+    if ((nCount > 3) || (nVal == AMICA_SIG_BYTE))
+    {
+        // write: SIG count val
+        *pBuff++ = AMICA_SIG_BYTE;
+        *pBuff++ = nCount;
+        *pBuff++ = nVal;
+    }
+    else
+    {
+        // write literal data
+        for (i = 0; i < nCount; ++i)
+            *pBuff++ = nVal;
+    }
+
+    return pBuff;
+}
+
