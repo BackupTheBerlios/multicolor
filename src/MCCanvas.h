@@ -49,9 +49,12 @@ public:
     virtual void OnDraw(wxDC& dc);
 
     void SetDoc(MCDoc* pDoc);
+    MCDoc* GetDoc();
 
     void SetEmulateTV(bool bTV);
+    bool GetEmulateTV();
     void SetScale(int nScale);
+    int GetScale();
 
 protected:
 
@@ -98,6 +101,36 @@ protected:
     // This image is used as cache at zoom levels 1:1 and 2:1
     wxImage   m_image;
 };
+
+
+/*****************************************************************************/
+/*
+ * Return the state of the TV emulation (on/off).
+ */
+inline bool MCCanvas::GetEmulateTV()
+{
+    return m_bEmulateTV;
+}
+
+
+/*****************************************************************************/
+/*
+ * Return the current zoom factor.
+ */
+inline int MCCanvas::GetScale()
+{
+    return m_nScale;
+}
+
+
+/*****************************************************************************/
+/*
+ * Return the pointer to the document related to this Canvas.
+ */
+inline MCDoc* MCCanvas::GetDoc()
+{
+    return m_pDoc;
+}
 
 
 #endif /* MCCANVAS_H */

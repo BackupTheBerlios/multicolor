@@ -36,6 +36,7 @@
 #include "MCApp.h"
 #include "MCMainFrame.h"
 #include "MCDoc.h"
+#include "MCToolPanel.h"
 
 #include "MCToolDots.h"
 #include "MCToolFreehand.h"
@@ -160,11 +161,11 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
 
 /*****************************************************************************/
 /*
- * Set the active child window which shall be used to update the preview
- * and so on from now.
+ * Set the active document which shall be used to update the preview
+ * and so on from now. NULL means nothing to draw.
  */
-void MCApp::SetActiveWindow(MCChildFrame* pFrame)
+void MCApp::SetActiveDoc(MCDoc* pDoc)
 {
-    m_pMainFrame->GetToolPanel()->SetActiveView(pFrame);
+    m_pMainFrame->GetToolPanel()->SetActiveDoc(pDoc);
 }
 

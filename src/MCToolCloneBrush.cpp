@@ -25,7 +25,6 @@
 
 #include "MCToolCloneBrush.h"
 #include "MCDoc.h"
-#include "MCChildFrame.h"
 #include "MCApp.h"
 
 

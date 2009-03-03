@@ -30,7 +30,6 @@
 #include "PalettePanel.h"
 #include "MCDrawingModePanel.h"
 #include "MCBlockPanel.h"
-#include "MCChildFrame.h"
 
 
 MCToolPanel::MCToolPanel(wxWindow* parent):
@@ -76,17 +75,15 @@ MCToolPanel::~MCToolPanel()
 
 /*****************************************************************************/
 /*
- * Set the active child window which shall be used to update the preview
+ * Set the active document which shall be used to update the preview
  * and so on from now. NULL means nothing to draw.
  */
-void MCToolPanel::SetActiveView(MCChildFrame* pFrame)
+void MCToolPanel::SetActiveDoc(MCDoc* pDoc)
 {
-    m_pActiveView = pFrame;
-
-    if (pFrame)
+    if (pDoc)
     {
-        m_pCanvas->SetDoc(pFrame->GetDocument());
-        m_pBlockPanel->SetDoc(pFrame->GetDocument());
+        m_pCanvas->SetDoc(pDoc);
+        m_pBlockPanel->SetDoc(pDoc);
     }
     else
     {

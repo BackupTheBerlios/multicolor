@@ -31,6 +31,7 @@
 #include <list>
 
 #include "MCMainFrame.h"
+#include "MCToolPanel.h"
 
 class PalettePanel;
 class MCToolBase;
@@ -48,7 +49,7 @@ public:
     void SetActiveDrawingTool(int id);
     MCToolBase* GetActiveDrawingTool();
 
-    void SetActiveWindow(MCChildFrame* pFrame);
+    void SetActiveDoc(MCDoc* pDoc);
     void SetMousePos(int x, int y);
 
     MCMainFrame* GetMainFrame();

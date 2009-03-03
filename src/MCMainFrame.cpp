@@ -23,6 +23,7 @@
  * Thomas Giesel skoe@directbox.com
  */
 
+#include <wx/notebook.h>
 #include <wx/toolbar.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
@@ -32,15 +33,17 @@
 #include "MCApp.h"
 #include "MCDoc.h"
 #include "MCMainFrame.h"
-#include "MCChildFrame.h"
+#include "MCCanvas.h"
 #include "PalettePanel.h"
 
 /*****************************************************************************/
-MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title)
-    : wxMDIParentFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600))
-    , m_pToolPanel(NULL)
+MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
+    wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)),
+    m_pToolPanel(NULL),
+    m_pNotebook(NULL)
 {
     m_pToolPanel = new MCToolPanel(this);
+    m_pNotebook = new wxNotebook(this, wxID_ANY);
 
     InitMenuBar();
     InitToolBar();
@@ -48,6 +51,8 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title)
     CreateStatusBar(2);
     SetStatusText(_("?!"), 0);
     SetStatusText(_("!?"), 1);
+
+    Connect(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxCommandEventHandler(MCMainFrame::OnPageChanged));
 
     Connect(wxID_NEW, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler(MCMainFrame::OnNew));
@@ -232,18 +237,32 @@ void MCMainFrame::ShowMousePos(int x, int y)
 /*
  * Create a new file.
  */
+void MCMainFrame::OnPageChanged(wxCommandEvent &event)
+{
+    wxGetApp().SetActiveDoc(GetActiveDoc());
+}
+
+/*****************************************************************************/
+/*
+ * Create a new file.
+ */
 void MCMainFrame::OnNew(wxCommandEvent &event)
 {
     MCDoc* pDoc = new MCDoc();
-    MCChildFrame* pChildFrame = new MCChildFrame(pDoc, this, wxID_ANY, wxT("child frame"));
-    pDoc->SetFrame(pChildFrame);
-    pChildFrame->Show();
+    //MCChildFrame* pChildFrame = new MCChildFrame(pDoc, this, wxID_ANY, wxT("child frame"));
+    //pChildFrame->Show();
+
+    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
+    pCanvas->SetDoc(pDoc);
+    m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
+    pCanvas->Show();
 }
 
 
 /*****************************************************************************/
 void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
+#if 0
 	wxString stringFilter;
 
 	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
@@ -265,6 +284,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
         pChildFrame->Show();
     }
     delete pFileDialog;
+#endif
 }
 
 
@@ -274,7 +294,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
  */
 void MCMainFrame::OnUpdateSave(wxUpdateUIEvent& event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc != NULL);
 }
 
@@ -285,7 +305,7 @@ void MCMainFrame::OnUpdateSave(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnSave(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
 
 
     if (pDoc)
@@ -303,7 +323,7 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
 	wxString stringFilter;
 
     /* !!! Keep the filter list in sync with the code below !!! */
@@ -358,7 +378,7 @@ void MCMainFrame::OnQuit(wxCommandEvent &event)
  */
 void MCMainFrame::OnUpdateUndo(wxUpdateUIEvent& event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc && pDoc->CanUndo());
 }
 
@@ -369,7 +389,7 @@ void MCMainFrame::OnUpdateUndo(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnUndo(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
 
     if (pDoc)
         pDoc->Undo();
@@ -382,7 +402,7 @@ void MCMainFrame::OnUndo(wxCommandEvent &event)
  */
 void MCMainFrame::OnUpdateRedo(wxUpdateUIEvent& event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc && pDoc->CanRedo());
 }
 
@@ -393,7 +413,7 @@ void MCMainFrame::OnUpdateRedo(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnRedo(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDocument();
+    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
 
     if (pDoc)
         pDoc->Redo();
@@ -404,15 +424,33 @@ void MCMainFrame::OnRedo(wxCommandEvent &event)
 /*
  * Get a pointer to the active document or NULL.
  */
-MCDoc* MCMainFrame::GetActiveDocument()
+MCDoc* MCMainFrame::GetActiveDoc()
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    if (pChild)
+    MCCanvas* pCanvas = GetActiveCanvas();
+
+    if (pCanvas)
     {
-        return pChild->GetDocument();
+        return pCanvas->GetDoc();
     }
     return NULL;
 }
+
+
+/*****************************************************************************/
+/*
+ * Get the active Canvas or NULL if there is none.
+ */
+MCCanvas* MCMainFrame::GetActiveCanvas()
+{
+    int nSelected;
+
+    nSelected = m_pNotebook->GetSelection();
+    if (nSelected < 0)
+        return NULL;
+
+    return (MCCanvas*) m_pNotebook->GetPage(nSelected);
+}
+
 
 /*****************************************************************************/
 void MCMainFrame::OnSize(wxSizeEvent& event)
@@ -422,7 +460,7 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
 
     minWidth = m_pToolPanel->GetMinWidth();
     m_pToolPanel->SetSize(0, 0, minWidth, h);
-    GetClientWindow()->SetSize(minWidth, 0, w - minWidth, h);
+    m_pNotebook->SetSize(minWidth, 0, w - minWidth, h);
 
     // FIXME: On wxX11, we need the MDI frame to process this
     // event, but on other platforms this should not
@@ -448,14 +486,12 @@ void MCMainFrame::OnTool(wxCommandEvent &event)
 void MCMainFrame::OnZoom(wxCommandEvent& event)
 {
     int nScale;
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
+    MCCanvas* pCanvas = GetActiveCanvas();
 
-    if (!pChild)
-    {
+    if (!pCanvas)
         return;
-    }
 
-    nScale = pChild->GetScale();
+    nScale = pCanvas->GetScale();
 
     switch (event.GetId())
     {
@@ -494,16 +530,16 @@ void MCMainFrame::OnZoom(wxCommandEvent& event)
         break;
     }
 
-    pChild->SetScale(nScale);
+    pCanvas->SetScale(nScale);
 }
 
 /*****************************************************************************/
 void MCMainFrame::OnTVMode(wxCommandEvent& event)
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    if (pChild)
+    MCCanvas* pCanvas = GetActiveCanvas();
+    if (pCanvas)
     {
-        pChild->SetTVMode(event.IsChecked());
+        pCanvas->SetEmulateTV(event.IsChecked());
     }
 }
 
@@ -511,28 +547,28 @@ void MCMainFrame::OnTVMode(wxCommandEvent& event)
 /*****************************************************************************/
 void MCMainFrame::OnUpdateZoomIn(wxUpdateUIEvent& event)
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    event.Enable(pChild ? (pChild->GetScale() < MC_MAX_ZOOM) : false);
+    MCCanvas* pCanvas = GetActiveCanvas();
+    event.Enable(pCanvas ? (pCanvas->GetScale() < MC_MAX_ZOOM) : false);
 }
 
 
 /*****************************************************************************/
 void MCMainFrame::OnUpdateZoomOut(wxUpdateUIEvent& event)
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    event.Enable(pChild ? (pChild->GetScale() > 1) : false);
+    MCCanvas* pCanvas = GetActiveCanvas();
+    event.Enable(pCanvas ? (pCanvas->GetScale() > 1) : false);
 }
 
 
 /*****************************************************************************/
 void MCMainFrame::OnUpdateZoom(wxUpdateUIEvent& event)
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
+    MCCanvas* pCanvas = GetActiveCanvas();
 
-    if (pChild)
+    if (pCanvas)
     {
         event.Enable(true);
-        switch (pChild->GetScale())
+        switch (pCanvas->GetScale())
         {
         case 1:
             event.Check(event.GetId() == MC_ID_ZOOM_1);
@@ -568,11 +604,12 @@ void MCMainFrame::OnUpdateZoom(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnUpdateTVMode(wxUpdateUIEvent& event)
 {
-    MCChildFrame* pChild = (MCChildFrame*) GetActiveChild();
-    if (pChild)
+    MCCanvas* pCanvas = GetActiveCanvas();
+
+    if (pCanvas)
     {
         event.Enable(true);
-        event.Check(pChild->GetTVMode());
+        event.Check(pCanvas->GetEmulateTV());
     }
     else
     {

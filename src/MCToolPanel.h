@@ -28,7 +28,7 @@
 
 #include <wx/panel.h>
 
-class MCChildFrame;
+class MCDoc;
 class MCCanvas;
 class PalettePanel;
 class MCDrawingModePanel;
@@ -40,7 +40,7 @@ public:
     MCToolPanel(wxWindow* parent);
     virtual ~MCToolPanel();
 
-    void SetActiveView(MCChildFrame* pFrame);
+    void SetActiveDoc(MCDoc* pDoc);
 
     void Refresh();
     PalettePanel* GetPalettePanel();
@@ -51,8 +51,6 @@ protected:
     PalettePanel* m_pPalettePanel;
     MCDrawingModePanel* m_pDrawingModePanel;
     MCBlockPanel* m_pBlockPanel;
-
-    MCChildFrame* m_pActiveView;
 };
 
 /*****************************************************************************/

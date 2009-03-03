@@ -26,28 +26,33 @@
 #ifndef MCMAINFRAME_H
 #define MCMAINFRAME_H
 
-#include <wx/docmdi.h>
+#include <wx/frame.h>
 
-#include "MCToolPanel.h"
+class MCToolPanel;
+class wxNotebook;
 
 #define MC_MAX_ZOOM 16
 
 class PalettePanel;
 class MCDoc;
+class MCCanvas;
 
-class MCMainFrame: public wxMDIParentFrame
+class MCMainFrame: public wxFrame
 {
 public:
     MCMainFrame(wxFrame* parent,
             const wxString& title);
 
     MCToolPanel* GetToolPanel();
-    MCDoc* GetActiveDocument();
+    MCDoc* GetActiveDoc();
+    MCCanvas* GetActiveCanvas();
     void ShowMousePos(int x, int y);
 
 protected:
     void InitToolBar();
     void InitMenuBar();
+
+    void OnPageChanged(wxCommandEvent &event);
 
     void OnNew(wxCommandEvent &event);
 
@@ -79,6 +84,7 @@ protected:
     void OnUpdateTVMode(wxUpdateUIEvent& event);
 
     MCToolPanel* m_pToolPanel;
+    wxNotebook*  m_pNotebook;
 };
 
 /*****************************************************************************/

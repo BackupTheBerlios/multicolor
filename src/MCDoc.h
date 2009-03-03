@@ -34,7 +34,6 @@
 
 #define MC_UNDO_LEN 100
 
-class MCChildFrame;
 class DocRenderer;
 
 class MCDoc
@@ -42,8 +41,6 @@ class MCDoc
 public:
     MCDoc();
     virtual ~MCDoc();
-    void SetFrame(MCChildFrame* pFrame);
-    MCChildFrame* GetFrame();
     void Refresh(
             unsigned x1 = 0, unsigned y1 = 0,
             unsigned x2 = MC_X - 1, unsigned y2 = MC_Y - 1);
@@ -80,9 +77,6 @@ protected:
     // last mouse position reported by one of my views (bitmap coordinates)
     wxPoint m_pointMousePos;
 
-    // Points to the frame associated with this doc
-    MCChildFrame* m_pFrame;
-
     // A list of all Renderers for this document
     std::list<DocRenderer*> m_listDocRenderers;
 
@@ -92,23 +86,6 @@ protected:
     int SaveAmica(unsigned char* pBuff);
 };
 
-/******************************************************************************/
-/*
- * Set the frame associated with this document.
- */
-inline void MCDoc::SetFrame(MCChildFrame* pFrame)
-{
-    m_pFrame = pFrame;
-}
-
-/******************************************************************************/
-/*
- * Set the frame associated with this document.
- */
-inline MCChildFrame* MCDoc::GetFrame()
-{
-    return m_pFrame;
-}
 
 /******************************************************************************/
 /*

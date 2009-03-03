@@ -30,7 +30,6 @@
 
 #include "MCApp.h"
 #include "MCDoc.h"
-#include "MCChildFrame.h"
 #include "DocRenderer.h"
 
 #define AMICA_SIG_BYTE 0xc2
@@ -58,13 +57,11 @@ MCDoc::MCDoc()
     , m_listUndo()
     , m_nRedoPos(0)
     , m_fileName()
-    , m_pFrame(NULL)
 {
     PrepareUndo();
-    //SetDocumentName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
+    m_fileName.SetName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
 }
 
-std::list<DocRenderer*>::iterator i;
 
 /******************************************************************************
 /*
@@ -259,7 +256,9 @@ bool MCDoc::Load(const wxString& stringFilename)
     PrepareUndo();
 
     m_fileName.Assign(stringFilename);
-    m_pFrame->SetTitle(m_fileName.GetName());
+
+#warning Titel fehlt
+//    m_pFrame->SetTitle(m_fileName.GetName());
     Refresh();
     return true;
 }
@@ -313,7 +312,9 @@ bool MCDoc::Save(const wxString& stringFilename)
         {
             // remember name only if it went well
             m_fileName = fileNameTmp;
-            m_pFrame->SetTitle(m_fileName.GetName());
+#warning Titel fehlt
+
+//            m_pFrame->SetTitle(m_fileName.GetName());
             bRet = true;
         }
         else
