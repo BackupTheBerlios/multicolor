@@ -249,9 +249,6 @@ void MCMainFrame::OnPageChanged(wxCommandEvent &event)
 void MCMainFrame::OnNew(wxCommandEvent &event)
 {
     MCDoc* pDoc = new MCDoc();
-    //MCChildFrame* pChildFrame = new MCChildFrame(pDoc, this, wxID_ANY, wxT("child frame"));
-    //pChildFrame->Show();
-
     MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
     pCanvas->SetDoc(pDoc);
     m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
@@ -262,7 +259,6 @@ void MCMainFrame::OnNew(wxCommandEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
-#if 0
 	wxString stringFilter;
 
 	stringFilter.append(wxT("All image files (*.koa;*.ami)|*.koa;*.ami|"));
@@ -278,13 +274,13 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
     {
         // Create a new document and load the file into it
         MCDoc* pDoc = new MCDoc();
-        MCChildFrame* pChildFrame = new MCChildFrame(pDoc, this, wxID_ANY, wxT("child frame"));
-        pDoc->SetFrame(pChildFrame);
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
+        pCanvas->SetDoc(pDoc);
+        m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
         pDoc->Load(pFileDialog->GetPath());
-        pChildFrame->Show();
+        pCanvas->Show();
     }
     delete pFileDialog;
-#endif
 }
 
 
