@@ -128,6 +128,7 @@ void MCMainFrame::InitToolBar()
             MCApp::GetBitmap(wxT("24x24"), wxT("filenew.png")), _T("New file"));
     pToolBar->AddTool(wxID_OPEN, _T("Open"),
             MCApp::GetBitmap(wxT("24x24"), wxT("fileopen.png")), _T("Open file"));
+
     pToolBar->AddTool(wxID_SAVE, _T("Save"),
             MCApp::GetBitmap(wxT("24x24"), wxT("filesave.png")), _T("Save file"));
 
@@ -141,10 +142,10 @@ void MCMainFrame::InitToolBar()
     pToolBar->AddSeparator();
 
     pToolBar->AddTool(wxID_ZOOM_OUT, _T("Zoom out"),
-            MCApp::GetBitmap(wxT("24x24"), wxT("viewmag-.png")), _T("Zoom out"));
+            MCApp::GetBitmap(wxT("24x24"), wxT("zoomout.png")), _T("Zoom out"));
 
-    pToolBar->AddTool(wxID_ZOOM_IN, _T("Zoom in"),
-            MCApp::GetBitmap(wxT("24x24"), wxT("viewmag+.png")), _T("Zoom in"));
+    pToolBar->AddTool(wxID_ZOOM_IN, _T("Zoom in\t+"),
+            MCApp::GetBitmap(wxT("24x24"), wxT("zoomin.png")), _T("Zoom in"));
 
     bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("tv.png"));
     pToolBar->AddCheckTool(MC_ID_TV_MODE, _T("TV mode"),
@@ -183,17 +184,35 @@ void MCMainFrame::InitToolBar()
 /*****************************************************************************/
 void MCMainFrame::InitMenuBar()
 {
-    //// Make a menubar
-    wxMenu *pFileMenu = new wxMenu;
+    // Make a menubar
+    wxMenuItem* pItem;
+    wxMenu*     pFileMenu = new wxMenu;
 
-    pFileMenu->Append(wxID_NEW, _T("&New..."));
-    pFileMenu->Append(wxID_OPEN, _T("&Open..."));
-    pFileMenu->Append(wxID_CLOSE, _T("&Close"));
-    pFileMenu->Append(wxID_SAVE, _T("&Save"));
-    pFileMenu->Append(wxID_SAVEAS, _T("Save &As..."));
+    pItem = new wxMenuItem(pFileMenu, wxID_NEW);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("filenew.png")));
+    pFileMenu->Append(pItem);
+
+    pItem = new wxMenuItem(pFileMenu, wxID_OPEN);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("fileopen.png")));
+    pFileMenu->Append(pItem);
+
+    pItem = new wxMenuItem(pFileMenu, wxID_CLOSE);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("fileclose.png")));
+    pFileMenu->Append(pItem);
+
+    pItem = new wxMenuItem(pFileMenu, wxID_SAVE);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("filesave.png")));
+    pFileMenu->Append(pItem);
+
+    pItem = new wxMenuItem(pFileMenu, wxID_SAVEAS);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("filesaveas.png")));
+    pFileMenu->Append(pItem);
 
     pFileMenu->AppendSeparator();
-    pFileMenu->Append(wxID_EXIT, _T("E&xit"));
+
+    pItem = new wxMenuItem(pFileMenu, wxID_EXIT);
+    pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("quit.png")));
+    pFileMenu->Append(pItem);
 
     wxMenu *pViewMenu = new wxMenu;
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_1, _T("Zoom &1:1"));

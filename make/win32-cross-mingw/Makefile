@@ -5,7 +5,7 @@ wx-prefix     := /usr/local/i586-mingw32-$(wx-version)
 
 cxx           := i586-mingw32msvc-c++
 strip         := i586-mingw32msvc-strip
-cxxflags      := -O3 `$(wx-prefix)/bin/wx-config --static=yes --cxxflags`
+cxxflags      := -O2 `$(wx-prefix)/bin/wx-config --static=yes --cxxflags`
 
 include ../common/filelist.mk
 
