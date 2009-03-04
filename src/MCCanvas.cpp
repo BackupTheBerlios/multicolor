@@ -90,7 +90,6 @@ MCCanvas::~MCCanvas()
  */
 void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 {
-    unsigned tmp;
     wxRect   rect;
 
     FixCoordinates(&x1, &y1, &x2, &y2);
@@ -172,7 +171,7 @@ void MCCanvas::SetEmulateTV(bool bTV)
 /*
  * Set zoom factor and delete the cache.
  */
-void MCCanvas::SetScale(int nScale)
+void MCCanvas::SetScale(unsigned nScale)
 {
     m_nScale = nScale;
 
@@ -250,10 +249,10 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
     int      fixr, fixg, fixb, tmpr, tmpg, tmpb;
     const int aFilters[] = {0, 2, 1};
     int      filter;
-    int      x, y;
-    unsigned char* pPixels;
-    unsigned char* p;
-    int            nPitch;
+    unsigned        x, y;
+    unsigned char*  pPixels;
+    unsigned char*  p;
+    unsigned        nPitch;
 
     filter = aFilters[m_nScale];
 
@@ -321,7 +320,7 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     wxPen          pen(*wxBLACK);
     MC_RGB         rgb;
     wxRect         rect;
-    int            x, y, i;
+    unsigned       x, y, i;
 
     pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
 
