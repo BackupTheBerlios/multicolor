@@ -36,6 +36,15 @@
 #include "MCCanvas.h"
 #include "PalettePanel.h"
 
+/*
+ * On Windows the png icons with alpha channel look very strange in the toolbar
+ * when the tool is disabled (They are not grayed out but appear black). This
+ * happens at least with wxMSW 2.8.9. That's why we leave them always active.
+ */
+#ifdef __WXMSW__
+#define MC_TOOLS_ALWAYS_ENABLED
+#endif
+
 /*****************************************************************************/
 MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxSize(800, 600)),
@@ -122,7 +131,8 @@ void MCMainFrame::InitToolBar()
     wxBitmap        bitmap;
 
     pToolBar = CreateToolBar();
-	pToolBar->SetToolBitmapSize(wxSize(24, 24));
+
+    pToolBar->SetToolBitmapSize(wxSize(24, 24));
 
     pToolBar->AddTool(wxID_NEW, _T("New"),
             MCApp::GetBitmap(wxT("24x24"), wxT("filenew.png")), _T("New file"));
@@ -311,6 +321,10 @@ void MCMainFrame::OnUpdateSave(wxUpdateUIEvent& event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc != NULL);
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -395,6 +409,10 @@ void MCMainFrame::OnUpdateUndo(wxUpdateUIEvent& event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc && pDoc->CanUndo());
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -419,6 +437,10 @@ void MCMainFrame::OnUpdateRedo(wxUpdateUIEvent& event)
 {
     MCDoc* pDoc = (MCDoc*) GetActiveDoc();
     event.Enable(pDoc && pDoc->CanRedo());
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -470,12 +492,13 @@ MCCanvas* MCMainFrame::GetActiveCanvas()
 /*****************************************************************************/
 void MCMainFrame::OnSize(wxSizeEvent& event)
 {
-    int w, h, minWidth;
+    int w, h, wToolPanel;
     GetClientSize(&w, &h);
 
-    minWidth = m_pToolPanel->GetMinWidth();
-    m_pToolPanel->SetSize(0, 0, minWidth, h);
-    m_pNotebook->SetSize(minWidth, 0, w - minWidth, h);
+    wToolPanel = m_pToolPanel->GetMinWidth();
+    m_pToolPanel->SetSize(0, 0, wToolPanel, h);
+
+    m_pNotebook->SetSize(wToolPanel, 0, w - wToolPanel, h);
 
     // FIXME: On wxX11, we need the MDI frame to process this
     // event, but on other platforms this should not
@@ -564,6 +587,10 @@ void MCMainFrame::OnUpdateZoomIn(wxUpdateUIEvent& event)
 {
     MCCanvas* pCanvas = GetActiveCanvas();
     event.Enable(pCanvas ? (pCanvas->GetScale() < MC_MAX_ZOOM) : false);
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -572,6 +599,10 @@ void MCMainFrame::OnUpdateZoomOut(wxUpdateUIEvent& event)
 {
     MCCanvas* pCanvas = GetActiveCanvas();
     event.Enable(pCanvas ? (pCanvas->GetScale() > 1) : false);
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -610,6 +641,10 @@ void MCMainFrame::OnUpdateZoom(wxUpdateUIEvent& event)
     {
         event.Enable(false);
     }
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
 
 
@@ -631,4 +666,8 @@ void MCMainFrame::OnUpdateTVMode(wxUpdateUIEvent& event)
         event.Enable(false);
         event.Check(false);
     }
+
+#ifdef MC_TOOLS_ALWAYS_ENABLED
+    event.Enable(true);
+#endif
 }
