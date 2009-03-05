@@ -57,6 +57,7 @@ MCDoc::MCDoc()
     , m_listUndo()
     , m_nRedoPos(0)
     , m_fileName()
+    , m_bModified(false)
 {
     PrepareUndo();
     m_fileName.SetName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
@@ -103,6 +104,8 @@ void MCDoc::Refresh(unsigned x1, unsigned y1, unsigned x2, unsigned y2)
 void MCDoc::PrepareUndo()
 {
     unsigned i;
+
+    Modify(true);
 
     // if we are not at the end of the undo list, discard the rest
     while (m_nRedoPos < m_listUndo.size())
@@ -263,8 +266,7 @@ bool MCDoc::Load(const wxString& stringFilename)
     PrepareUndo();
 
     m_fileName.Assign(stringFilename);
-
-    wxGetApp().SetDocName(this, m_fileName.GetFullName());
+    Modify(false);
 
     Refresh();
     return true;
@@ -319,7 +321,7 @@ bool MCDoc::Save(const wxString& stringFilename)
         {
             // remember name only if it went well
             m_fileName = fileNameTmp;
-            wxGetApp().SetDocName(this, m_fileName.GetFullName());
+            Modify(false);
             bRet = true;
         }
         else
@@ -333,7 +335,27 @@ bool MCDoc::Save(const wxString& stringFilename)
 	return bRet;
 }
 
-/******************************************************************************
+
+/*****************************************************************************/
+/*
+ *
+ */
+void MCDoc::Modify(bool bModified)
+{
+    wxString str;
+
+    m_bModified = bModified;
+
+    if (bModified)
+        str = wxT("*");
+
+    str.Append(m_fileName.GetFullName());
+    wxGetApp().SetDocName(this, str);
+}
+
+
+/*****************************************************************************/
+/*
  * Try to load a Koala picture from the given buffer into this document.
  * Return true if it worked and false otherwise. False could also mean that
  * it isn't Koala.

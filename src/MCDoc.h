@@ -60,6 +60,9 @@ public:
     bool Load(const wxString& stringFilename);
     bool Save(const wxString& stringFilename);
 
+    bool IsModified();
+    void Modify(bool bModified);
+
     MCBitmap  m_bitmap;
 
     // Die Original-Bitmap waehrend der Benutzung des Werkzeugs.
@@ -73,6 +76,9 @@ protected:
 
     // the full path and file name
     wxFileName m_fileName;
+
+    // true if the document has been changed but not saved
+    bool m_bModified;
 
     // last mouse position reported by one of my views (bitmap coordinates)
     wxPoint m_pointMousePos;
@@ -105,6 +111,15 @@ inline const wxFileName& MCDoc::GetFileName() const
 inline const wxPoint& MCDoc::GetMousePos() const
 {
     return m_pointMousePos;
+}
+
+/******************************************************************************/
+/*
+ * Return true if the document has been modified but not saved.
+ */
+inline bool MCDoc::IsModified()
+{
+    return m_bModified;
 }
 
 #endif /* MCDOC_H */
