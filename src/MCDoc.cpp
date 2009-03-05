@@ -264,8 +264,8 @@ bool MCDoc::Load(const wxString& stringFilename)
 
     m_fileName.Assign(stringFilename);
 
-#warning Titel fehlt
-//    m_pFrame->SetTitle(m_fileName.GetName());
+    wxGetApp().SetDocName(this, m_fileName.GetFullName());
+
     Refresh();
     return true;
 }
@@ -319,9 +319,7 @@ bool MCDoc::Save(const wxString& stringFilename)
         {
             // remember name only if it went well
             m_fileName = fileNameTmp;
-#warning Titel fehlt
-
-//            m_pFrame->SetTitle(m_fileName.GetName());
+            wxGetApp().SetDocName(this, m_fileName.GetFullName());
             bRet = true;
         }
         else

@@ -51,6 +51,7 @@ public:
 
     void SetActiveDoc(MCDoc* pDoc);
     void SetMousePos(int x, int y);
+    void SetDocName(const MCDoc* pDoc, const wxString stringName);
 
     MCMainFrame* GetMainFrame();
     PalettePanel* GetPalettePanel();

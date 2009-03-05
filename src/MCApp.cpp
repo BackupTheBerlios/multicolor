@@ -169,3 +169,14 @@ void MCApp::SetActiveDoc(MCDoc* pDoc)
     m_pMainFrame->GetToolPanel()->SetActiveDoc(pDoc);
 }
 
+/*****************************************************************************/
+/*
+ * Set the name of the given document to the given value.
+ * This is done in this strange way so the right window titles can be set
+ * even if there is no simple relationship between them.
+ */
+void MCApp::SetDocName(const MCDoc* pDoc, const wxString name)
+{
+    m_pMainFrame->SetDocName(pDoc, name);
+}
+

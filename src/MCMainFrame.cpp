@@ -262,6 +262,31 @@ void MCMainFrame::ShowMousePos(int x, int y)
     SetStatusText(strPosition, 1);
 }
 
+
+/*****************************************************************************/
+/*
+ * Set the name of the given document to the given value.
+ * This is done in this strange way so the right window titles can be set
+ * even if there is no simple relationship between them.
+ */
+void MCMainFrame::SetDocName(const MCDoc* pDoc, const wxString name)
+{
+    MCCanvas* pCanvas;
+    size_t n;
+    size_t nPages = m_pNotebook->GetPageCount();
+
+    // Search for page with this Document and change its title
+    for (n = 0; n < nPages; ++n)
+    {
+        pCanvas = (MCCanvas*) m_pNotebook->GetPage(n);
+        if (pCanvas->GetDoc() == pDoc)
+        {
+            m_pNotebook->SetPageText(n, name);
+        }
+    }
+}
+
+
 /*****************************************************************************/
 /*
  * Create a new file.
