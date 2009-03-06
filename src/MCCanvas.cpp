@@ -415,6 +415,30 @@ void MCCanvas::ToCanvasCoord(int* px, int* py, int x, int y)
 
 /******************************************************************************/
 /*
+ * Scroll the window so the given bitmap coordinate is centered in the window,
+ * if possible.
+ */
+void MCCanvas::CenterBitmapPoint(int x, int y)
+{
+    int xScroll, yScroll;
+    int xFactor, yFactor;
+    int wClient, hClient;
+
+    printf("center to %d %d\n", x, y);
+
+    GetClientSize(&wClient, &hClient);
+    GetScrollPixelsPerUnit(&xFactor, &yFactor);
+
+    x *= 2 * m_nScale;
+    y *= m_nScale;
+
+    xScroll = (x - wClient / 2) / xFactor;
+    yScroll = (y - hClient / 2) / yFactor;
+    Scroll(xScroll, yScroll);
+}
+
+/******************************************************************************/
+/*
  * Invalidate the rectangle around the current mouse position.
  */
 void MCCanvas::InvalidateMouseRect()
@@ -659,8 +683,11 @@ void MCCanvas::OnEraseBackground(wxEraseEvent& event)
  */
 void MCCanvas::OnMouseWheel(wxMouseEvent& event)
 {
-#ifdef MC_NOT_YET
     int nScale = m_nScale;
+    int x, y;
+
+    ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+    printf("%d %d\n", x, y);
 
     if ((event.GetWheelRotation() > 0) && (nScale > 1))
     {
@@ -675,8 +702,8 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
     if (m_nScale != nScale)
     {
         SetScale(nScale);
+        CenterBitmapPoint(x, y);
     }
-#endif
 }
 
 /*****************************************************************************/

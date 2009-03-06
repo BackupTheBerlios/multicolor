@@ -69,6 +69,8 @@ public:
     void SetScale(unsigned nScale);
     unsigned GetScale();
 
+    void CenterBitmapPoint(int x, int y);
+
 protected:
 
     // Pointer to Document to be rendered or NULL
