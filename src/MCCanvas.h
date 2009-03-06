@@ -29,9 +29,22 @@
 #include <wx/scrolwin.h>
 #include <wx/image.h>
 #include <wx/gdicmn.h>
+#include <wx/timer.h>
 
 #include "MCBitmap.h"
 #include "DocRenderer.h"
+
+#define MCCANVAS_SCROLL_TIMER_ID 1
+
+// If we are closer as that many (screen) pixels to the border, we scroll
+#define MCCANVAS_SCROLL_THRESHOLD 40
+
+// This is the timeout before scrolling the first time [ms]
+#define MCCANVAS_SCROLL_DELAY 750
+
+// Scroll interval [ms]
+#define MCCANVAS_SCROLL_INTERVAL 150
+
 
 class MCToolBase;
 class MCDoc;
@@ -79,12 +92,15 @@ protected:
     void ToCanvasCoord(int* px, int* py, int x, int y);
     void DrawMousePos(wxDC* pDC);
     void UpdateVirtualSize();
+    bool CheckScrolling(int xMouse, int yMouses);
+    void UpdateMousePosition(int xMouse, int yMouse);
 
     void OnButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnButtonUp(wxMouseEvent& event);
     void OnEraseBackground(wxEraseEvent& event);
     void OnMouseWheel(wxMouseEvent& event);
+    void OnTimer(wxTimerEvent& event);
 
     void FixCoordinates(int* px1, int* py1,
             int* px2, int* py2);
@@ -100,6 +116,9 @@ protected:
 
     // This image is used as cache at zoom levels 1:1 and 2:1
     wxImage     m_image;
+
+    // When this timer is still running, auto scroll is disabled
+    wxTimer     m_timerScrolling;
 };
 
 

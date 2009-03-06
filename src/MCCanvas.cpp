@@ -27,6 +27,7 @@
 #include <wx/dc.h>
 #include <wx/image.h>
 #include <wx/msgdlg.h>
+#include <wx/utils.h>
 
 #include "MCApp.h"
 #include "MCCanvas.h"
@@ -54,7 +55,8 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     m_pActiveTool(NULL),
     m_bEmulateTV(true),
     m_nScale(1),
-    m_pointLastMousePos(-1, -1)
+    m_pointLastMousePos(-1, -1),
+    m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID)
 {
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
@@ -66,6 +68,7 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
 
     Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
 
+    Connect(wxEVT_TIMER, wxTimerEventHandler(MCCanvas::OnTimer));
     // set min size incl. borders so the preview won't get scroll bars
     wxSize size(GetWindowBorderSize());
     size.IncBy(2 * MC_X * m_nScale, MC_Y * m_nScale);
@@ -209,10 +212,10 @@ void MCCanvas::OnDraw(wxDC& rDC)
         // erase the area around the bitmap
         rDC.SetPen(*wxTRANSPARENT_PEN);
         rDC.SetBrush(*wxGREY_BRUSH);
-        rDC.DrawRectangle(0, MC_Y * m_nScale, GetSize().GetWidth(),
-                GetSize().GetHeight());
-        rDC.DrawRectangle(2 * MC_X * m_nScale, 0, GetSize().GetWidth(),
-                GetSize().GetHeight());
+        rDC.DrawRectangle(rDC.DeviceToLogicalX(0), MC_Y * m_nScale,
+                GetSize().GetWidth(), GetSize().GetHeight());
+        rDC.DrawRectangle(2 * MC_X * m_nScale, rDC.DeviceToLogicalY(0),
+                GetSize().GetWidth(), GetSize().GetHeight());
     }
     else
     {
@@ -389,8 +392,8 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
 {
     CalcUnscrolledPosition(x, y, px, py);
 
-    *px /= (2 * m_nScale);
-    *py /= m_nScale;
+    *px /= (2 * (int)m_nScale);
+    *py /= (int)m_nScale;
 
     if (*px < 0) *px = 0;
     if (*py < 0) *py = 0;
@@ -431,6 +434,7 @@ void MCCanvas::InvalidateMouseRect()
     RefreshRect(rect, false);
 }
 
+
 /******************************************************************************/
 /*
  * Draw the mouse position or remove the drawing.
@@ -465,7 +469,116 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
 void MCCanvas::UpdateVirtualSize()
 {
     SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
-    SetScrollRate(10 * m_nScale, 10 * m_nScale);
+    SetScrollRate(16 * m_nScale, 16 * m_nScale);
+}
+
+
+/*****************************************************************************/
+/*
+ * Check if we have to scroll. If yes, do it.
+ * This is called upon mouse movement and when the scroll timer elapsed.
+ * If we have to scroll we will start the timer (again) to re-check later.
+ *
+ * xMouse and yMouse are window coordinates.
+ *
+ * If bStopOnly is set we do not really scroll. When being called with this
+ * and if we find out that the conditions for scrolling are not fulfilled
+ * anymore, we stop the timer. This is useful in this scenario: Mouse goes to
+ * scroll area, timer started, mouse leaves scroll area, mouse comes back
+ * exactly when the timer expires...
+ *
+ * Return true if we scrolled and false if not.
+ */
+bool MCCanvas::CheckScrolling(int xMouse, int yMouse)
+{
+    int xScroll, yScroll;
+    int xFactor, yFactor;
+    int wClient, hClient;
+    int wVirtual, hVirtual;
+    bool bScroll = false;
+
+    GetViewStart(&xScroll, &yScroll);
+    GetVirtualSize(&wVirtual, &hVirtual);
+    GetClientSize(&wClient, &hClient);
+    GetScrollPixelsPerUnit(&xFactor, &yFactor);
+    if (xFactor == 0) xFactor = 1;
+    if (yFactor == 0) yFactor = 1;
+
+    /*
+     * Scroll left if the mouse is left of the threshold AND
+     * (the mouse in inside the window OR a tool is active) AND
+     * there's still space for scrolling
+     */
+    /* same for all four directions */
+    if (xMouse < MCCANVAS_SCROLL_THRESHOLD &&
+        (xMouse > 0 || m_pActiveTool) && xScroll > 0)
+    {
+        --xScroll;
+        bScroll = true;
+    }
+    else if (xMouse >= wClient - MCCANVAS_SCROLL_THRESHOLD &&
+             (xMouse < wClient || m_pActiveTool) &&
+             xScroll <= (wVirtual - wClient) / xFactor)
+    {
+        ++xScroll;
+        bScroll = true;
+    }
+
+    if (yMouse < MCCANVAS_SCROLL_THRESHOLD &&
+        (yMouse > 0 || m_pActiveTool) && yScroll > 0)
+    {
+        --yScroll;
+        bScroll = true;
+    }
+    else if (yMouse >= hClient - MCCANVAS_SCROLL_THRESHOLD &&
+             (yMouse < hClient || m_pActiveTool) &&
+             yScroll <= (hVirtual - hClient) / yFactor)
+    {
+        ++yScroll;
+        bScroll = true;
+    }
+
+    // Are all conditions for scrolling fulfilled?
+    if (bScroll)
+    {
+        // If the timer is running do not scroll now but when it'll expire
+        if (!m_timerScrolling.IsRunning())
+        {
+            // Scroll now and restart the timer
+            Scroll(xScroll, yScroll);
+            m_timerScrolling.Start(MCCANVAS_SCROLL_INTERVAL, true);
+        }
+    }
+    else
+    {
+        // No need to scroll anymore, just stop the timer
+        m_timerScrolling.Stop();
+    }
+
+    return bScroll;
+}
+
+
+/*****************************************************************************/
+/*
+ * Update display and tool with our new mouse position.
+ *
+ * xMouse and yMouse are window coordinates.
+ */
+void MCCanvas::UpdateMousePosition(int xMouse, int yMouse)
+{
+    int x, y;
+
+    if (m_pDoc)
+    {
+        ToBitmapCoord(&x, &y, xMouse, yMouse);
+        m_pDoc->SetMousePos(x, y);
+
+        if (m_pActiveTool)
+        {
+            m_pActiveTool->Move(x, y);
+        }
+    }
 }
 
 
@@ -504,24 +617,12 @@ void MCCanvas::OnButtonDown(wxMouseEvent& event)
 }
 
 
-/******************************************************************************
- * Bei jeder Bewegung der Maus werden die Pixel-Koordinaten in der Statuszeile
- * angezeigt. Ausserdem wird der aktuelle Block in der linken Toolbar angezeigt.
- */
+/*****************************************************************************/
 void MCCanvas::OnMouseMove(wxMouseEvent& event)
 {
-    int x, y;
+    m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
 
-    if (m_pDoc)
-    {
-        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-        m_pDoc->SetMousePos(x, y);
-
-        if (m_pActiveTool)
-        {
-            m_pActiveTool->Move(x, y);
-        }
-    }
+    UpdateMousePosition(event.GetX(), event.GetY());
 }
 
 
@@ -576,6 +677,27 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
         SetScale(nScale);
     }
 #endif
+}
+
+/*****************************************************************************/
+/*
+ */
+void MCCanvas::OnTimer(wxTimerEvent& event)
+{
+    bool bScrolled;
+
+    if (event.GetId() == MCCANVAS_SCROLL_TIMER_ID)
+    {
+        wxPoint pos(wxGetMousePosition());
+        ScreenToClient(&pos.x, &pos.y);
+
+        bScrolled = CheckScrolling(pos.x, pos.y);
+
+        if (bScrolled)
+        {
+            UpdateMousePosition(pos.x, pos.y);
+        }
+    }
 }
 
 
