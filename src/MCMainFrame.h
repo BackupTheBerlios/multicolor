@@ -62,6 +62,7 @@ protected:
     void OnUpdateSave(wxUpdateUIEvent& event);
     void OnSave(wxCommandEvent& event);
     void OnSaveAs(wxCommandEvent& event);
+    void OnFileClose(wxCommandEvent &event);
 
     void OnClose(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);

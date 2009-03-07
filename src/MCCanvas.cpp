@@ -134,7 +134,7 @@ void MCCanvas::OnDocMouseMoved(int x, int y)
  */
 void MCCanvas::OnDocDestroy(MCDoc* pDoc)
 {
-    if (m_pDoc != pDoc)
+    if (m_pDoc == pDoc)
     {
         m_pDoc = NULL;
         Refresh(false);
@@ -472,6 +472,9 @@ void MCCanvas::InvalidateMouseRect()
 void MCCanvas::DrawMousePos(wxDC* pDC)
 {
     int x, y;
+
+    if (!m_pDoc)
+        return;
 
     x = m_pointLastMousePos.x * m_nScale * 2;
     y = m_pointLastMousePos.y * m_nScale;

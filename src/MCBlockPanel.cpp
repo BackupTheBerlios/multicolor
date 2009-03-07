@@ -82,7 +82,7 @@ void MCBlockPanel::OnDocMouseMoved(int x, int y)
  */
 void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
 {
-    if (m_pDoc != pDoc)
+    if (m_pDoc == pDoc)
     {
         m_pDoc = NULL;
         Refresh(false);

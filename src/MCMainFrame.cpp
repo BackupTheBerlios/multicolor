@@ -79,6 +79,9 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler(MCMainFrame::OnSaveAs));
 
+    Connect(wxID_CLOSE, wxEVT_COMMAND_MENU_SELECTED,
+            wxCommandEventHandler(MCMainFrame::OnFileClose));
+
     Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(MCMainFrame::OnClose));
 	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnQuit));
 	Connect(wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnAbout));
@@ -413,9 +416,78 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 
 
 /*****************************************************************************/
+void MCMainFrame::OnFileClose(wxCommandEvent &event)
+{
+    bool bReallyClose = false;
+    int result;
+    int nSelected;
+    MCCanvas* pCanvas;
+    MCDoc* pDoc;
+
+    nSelected = m_pNotebook->GetSelection();
+    if (nSelected < 0)
+        return;
+
+    pCanvas = (MCCanvas*) m_pNotebook->GetPage(nSelected);
+    pDoc = pCanvas->GetDoc();
+
+    if (pDoc->IsModified())
+    {
+        wxString str;
+        str.append(wxT("The document \""));
+        str.append(pDoc->GetFileName().GetFullName());
+        str.append(wxT("\" has been modified. Do you want to save your changes?"));
+
+        result = wxMessageBox(str, wxT("Document modified"),
+        wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
+
+        if (result == wxYES)
+        {
+            OnSave(event);
+            bReallyClose = true;
+        }
+        else if (result == wxNO)
+        {
+            bReallyClose = true;
+        }
+        else /* CANCEL */
+        {
+            bReallyClose = false;
+        }
+    }
+    else
+    {
+        bReallyClose = true;
+    }
+
+    if (bReallyClose)
+    {
+        m_pNotebook->DeletePage(nSelected);
+        delete pDoc;
+    }
+}
+
+/*****************************************************************************/
 void MCMainFrame::OnClose(wxCloseEvent &event)
 {
-    Destroy();
+    bool bWasCanceled = false;
+    wxCommandEvent evtDummy;
+    int nPages;
+
+    while (!bWasCanceled &&
+           (nPages = m_pNotebook->GetPageCount()) != 0)
+    {
+        OnFileClose(evtDummy);
+
+        // If the number of pages did NOT change, the user pressed CANCEL
+        if (nPages == m_pNotebook->GetPageCount())
+        {
+            bWasCanceled = true;
+        }
+    }
+
+    if (!bWasCanceled)
+        Destroy();
 }
 
 
