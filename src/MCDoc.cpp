@@ -60,6 +60,10 @@ MCDoc::MCDoc()
     , m_bModified(false)
 {
     PrepareUndo();
+
+    // PrepareUndo sets m_bModified, reset it
+    m_bModified = false;
+
     m_fileName.SetName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
 
     if (sizeof(KOALA_T) != 10003)

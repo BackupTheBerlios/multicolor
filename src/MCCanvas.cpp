@@ -75,6 +75,10 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
 
     Connect(wxEVT_TIMER, wxTimerEventHandler(MCCanvas::OnTimer));
+
+    Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(MCCanvas::OnKeyDown));
+    Connect(wxEVT_KEY_UP, wxKeyEventHandler(MCCanvas::OnKeyUp));
+
     // set min size incl. borders so the preview won't get scroll bars
     wxSize size(GetWindowBorderSize());
     size.IncBy(2 * MC_X * m_nScale, MC_Y * m_nScale);
@@ -430,8 +434,6 @@ void MCCanvas::CenterBitmapPoint(int x, int y)
     int xFactor, yFactor;
     int wClient, hClient;
 
-    printf("center to %d %d\n", x, y);
-
     GetClientSize(&wClient, &hClient);
     GetScrollPixelsPerUnit(&xFactor, &yFactor);
 
@@ -599,19 +601,120 @@ int MCCanvas::CheckScrollingOneDirection(
     return nScroll;
 }
 
+
 /*****************************************************************************/
 /*
- * Update display and tool with our new mouse position.
- *
- * xMouse and yMouse are window coordinates.
+ * Move the drawing cursor with a key. If the cursor leaves the visible
+ * area, scroll it to the center of the screen.
  */
-void MCCanvas::UpdateMousePosition(int xMouse, int yMouse)
+void MCCanvas::MoveCursorWithKey(int nKeyCode)
 {
-    int x, y;
+    bool bMoved = false;
+    int  x, y;
+    int  xCanvas, yCanvas;
 
+    x = m_pointLastMousePos.x;
+    y = m_pointLastMousePos.y;
+
+    switch (nKeyCode)
+    {
+    case WXK_UP:
+        if (y > 0)
+        {
+            --y;
+            bMoved = true;
+        }
+        break;
+
+    case WXK_DOWN:
+        if (y < MC_Y - 1)
+        {
+            ++y;
+            bMoved = true;
+        }
+        break;
+
+    case WXK_LEFT:
+        if (x > 0)
+        {
+            --x;
+            bMoved = true;
+        }
+        break;
+
+    case WXK_RIGHT:
+        if (x < MC_X - 1)
+        {
+            ++x;
+            bMoved = true;
+        }
+        break;
+    }
+
+    if (bMoved)
+    {
+        UpdateCursorPosition(x, y, false);
+
+        ToCanvasCoord(&xCanvas, &yCanvas, x, y);
+        if (xCanvas < MCCANVAS_SCROLL_THRESHOLD ||
+            xCanvas >= GetClientSize().GetWidth() - MCCANVAS_SCROLL_THRESHOLD ||
+            yCanvas < MCCANVAS_SCROLL_THRESHOLD ||
+            yCanvas >= GetClientSize().GetHeight() - MCCANVAS_SCROLL_THRESHOLD)
+        {
+            CenterBitmapPoint(x, y);
+        }
+    }
+}
+
+
+/*****************************************************************************/
+/*
+ * Start a tool at the given coordinate.
+ */
+void MCCanvas::StartTool(int x, int y, bool bSecondary)
+{
+    MCDrawingMode mode;
+
+    // this can happen when we didn't get ButtonUp event
+    if (m_pActiveTool)
+        return;
+
+    m_pActiveTool = wxGetApp().GetActiveDrawingTool();
+
+    if (m_pActiveTool)
+    {
+        m_pActiveTool->SetColors(wxGetApp().GetPalettePanel()->GetColorA(),
+                wxGetApp().GetPalettePanel()->GetColorB());
+        m_pActiveTool->SetDoc(m_pDoc);
+
+        mode = wxGetApp().GetMainFrame()->
+            GetToolPanel()-> GetDrawingModePanel()->GetDrawingMode();
+        m_pActiveTool->SetDrawingMode(mode);
+
+        m_pActiveTool->Start(x, y, bSecondary);
+    }
+}
+
+
+/*****************************************************************************/
+/*
+ * Update display and tool with our new cursor position.
+ *
+ * x and y are window coordinates if bCanvasCoordinates is set. Otherwise
+ * they are bitmap coordinates.
+ */
+void MCCanvas::UpdateCursorPosition(int x, int y, bool bCanvasCoordinates)
+{
     if (m_pDoc)
     {
-        ToBitmapCoord(&x, &y, xMouse, yMouse);
+        if (bCanvasCoordinates)
+            ToBitmapCoord(&x, &y, x, y);
+
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x > MC_X - 1) x = MC_X - 1;
+        if (y > MC_Y - 1) y = MC_Y - 1;
+
         m_pDoc->SetMousePos(x, y);
 
         if (m_pActiveTool)
@@ -623,36 +726,28 @@ void MCCanvas::UpdateMousePosition(int xMouse, int yMouse)
 
 
 /*****************************************************************************/
+/*
+ * End the tool if one is active.
+ */
+void MCCanvas::EndTool(int x, int y)
+{
+    if (m_pActiveTool)
+    {
+        m_pActiveTool->End(x, y);
+        m_pActiveTool = NULL;
+    }
+}
+
+
+/*****************************************************************************/
 void MCCanvas::OnButtonDown(wxMouseEvent& event)
 {
-    MCDrawingMode mode;
     int x, y;
 
     if (m_pDoc)
     {
         ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-        // this can happen when we didn't get ButtonUp event
-        if (m_pActiveTool)
-        {
-            m_pActiveTool->End(x, y);
-            m_pActiveTool = NULL;
-        }
-
-        m_pActiveTool = wxGetApp().GetActiveDrawingTool();
-
-        if (m_pActiveTool)
-        {
-            m_pActiveTool->SetColors(wxGetApp().GetPalettePanel()->GetColorA(),
-                    wxGetApp().GetPalettePanel()->GetColorB());
-            m_pActiveTool->SetDoc(m_pDoc);
-
-            mode
-                    = wxGetApp().GetMainFrame()->GetToolPanel()-> GetDrawingModePanel()->GetDrawingMode();
-            m_pActiveTool->SetDrawingMode(mode);
-
-            m_pActiveTool->Start(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
-        }
+        StartTool(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
     }
 }
 
@@ -679,7 +774,7 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
         Scroll(xScroll, yScroll);
     }
 
-    UpdateMousePosition(event.GetX(), event.GetY());
+    UpdateCursorPosition(event.GetX(), event.GetY(), true);
 }
 
 
@@ -691,12 +786,7 @@ void MCCanvas::OnButtonUp(wxMouseEvent& event)
     if (m_pDoc)
     {
         ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-        if (m_pActiveTool)
-        {
-            m_pActiveTool->End(x, y);
-            m_pActiveTool = NULL;
-        }
+        EndTool(x, y);
     }
 }
 
@@ -742,7 +832,6 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
     int x, y;
 
     ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-    printf("%d %d\n", x, y);
 
     if ((event.GetWheelRotation() > 0) && (nScale > 1))
     {
@@ -759,6 +848,65 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
         SetScale(nScale);
         CenterBitmapPoint(x, y);
     }
+}
+
+/*****************************************************************************/
+/*
+ * Handle events for pressed keys.
+ */
+void MCCanvas::OnKeyDown(wxKeyEvent& event)
+{
+    bool bKeyUsed = false;
+
+    switch (event.GetKeyCode())
+    {
+    case WXK_UP:
+    case WXK_DOWN:
+    case WXK_LEFT:
+    case WXK_RIGHT:
+        MoveCursorWithKey(event.GetKeyCode());
+        bKeyUsed = true;
+        break;
+
+    case 'C':
+        StartTool(m_pointLastMousePos.x, m_pointLastMousePos.y, false);
+        bKeyUsed = true;
+        break;
+
+    case 'V':
+        StartTool(m_pointLastMousePos.x, m_pointLastMousePos.y, true);
+        bKeyUsed = true;
+        break;
+    }
+
+    // We also use keydown events in MCMainFrame, that's why we propagate them
+    if (!bKeyUsed)
+    {
+        event.ResumePropagation(wxEVENT_PROPAGATE_MAX);
+        event.Skip();
+    }
+}
+
+
+/*****************************************************************************/
+/*
+ * Handle events for released keys.
+ */
+void MCCanvas::OnKeyUp(wxKeyEvent& event)
+{
+    bool bKeyUsed = false;
+
+    switch (event.GetKeyCode())
+    {
+    case 'C':
+    case 'V':
+        EndTool(m_pointLastMousePos.x, m_pointLastMousePos.y);
+        bKeyUsed = true;
+        break;
+    }
+
+    if (!bKeyUsed)
+        event.Skip();
 }
 
 
@@ -778,7 +926,7 @@ void MCCanvas::OnTimer(wxTimerEvent& event)
 
         if (bScrolled)
         {
-            UpdateMousePosition(pos.x, pos.y);
+            UpdateCursorPosition(pos.x, pos.y, true);
         }
     }
 }

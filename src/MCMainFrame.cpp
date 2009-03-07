@@ -101,6 +101,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(MC_ID_ZOOM_2, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
     Connect(MC_ID_ZOOM_4, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
     Connect(MC_ID_ZOOM_8, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
+    Connect(MC_ID_ZOOM_16, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
     Connect(wxID_ZOOM_IN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
     Connect(wxID_ZOOM_OUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnZoom));
     Connect(MC_ID_TV_MODE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTVMode));
@@ -112,6 +113,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(MC_ID_ZOOM_2, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoom));
     Connect(MC_ID_ZOOM_4, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoom));
     Connect(MC_ID_ZOOM_8, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoom));
+    Connect(MC_ID_ZOOM_16, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoom));
     Connect(wxID_ZOOM_IN, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoomIn));
     Connect(wxID_ZOOM_OUT, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateZoomOut));
     Connect(MC_ID_TV_MODE, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTVMode));
@@ -124,6 +126,12 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
 	Connect(MC_ID_TOOL_LINES, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_FILL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
+
+    Connect(MC_ID_TOOL_DOTS, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+    Connect(MC_ID_TOOL_FREEHAND, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+    Connect(MC_ID_TOOL_LINES, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+    Connect(MC_ID_TOOL_FILL, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+    Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
 }
 
 
@@ -227,20 +235,28 @@ void MCMainFrame::InitMenuBar()
     pItem->SetBitmap(MCApp::GetBitmap(wxT("16x16"), wxT("quit.png")));
     pFileMenu->Append(pItem);
 
-    wxMenu *pViewMenu = new wxMenu;
+    wxMenu *pEditMenu = new wxMenu;
+
+    pEditMenu->Append(wxID_UNDO, _T("&Undo\tCtrl+Z"));
+    pEditMenu->Append(wxID_REDO, _T("&Redo\tShift+Ctrl+Z"));
+
+    wxMenu* pToolsMenu = new wxMenu;
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_DOTS, _T("&Dots\tF1"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FREEHAND, _T("&Freehand\tF2"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_LINES, _T("&Lines\tF3"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FILL, _T("Fl&ood fill\tF4"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_CLONE_BRUSH, _T("&Clone brush\tF5"));
+
+    wxMenu* pViewMenu = new wxMenu;
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_1, _T("Zoom &1:1"));
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_2, _T("Zoom &2:1"));
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_4, _T("Zoom &4:1"));
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_8, _T("Zoom &8:1"));
-    pViewMenu->Append(wxID_ZOOM_IN, _T("Zoom &in"));
-    pViewMenu->Append(wxID_ZOOM_OUT, _T("Zoom &out"));
+    pViewMenu->AppendRadioItem(MC_ID_ZOOM_16, _T("Zoom 1&6:1"));
+    pViewMenu->Append(wxID_ZOOM_IN, _T("Zoom &in\t+"));
+    pViewMenu->Append(wxID_ZOOM_OUT, _T("Zoom &out\t-"));
     pViewMenu->AppendSeparator();
     pViewMenu->Append(MC_ID_TV_MODE, _T("&TV Mode"), _T("Blur the image a little bit"), wxITEM_CHECK);
-
-    wxMenu *pEditMenu = new wxMenu;
-
-    pEditMenu->Append(wxID_UNDO, _T("&Undo"));
-    pEditMenu->Append(wxID_REDO, _T("&Redo"));
 
     wxMenu *pHelpMenu = new wxMenu;
     pHelpMenu->Append(wxID_ABOUT, _T("&About"));
@@ -248,6 +264,7 @@ void MCMainFrame::InitMenuBar()
     wxMenuBar *pMenuBar = new wxMenuBar;
     pMenuBar->Append(pFileMenu, _T("&File"));
     pMenuBar->Append(pEditMenu, _T("&Edit"));
+    pMenuBar->Append(pToolsMenu, _T("&Tools"));
     pMenuBar->Append(pViewMenu, _T("&View"));
     pMenuBar->Append(pHelpMenu, _T("&Help"));
 
@@ -292,11 +309,24 @@ void MCMainFrame::SetDocName(const MCDoc* pDoc, const wxString name)
 
 /*****************************************************************************/
 /*
- * Create a new file.
+ * The page has been changed. Update the active document and set the focus to
+ * the canvas.
  */
 void MCMainFrame::OnPageChanged(wxCommandEvent &event)
 {
-    wxGetApp().SetActiveDoc(GetActiveDoc());
+    int nSelected;
+    MCCanvas* pCanvas;
+    MCDoc* pDoc;
+
+    nSelected = m_pNotebook->GetSelection();
+    if (nSelected < 0)
+        return;
+
+    pCanvas = (MCCanvas*) m_pNotebook->GetPage(nSelected);
+    pDoc = pCanvas->GetDoc();
+
+    wxGetApp().SetActiveDoc(pDoc);
+    pCanvas->SetFocus();
 }
 
 /*****************************************************************************/
@@ -610,6 +640,21 @@ void MCMainFrame::OnAbout(wxCommandEvent &event)
     wxMessageBox(_("MultiColor 0.1.1"), _("Welcome to..."));
 }
 
+
+/*****************************************************************************/
+void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
+{
+    int id;
+    MCToolBase* pTool;
+
+    pTool = wxGetApp().GetActiveDrawingTool();
+    id = pTool ? pTool->GetToolId() : -1;
+
+    event.Enable(true);
+    event.Check(event.GetId() == id);
+}
+
+
 /*****************************************************************************/
 void MCMainFrame::OnTool(wxCommandEvent &event)
 {
@@ -768,3 +813,4 @@ void MCMainFrame::OnUpdateTVMode(wxUpdateUIEvent& event)
     event.Enable(true);
 #endif
 }
+

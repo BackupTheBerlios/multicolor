@@ -97,7 +97,10 @@ protected:
     bool CheckScrolling(int xMouse, int yMouses);
     int CheckScrollingOneDirection(
             int nScroll, int nMousePos, int nAreaMax, int nScrollMax);
-    void UpdateMousePosition(int xMouse, int yMouse);
+    void MoveCursorWithKey(int nKeyCode);
+    void StartTool(int x, int y, bool bSecondary);
+    void UpdateCursorPosition(int x, int y, bool bCanvasCoordinates);
+    void EndTool(int x, int y);
 
     void OnButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
@@ -106,6 +109,8 @@ protected:
     void OnMButtonUp(wxMouseEvent& event);
     void OnEraseBackground(wxEraseEvent& event);
     void OnMouseWheel(wxMouseEvent& event);
+    void OnKeyDown(wxKeyEvent& event);
+    void OnKeyUp(wxKeyEvent& event);
     void OnTimer(wxTimerEvent& event);
 
     void FixCoordinates(int* px1, int* py1,

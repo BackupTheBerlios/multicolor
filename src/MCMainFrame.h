@@ -75,6 +75,8 @@ protected:
 
     void OnAbout(wxCommandEvent& event);
     void OnSize(wxSizeEvent& event);
+
+    void OnUpdateTool(wxUpdateUIEvent& event);
     void OnTool(wxCommandEvent& event);
 
     void OnZoom(wxCommandEvent& event);
