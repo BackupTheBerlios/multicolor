@@ -95,11 +95,15 @@ protected:
     void DrawMousePos(wxDC* pDC);
     void UpdateVirtualSize();
     bool CheckScrolling(int xMouse, int yMouses);
+    int CheckScrollingOneDirection(
+            int nScroll, int nMousePos, int nAreaMax, int nScrollMax);
     void UpdateMousePosition(int xMouse, int yMouse);
 
     void OnButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
     void OnButtonUp(wxMouseEvent& event);
+    void OnMButtonDown(wxMouseEvent& event);
+    void OnMButtonUp(wxMouseEvent& event);
     void OnEraseBackground(wxEraseEvent& event);
     void OnMouseWheel(wxMouseEvent& event);
     void OnTimer(wxTimerEvent& event);
@@ -121,6 +125,21 @@ protected:
 
     // When this timer is still running, auto scroll is disabled
     wxTimer     m_timerScrolling;
+
+    //// Drag Scrolling
+    // true if we are dragging the image for scrolling
+    bool        m_bDragScrollActive;
+
+    // point (canvas coordinates) where the dragging started
+    wxPoint     m_pointDragScrollStart;
+
+    // xScroll where the drag scroll started
+    int         m_xDragScrollStart;
+
+    // yScroll where the drag scroll started
+    int         m_yDragScrollStart;
+    //
+    ////
 };
 
 

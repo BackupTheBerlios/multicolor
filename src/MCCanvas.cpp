@@ -56,11 +56,17 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     m_bEmulateTV(true),
     m_nScale(1),
     m_pointLastMousePos(-1, -1),
-    m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID)
+    m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID),
+    m_bDragScrollActive(false),
+    m_pointDragScrollStart(0, 0),
+    m_xDragScrollStart(0),
+    m_yDragScrollStart(0)
 {
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
+    Connect(wxEVT_MIDDLE_DOWN, wxMouseEventHandler(MCCanvas::OnMButtonDown));
     Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_LEFT_UP, wxMouseEventHandler(MCCanvas::OnButtonUp));
+    Connect(wxEVT_MIDDLE_UP, wxMouseEventHandler(MCCanvas::OnMButtonUp));
     Connect(wxEVT_RIGHT_UP, wxMouseEventHandler(MCCanvas::OnButtonUp));
     Connect(wxEVT_MOTION, wxMouseEventHandler(MCCanvas::OnMouseMove));
 
@@ -493,7 +499,7 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
 void MCCanvas::UpdateVirtualSize()
 {
     SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
-    SetScrollRate(16 * m_nScale, 16 * m_nScale);
+    SetScrollRate(2 * m_nScale, m_nScale);
 }
 
 
@@ -516,54 +522,29 @@ void MCCanvas::UpdateVirtualSize()
 bool MCCanvas::CheckScrolling(int xMouse, int yMouse)
 {
     int xScroll, yScroll;
+    int xScrollOld, yScrollOld;
     int xFactor, yFactor;
     int wClient, hClient;
     int wVirtual, hVirtual;
-    bool bScroll = false;
 
     GetViewStart(&xScroll, &yScroll);
+    xScrollOld = xScroll;
+    yScrollOld = yScroll;
+
     GetVirtualSize(&wVirtual, &hVirtual);
     GetClientSize(&wClient, &hClient);
     GetScrollPixelsPerUnit(&xFactor, &yFactor);
     if (xFactor == 0) xFactor = 1;
     if (yFactor == 0) yFactor = 1;
 
-    /*
-     * Scroll left if the mouse is left of the threshold AND
-     * (the mouse in inside the window OR a tool is active) AND
-     * there's still space for scrolling
-     */
-    /* same for all four directions */
-    if (xMouse < MCCANVAS_SCROLL_THRESHOLD &&
-        (xMouse > 0 || m_pActiveTool) && xScroll > 0)
-    {
-        --xScroll;
-        bScroll = true;
-    }
-    else if (xMouse >= wClient - MCCANVAS_SCROLL_THRESHOLD &&
-             (xMouse < wClient || m_pActiveTool) &&
-             xScroll <= (wVirtual - wClient) / xFactor)
-    {
-        ++xScroll;
-        bScroll = true;
-    }
+    xScroll = CheckScrollingOneDirection(
+            xScrollOld, xMouse, wClient, (wVirtual - wClient) / xFactor);
 
-    if (yMouse < MCCANVAS_SCROLL_THRESHOLD &&
-        (yMouse > 0 || m_pActiveTool) && yScroll > 0)
-    {
-        --yScroll;
-        bScroll = true;
-    }
-    else if (yMouse >= hClient - MCCANVAS_SCROLL_THRESHOLD &&
-             (yMouse < hClient || m_pActiveTool) &&
-             yScroll <= (hVirtual - hClient) / yFactor)
-    {
-        ++yScroll;
-        bScroll = true;
-    }
+    yScroll = CheckScrollingOneDirection(
+            yScrollOld, yMouse, hClient, (hVirtual - hClient) / yFactor);
 
     // Are all conditions for scrolling fulfilled?
-    if (bScroll)
+    if (xScroll != xScrollOld || yScroll != yScrollOld)
     {
         // If the timer is running do not scroll now but when it'll expire
         if (!m_timerScrolling.IsRunning())
@@ -571,6 +552,7 @@ bool MCCanvas::CheckScrolling(int xMouse, int yMouse)
             // Scroll now and restart the timer
             Scroll(xScroll, yScroll);
             m_timerScrolling.Start(MCCANVAS_SCROLL_INTERVAL, true);
+            return true;
         }
     }
     else
@@ -578,10 +560,41 @@ bool MCCanvas::CheckScrolling(int xMouse, int yMouse)
         // No need to scroll anymore, just stop the timer
         m_timerScrolling.Stop();
     }
-
-    return bScroll;
+    return false;
 }
 
+
+/*****************************************************************************/
+/*
+ * This function is used by CheckScrolling for calculating the scrolling
+ * in horizontal or in vertical direction.
+ *
+ * It checks following:
+ * Scroll left if the mouse is left of the threshold AND
+ * (the mouse in inside the window OR a tool is active) AND
+ * there's still space for scrolling
+ *
+ * return the new scroll position
+ */
+int MCCanvas::CheckScrollingOneDirection(
+        int nScroll, int nMousePos, int nAreaMax, int nScrollMax)
+{
+    if (nMousePos < MCCANVAS_SCROLL_THRESHOLD &&
+        (nMousePos >= 0 || m_pActiveTool))
+    {
+        nScroll -= 8;
+        if (nScroll < 0)
+            nScroll = 0;
+    }
+    else if (nMousePos >= nAreaMax - MCCANVAS_SCROLL_THRESHOLD &&
+             (nMousePos < nAreaMax || m_pActiveTool))
+    {
+        nScroll += 8;
+        if (nScroll > nScrollMax)
+            nScroll = nScrollMax;
+    }
+    return nScroll;
+}
 
 /*****************************************************************************/
 /*
@@ -644,7 +657,24 @@ void MCCanvas::OnButtonDown(wxMouseEvent& event)
 /*****************************************************************************/
 void MCCanvas::OnMouseMove(wxMouseEvent& event)
 {
+    int xFactor, yFactor;
+    int xScroll, yScroll;
+
     m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
+
+    if (m_bDragScrollActive)
+    {
+        GetScrollPixelsPerUnit(&xFactor, &yFactor);
+        if (xFactor == 0) xFactor = 1;
+        if (yFactor == 0) yFactor = 1;
+
+        xScroll = m_xDragScrollStart -
+                  (event.GetX() - m_pointDragScrollStart.x) / xFactor;
+        yScroll = m_yDragScrollStart -
+                  (event.GetY() - m_pointDragScrollStart.y) / yFactor;
+
+        Scroll(xScroll, yScroll);
+    }
 
     UpdateMousePosition(event.GetX(), event.GetY());
 }
@@ -665,6 +695,28 @@ void MCCanvas::OnButtonUp(wxMouseEvent& event)
             m_pActiveTool = NULL;
         }
     }
+}
+
+
+/*****************************************************************************/
+/*
+ *
+ */
+void MCCanvas::OnMButtonDown(wxMouseEvent& event)
+{
+    m_bDragScrollActive = true;
+    m_pointDragScrollStart = event.GetPosition();
+    GetViewStart(&m_xDragScrollStart, &m_yDragScrollStart);
+}
+
+
+/*****************************************************************************/
+/*
+ *
+ */
+void MCCanvas::OnMButtonUp(wxMouseEvent& event)
+{
+    m_bDragScrollActive = false;
 }
 
 
@@ -705,6 +757,7 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
         CenterBitmapPoint(x, y);
     }
 }
+
 
 /*****************************************************************************/
 /*
@@ -772,3 +825,4 @@ void MCCanvas::FixCoordinates(int* px1, int* py1, int* px2, int* py2)
         *py2 = tmp; // swap
     }
 }
+
