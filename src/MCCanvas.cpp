@@ -856,7 +856,8 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
  */
 void MCCanvas::OnKeyDown(wxKeyEvent& event)
 {
-    bool bKeyUsed = false;
+    // We also use key events in MCMainFrame, that's why we propagate them
+    bool bPropagateEvent = true;
 
     switch (event.GetKeyCode())
     {
@@ -865,22 +866,20 @@ void MCCanvas::OnKeyDown(wxKeyEvent& event)
     case WXK_LEFT:
     case WXK_RIGHT:
         MoveCursorWithKey(event.GetKeyCode());
-        bKeyUsed = true;
+        // We eat this event so it doesn't scroll automatically
+        bPropagateEvent = false;
         break;
 
     case 'C':
         StartTool(m_pointLastMousePos.x, m_pointLastMousePos.y, false);
-        bKeyUsed = true;
         break;
 
     case 'V':
         StartTool(m_pointLastMousePos.x, m_pointLastMousePos.y, true);
-        bKeyUsed = true;
         break;
     }
 
-    // We also use keydown events in MCMainFrame, that's why we propagate them
-    if (!bKeyUsed)
+    if (bPropagateEvent)
     {
         event.ResumePropagation(wxEVENT_PROPAGATE_MAX);
         event.Skip();
@@ -894,19 +893,30 @@ void MCCanvas::OnKeyDown(wxKeyEvent& event)
  */
 void MCCanvas::OnKeyUp(wxKeyEvent& event)
 {
-    bool bKeyUsed = false;
+    // We also use key events in MCMainFrame, that's why we propagate them
+    bool bPropagateEvent = true;
 
     switch (event.GetKeyCode())
     {
+    case WXK_UP:
+    case WXK_DOWN:
+    case WXK_LEFT:
+    case WXK_RIGHT:
+        // We eat this event so it doesn't scroll automatically
+        bPropagateEvent = false;
+        break;
+
     case 'C':
     case 'V':
         EndTool(m_pointLastMousePos.x, m_pointLastMousePos.y);
-        bKeyUsed = true;
         break;
     }
 
-    if (!bKeyUsed)
+    if (bPropagateEvent)
+    {
+        event.ResumePropagation(wxEVENT_PROPAGATE_MAX);
         event.Skip();
+    }
 }
 
 
