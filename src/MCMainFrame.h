@@ -87,6 +87,8 @@ protected:
     void OnUpdateZoom(wxUpdateUIEvent& event);
     void OnUpdateTVMode(wxUpdateUIEvent& event);
 
+    void OnKeyDown(wxKeyEvent& event);
+
     MCToolPanel* m_pToolPanel;
     wxNotebook*  m_pNotebook;
 };

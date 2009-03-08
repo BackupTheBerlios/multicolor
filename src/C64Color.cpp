@@ -51,8 +51,6 @@ C64Color::C64Color(int col)
 /*****************************************************************************/
 void C64Color::SetColor(int col)
 {
-//    ASSERT(col < LAST_COLOR);
-
     m_color = col;
     m_RGB   = m_aRGB[m_color];
 }

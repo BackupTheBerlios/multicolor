@@ -39,7 +39,7 @@
 /*
  * On Windows the png icons with alpha channel look very strange in the toolbar
  * when the tool is disabled (They are not grayed out but appear black). This
- * happens at least with wxMSW 2.8.9. That's why we leave them always active.
+ * happens with wxMSW 2.8.9. That's why we leave them always active.
  */
 #ifdef __WXMSW__
 #define MC_TOOLS_ALWAYS_ENABLED
@@ -132,6 +132,8 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(MC_ID_TOOL_LINES, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_FILL, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+
+    Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(MCMainFrame::OnKeyDown));
 }
 
 
@@ -814,3 +816,28 @@ void MCMainFrame::OnUpdateTVMode(wxUpdateUIEvent& event)
 #endif
 }
 
+
+/*****************************************************************************/
+void MCMainFrame::OnKeyDown(wxKeyEvent& event)
+{
+    int key = event.GetKeyCode();
+    int nColor;
+
+    printf("%d - %d\n", event.GetRawKeyCode(), event.GetKeyCode());
+
+    if (key >= '1' && key <= '8')
+    {
+        if (event.GetModifiers() & wxMOD_SHIFT)
+        {
+            // colors 8..15
+            nColor = key - '1' + 8;
+        }
+        else
+        {
+            // colors 0..7
+            nColor = key - '1';
+        }
+        m_pToolPanel->GetPalettePanel()->SelectColor(
+                nColor, (event.GetModifiers() & wxMOD_CONTROL) != 0);
+    }
+}

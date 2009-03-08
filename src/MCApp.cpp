@@ -179,4 +179,3 @@ void MCApp::SetDocName(const MCDoc* pDoc, const wxString name)
 {
     m_pMainFrame->SetDocName(pDoc, name);
 }
-

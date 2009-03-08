@@ -26,6 +26,7 @@
 #include <wx/app.h>
 #include <wx/statbmp.h>
 #include <wx/sizer.h>
+#include <wx/msgdlg.h>
 
 #include "MCApp.h"
 #include "C64Color.h"
@@ -35,7 +36,7 @@
 /*
  * Create a palette panel.
  * This is constructed like this:
- * 
+ *
  * PalettePanel::wxPanel:
  * -----------------------------------------------------------
  * |pBoxSizerOuter                                           |
@@ -57,7 +58,7 @@
  * |                                                         |
  * -----------------------------------------------------------
  *
- */ 
+ */
 PalettePanel::PalettePanel(wxWindow* parent)
     : wxPanel(parent)
     , m_nColorA(1)
@@ -92,7 +93,7 @@ PalettePanel::PalettePanel(wxWindow* parent)
     // Add the two panels for the current color
     pBoxSizerSelections = new wxBoxSizer(wxHORIZONTAL);
 
-    m_pPanelSelA = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(20,16), 
+    m_pPanelSelA = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(20,16),
             wxSIMPLE_BORDER | wxTAB_TRAVERSAL);
     c64Color.SetColor(m_nColorA);
     m_pPanelSelA->SetBackgroundColour(c64Color.GetWxColor());
@@ -105,11 +106,11 @@ PalettePanel::PalettePanel(wxWindow* parent)
     m_pPanelSelB = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(20,16),
             wxSIMPLE_BORDER | wxTAB_TRAVERSAL);
     c64Color.SetColor(m_nColorB);
-    
+
     m_pPanelSelB->SetBackgroundColour(c64Color.GetWxColor());
     pBoxSizerSelections->Add(m_pPanelSelB);
 
-    // Add the sizer for the current colors into the outer sizer 
+    // Add the sizer for the current colors into the outer sizer
     pBoxSizerOuter->Add(pBoxSizerSelections, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     SetSizer(pBoxSizerOuter);
 
@@ -121,36 +122,54 @@ PalettePanel::PalettePanel(wxWindow* parent)
 void PalettePanel::OnColorLeftDown(wxMouseEvent& event)
 {
     int i;
-    C64Color c64Color;
 
     for (i = 0; i < 16; i++)
     {
         if (m_apPanelColor[i]->GetId() == event.GetId())
         {
-            m_nColorA = i;
-            c64Color.SetColor(m_nColorA);
-            m_pPanelSelA->SetBackgroundColour(c64Color.GetWxColor());
-            m_pPanelSelA->Refresh();
+            SelectColor(i, false);
             break;
         }
     }
 }
 
+/*****************************************************************************/
 void PalettePanel::OnColorRightDown(wxMouseEvent& event)
 {
     int i;
-    C64Color c64Color;
 
     for (i = 0; i < 16; i++)
     {
         if (m_apPanelColor[i]->GetId() == event.GetId())
         {
-            m_nColorB = i;
-            c64Color.SetColor(m_nColorB);
-            m_pPanelSelB->SetBackgroundColour(c64Color.GetWxColor());
-            m_pPanelSelB->Refresh();
+            SelectColor(i, true);
             break;
         }
     }
 }
 
+
+/*****************************************************************************/
+/*
+ * Select a color.
+ */
+void PalettePanel::SelectColor(int nColor, bool bSecondary)
+{
+    C64Color c64Color;
+    wxPanel* pPanel;
+
+    if (bSecondary)
+    {
+        m_nColorB = nColor;
+        pPanel = m_pPanelSelB;
+    }
+    else
+    {
+        m_nColorA = nColor;
+        pPanel = m_pPanelSelA;
+    }
+
+    c64Color.SetColor(nColor);
+    pPanel->SetBackgroundColour(c64Color.GetWxColor());
+    pPanel->Refresh();
+}

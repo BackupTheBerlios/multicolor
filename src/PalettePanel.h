@@ -35,6 +35,8 @@ public:
     int GetColorA();
     int GetColorB();
 
+    void SelectColor(int colorCode, bool bSecondary);
+
 private:
     wxPanel* m_pPanelSelA;
     wxPanel* m_pPanelSelB;
