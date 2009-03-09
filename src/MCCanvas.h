@@ -26,10 +26,12 @@
 #ifndef MCCANVAS_H
 #define MCCANVAS_H
 
+#include <list>
 #include <wx/scrolwin.h>
 #include <wx/image.h>
 #include <wx/gdicmn.h>
 #include <wx/timer.h>
+#include <wx/cursor.h>
 
 #include "MCBitmap.h"
 #include "DocRenderer.h"
@@ -52,7 +54,7 @@ class MCDoc;
 class MCCanvas: public wxScrolledWindow, public DocRenderer
 {
 public:
-    MCCanvas(wxWindow* pParent, int nStyle);
+    MCCanvas(wxWindow* pParent, int nStyle, bool bPreview);
     virtual ~MCCanvas(void);
 
     virtual void OnDocChanged(int x1, int y1, int x2, int y2);
@@ -71,7 +73,10 @@ public:
 
     void CenterBitmapPoint(int x, int y);
 
+    static void UpdateAllCursorTypes();
+
 protected:
+    static std::list<MCCanvas*> m_listCanvasInstances;
 
     // Pointer to Document to be rendered or NULL
     MCDoc* m_pDoc;
@@ -101,6 +106,7 @@ protected:
     void StartTool(int x, int y, bool bSecondary);
     void UpdateCursorPosition(int x, int y, bool bCanvasCoordinates);
     void EndTool(int x, int y);
+    void UpdateCursorType();
 
     void OnButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);
@@ -111,6 +117,8 @@ protected:
     void OnMouseWheel(wxMouseEvent& event);
     void OnKeyDown(wxKeyEvent& event);
     void OnKeyUp(wxKeyEvent& event);
+    void OnEnter(wxMouseEvent& event);
+    void OnLeave(wxMouseEvent& event);
     void OnTimer(wxTimerEvent& event);
 
     void FixCoordinates(int* px1, int* py1,
@@ -118,6 +126,9 @@ protected:
 
     // Points to the currently active tool or NULL
     MCToolBase* m_pActiveTool;
+
+    // true if this is the small preview window
+    bool        m_bPreviewWindow;
 
     bool        m_bEmulateTV;
     unsigned    m_nScale;
@@ -145,6 +156,16 @@ protected:
     int         m_yDragScrollStart;
     //
     ////
+
+    // This is true if the Color Picker is activated temporarily (using Shift)
+    bool        m_bColorPickerActive;
+
+    wxCursor    m_cursorCloneBrush;
+    wxCursor    m_cursorDots;
+    wxCursor    m_cursorFreehand;
+    wxCursor    m_cursorFloodFill;
+    wxCursor    m_cursorLines;
+    wxCursor    m_cursorColorPicker;
 };
 
 

@@ -43,6 +43,7 @@
 #include "MCToolLines.h"
 #include "MCToolFill.h"
 #include "MCToolCloneBrush.h"
+#include "MCToolColorPicker.h"
 
 IMPLEMENT_APP(MCApp);
 
@@ -92,6 +93,7 @@ void MCApp::AllocateTools()
     m_listTools.push_back(new MCToolLines);
     m_listTools.push_back(new MCToolFill);
     m_listTools.push_back(new MCToolCloneBrush);
+    m_listTools.push_back(new MCToolColorPicker);
 }
 
 /*****************************************************************************/
@@ -111,16 +113,24 @@ void MCApp::FreeTools()
 
 /*****************************************************************************/
 /*
- * Return a pointer to the currently active tool. NULL if there is no tool
- * chosen.
+ * Return a pointer to the given or the currently active tool.
+ * If the argument is 0, the currently active tool is searched. Otherwise
+ * the given ID is used.
+ *
+ * Returns NULL if there is no tool chosen.
  */
-MCToolBase* MCApp::GetActiveDrawingTool()
+MCToolBase* MCApp::GetDrawingTool(int idTool /* = 0 */)
 {
     std::list<MCToolBase*>::iterator i;
 
+    if (idTool == 0)
+    {
+        idTool = m_idDrawingTool;
+    }
+
     for (i = m_listTools.begin(); i != m_listTools.end(); ++i)
     {
-        if ((*i)->GetToolId() == m_idDrawingTool)
+        if ((*i)->GetToolId() == idTool)
             return *i;
     }
 
@@ -130,10 +140,10 @@ MCToolBase* MCApp::GetActiveDrawingTool()
 
 /*****************************************************************************/
 /*
- * Load a bitmap from our ressources. If our executable is located in $(X),
+ * Load an image from our ressources. If our executable is located in $(X),
  * search in $(X)/res first and then in $(X)/../share/multicolor.
  */
-wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
+wxImage MCApp::GetImage(const wxString& dir, const wxString& name)
 {
     wxStandardPaths paths;
 
@@ -155,7 +165,18 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
         fileName.SetFullName(name);
     }
 
-    return wxBitmap(wxImage(fileName.GetFullPath(), wxBITMAP_TYPE_PNG));
+    return wxImage(fileName.GetFullPath(), wxBITMAP_TYPE_PNG);
+}
+
+
+/*****************************************************************************/
+/*
+ * Load a bitmap from our ressources. If our executable is located in $(X),
+ * search in $(X)/res first and then in $(X)/../share/multicolor.
+ */
+wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
+{
+    return wxBitmap(GetImage(dir, name));
 }
 
 

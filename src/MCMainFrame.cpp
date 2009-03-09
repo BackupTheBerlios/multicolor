@@ -83,9 +83,9 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
             wxCommandEventHandler(MCMainFrame::OnFileClose));
 
     Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(MCMainFrame::OnClose));
-	Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnQuit));
-	Connect(wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnAbout));
-	Connect(wxEVT_SIZE, wxSizeEventHandler(MCMainFrame::OnSize));
+    Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnQuit));
+    Connect(wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnAbout));
+    Connect(wxEVT_SIZE, wxSizeEventHandler(MCMainFrame::OnSize));
 
     Connect(wxID_UNDO, wxEVT_UPDATE_UI,
             wxUpdateUIEventHandler(MCMainFrame::OnUpdateUndo));
@@ -121,12 +121,14 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(wxID_UNDO, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateUndo));
     Connect(wxID_REDO, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateRedo));
 
+    Connect(MC_ID_TOOL_COLOR_PICKER, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
 	Connect(MC_ID_TOOL_DOTS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_FREEHAND, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
 	Connect(MC_ID_TOOL_LINES, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_FILL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
 
+    Connect(MC_ID_TOOL_COLOR_PICKER, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_DOTS, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_FREEHAND, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_LINES, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
@@ -176,6 +178,10 @@ void MCMainFrame::InitToolBar()
 
     pToolBar->AddSeparator();
 
+    bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("colorpicker.png"));
+    pToolBar->AddRadioTool(MC_ID_TOOL_COLOR_PICKER, _T("Pick colors"),
+            bitmap, bitmap, _T("Pick colors"));
+
     bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("dots.png"));
     pToolBar->AddRadioTool(MC_ID_TOOL_DOTS, _T("Draw dots"),
             bitmap, bitmap, _T("Draw single dots"));
@@ -198,7 +204,7 @@ void MCMainFrame::InitToolBar()
 
     // to make sure it is consistent:
     pToolBar->ToggleTool(MC_ID_TOOL_DOTS, true);
-    wxGetApp().SetActiveDrawingTool(MC_ID_TOOL_DOTS);
+    wxGetApp().SetDrawingTool(MC_ID_TOOL_DOTS);
 
     pToolBar->Realize();
 }
@@ -243,11 +249,12 @@ void MCMainFrame::InitMenuBar()
     pEditMenu->Append(wxID_REDO, _T("&Redo\tShift+Ctrl+Z"));
 
     wxMenu* pToolsMenu = new wxMenu;
-    pToolsMenu->AppendRadioItem(MC_ID_TOOL_DOTS, _T("&Dots\tF1"));
-    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FREEHAND, _T("&Freehand\tF2"));
-    pToolsMenu->AppendRadioItem(MC_ID_TOOL_LINES, _T("&Lines\tF3"));
-    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FILL, _T("Fl&ood fill\tF4"));
-    pToolsMenu->AppendRadioItem(MC_ID_TOOL_CLONE_BRUSH, _T("&Clone brush\tF5"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_COLOR_PICKER, _T("Color &picker\tF1"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_DOTS, _T("&Dots\tF2"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FREEHAND, _T("&Freehand\tF3"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_LINES, _T("&Lines\tF4"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_FILL, _T("Fl&ood fill\tF5"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_CLONE_BRUSH, _T("&Clone brush\tF6"));
 
     wxMenu* pViewMenu = new wxMenu;
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_1, _T("Zoom &1:1"));
@@ -338,7 +345,7 @@ void MCMainFrame::OnPageChanged(wxCommandEvent &event)
 void MCMainFrame::OnNew(wxCommandEvent &event)
 {
     MCDoc* pDoc = new MCDoc();
-    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
+    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
     pCanvas->SetDoc(pDoc);
     m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
     pCanvas->Show();
@@ -363,7 +370,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
     {
         // Create a new document and load the file into it
         MCDoc* pDoc = new MCDoc();
-        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
         pCanvas->SetDoc(pDoc);
         m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
         pDoc->Load(pFileDialog->GetPath());
@@ -504,7 +511,7 @@ void MCMainFrame::OnClose(wxCloseEvent &event)
 {
     bool bWasCanceled = false;
     wxCommandEvent evtDummy;
-    int nPages;
+    unsigned nPages;
 
     while (!bWasCanceled &&
            (nPages = m_pNotebook->GetPageCount()) != 0)
@@ -628,11 +635,6 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
     m_pToolPanel->SetSize(0, 0, wToolPanel, h);
 
     m_pNotebook->SetSize(wToolPanel, 0, w - wToolPanel, h);
-
-    // FIXME: On wxX11, we need the MDI frame to process this
-    // event, but on other platforms this should not
-    // be done.
-    // event.Skip();
 }
 
 
@@ -649,7 +651,7 @@ void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
     int id;
     MCToolBase* pTool;
 
-    pTool = wxGetApp().GetActiveDrawingTool();
+    pTool = wxGetApp().GetDrawingTool();
     id = pTool ? pTool->GetToolId() : -1;
 
     event.Enable(true);
@@ -660,7 +662,10 @@ void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnTool(wxCommandEvent &event)
 {
-    wxGetApp().SetActiveDrawingTool(event.GetId());
+    MCDoc* pDoc;
+
+    wxGetApp().SetDrawingTool(event.GetId());
+    MCCanvas::UpdateAllCursorTypes();
 }
 
 
@@ -822,8 +827,6 @@ void MCMainFrame::OnKeyDown(wxKeyEvent& event)
 {
     int key = event.GetKeyCode();
     int nColor;
-
-    printf("%d - %d\n", event.GetRawKeyCode(), event.GetKeyCode());
 
     if (key >= '1' && key <= '8')
     {

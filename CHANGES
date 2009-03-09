@@ -17,7 +17,10 @@
     * F1 to F5 for tools
     * Cursor keys move the drawing cursor
     * 'C' and 'V' act like left and right mouse button
-  
+  * Color picker added
+    * Can be activated using Shift key, menu or toolbar
+  * Special mouse cursors added for all tools
+
 0.1.1 - 25.03.2009
   * Current Cell view added
   * Files get an extension if the user didn't supply one

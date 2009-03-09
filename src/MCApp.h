@@ -27,7 +27,6 @@
 #define MCAPP_H
 
 #include <wx/app.h>
-#include <wx/docmdi.h>
 #include <list>
 
 #include "MCMainFrame.h"
@@ -44,10 +43,11 @@ public:
     virtual ~MCApp();
     virtual bool OnInit();
 
+    static wxImage GetImage(const wxString& dir, const wxString& name);
     static wxBitmap GetBitmap(const wxString& dir, const wxString& name);
 
-    void SetActiveDrawingTool(int id);
-    MCToolBase* GetActiveDrawingTool();
+    void SetDrawingTool(int id);
+    MCToolBase* GetDrawingTool(int idTool = 0);
 
     void SetActiveDoc(MCDoc* pDoc);
     void SetMousePos(int x, int y);
@@ -70,7 +70,7 @@ private:
 DECLARE_APP(MCApp)
 
 /*****************************************************************************/
-inline void MCApp::SetActiveDrawingTool(int id)
+inline void MCApp::SetDrawingTool(int id)
 {
     m_idDrawingTool = id;
 }
@@ -106,7 +106,8 @@ enum MultiColorId
     MC_ID_TOOL_FREEHAND,
     MC_ID_TOOL_LINES,
     MC_ID_TOOL_FILL,
-    MC_ID_TOOL_CLONE_BRUSH
+    MC_ID_TOOL_CLONE_BRUSH,
+    MC_ID_TOOL_COLOR_PICKER
 };
 
 #endif // MCAPP_H

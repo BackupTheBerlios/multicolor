@@ -89,8 +89,8 @@ protected:
 
     void OnKeyDown(wxKeyEvent& event);
 
-    MCToolPanel* m_pToolPanel;
-    wxNotebook*  m_pNotebook;
+    MCToolPanel*    m_pToolPanel;
+    wxNotebook*     m_pNotebook;
 };
 
 /*****************************************************************************/

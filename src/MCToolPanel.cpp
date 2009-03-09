@@ -41,7 +41,7 @@ MCToolPanel::MCToolPanel(wxWindow* parent):
 
     pBoxSizerOuter = new wxBoxSizer(wxVERTICAL);
 
-    m_pCanvas = new MCCanvas(this, wxBORDER_SUNKEN);
+    m_pCanvas = new MCCanvas(this, wxBORDER_SUNKEN, true);
     pBoxSizerOuter->Add(m_pCanvas);
 
     pBoxSizerOuter->AddSpacer(4);

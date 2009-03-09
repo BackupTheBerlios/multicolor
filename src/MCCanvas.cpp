@@ -23,7 +23,7 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include <wx/docview.h>
+#include <wx/event.h>
 #include <wx/dc.h>
 #include <wx/image.h>
 #include <wx/msgdlg.h>
@@ -48,11 +48,15 @@
 /* define this to get some extra debug effects */
 //#define MC_DEBUG_REDRAW
 
+std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
+
+
 /*****************************************************************************/
-MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
+MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition, wxDefaultSize, nStyle),
     m_pDoc(NULL),
     m_pActiveTool(NULL),
+    m_bPreviewWindow(bPreview),
     m_bEmulateTV(true),
     m_nScale(1),
     m_pointLastMousePos(-1, -1),
@@ -60,8 +64,17 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     m_bDragScrollActive(false),
     m_pointDragScrollStart(0, 0),
     m_xDragScrollStart(0),
-    m_yDragScrollStart(0)
+    m_yDragScrollStart(0),
+    m_bColorPickerActive(false),
+    m_cursorCloneBrush(MCApp::GetImage(wxT("cursors"), wxT("clonebrush.png"))),
+    m_cursorDots(MCApp::GetImage(wxT("cursors"), wxT("dots.png"))),
+    m_cursorFloodFill(MCApp::GetImage(wxT("cursors"), wxT("floodfill.png"))),
+    m_cursorFreehand(MCApp::GetImage(wxT("cursors"), wxT("freehand.png"))),
+    m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png"))),
+    m_cursorColorPicker(MCApp::GetImage(wxT("cursors"), wxT("colorpicker.png")))
 {
+    m_listCanvasInstances.push_back(this);
+
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_MIDDLE_DOWN, wxMouseEventHandler(MCCanvas::OnMButtonDown));
     Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
@@ -72,7 +85,10 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
 
     Connect(wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(MCCanvas::OnEraseBackground));
 
-    Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
+    if (!m_bPreviewWindow)
+    {
+        Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
+    }
 
     Connect(wxEVT_TIMER, wxTimerEventHandler(MCCanvas::OnTimer));
 
@@ -83,11 +99,15 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     wxSize size(GetWindowBorderSize());
     size.IncBy(2 * MC_X * m_nScale, MC_Y * m_nScale);
     SetMinSize(size);
+
+    UpdateCursorType();
 }
 
 /*****************************************************************************/
 MCCanvas::~MCCanvas()
 {
+    m_listCanvasInstances.remove(this);
+
     if (m_pDoc)
         m_pDoc->RemoveRenderer(this);
 }
@@ -117,6 +137,7 @@ void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 
     RefreshRect(rect, false);
     Update();
+    UpdateCursorType();
 }
 
 /*****************************************************************************/
@@ -445,6 +466,23 @@ void MCCanvas::CenterBitmapPoint(int x, int y)
     Scroll(xScroll, yScroll);
 }
 
+
+/******************************************************************************/
+/*
+ * Update the cursors of all Canvases.
+ */
+void MCCanvas::UpdateAllCursorTypes()
+{
+    std::list<MCCanvas*>::iterator i;
+
+    for (i = m_listCanvasInstances.begin();
+         i != m_listCanvasInstances.end(); ++i)
+    {
+        (*i)->UpdateCursorType();
+    }
+}
+
+
 /******************************************************************************/
 /*
  * Invalidate the rectangle around the current mouse position.
@@ -679,7 +717,10 @@ void MCCanvas::StartTool(int x, int y, bool bSecondary)
     if (m_pActiveTool)
         return;
 
-    m_pActiveTool = wxGetApp().GetActiveDrawingTool();
+    if (m_bColorPickerActive)
+        m_pActiveTool = wxGetApp().GetDrawingTool(MC_ID_TOOL_COLOR_PICKER);
+    else
+        m_pActiveTool = wxGetApp().GetDrawingTool();
 
     if (m_pActiveTool)
     {
@@ -738,6 +779,54 @@ void MCCanvas::EndTool(int x, int y)
     }
 }
 
+
+/*****************************************************************************/
+/*
+ * Set the right cursor type (bitmap) for the active tool.
+ */
+void MCCanvas::UpdateCursorType()
+{
+    MCToolBase* pSelectedTool;
+    int idTool;
+
+    if (m_bColorPickerActive)
+        pSelectedTool = wxGetApp().GetDrawingTool(MC_ID_TOOL_COLOR_PICKER);
+    else
+        pSelectedTool = wxGetApp().GetDrawingTool();
+
+    if (pSelectedTool)
+            idTool = pSelectedTool->GetToolId();
+
+    switch (idTool)
+    {
+    case MC_ID_TOOL_CLONE_BRUSH:
+        SetCursor(m_cursorCloneBrush);
+        break;
+
+    case MC_ID_TOOL_DOTS:
+        SetCursor(m_cursorDots);
+        break;
+
+    case MC_ID_TOOL_FILL:
+        SetCursor(m_cursorFloodFill);
+        break;
+
+    case MC_ID_TOOL_FREEHAND:
+        SetCursor(m_cursorFreehand);
+        break;
+
+    case MC_ID_TOOL_LINES:
+        SetCursor(m_cursorLines);
+        break;
+
+    case MC_ID_TOOL_COLOR_PICKER:
+        SetCursor(m_cursorColorPicker);
+        break;
+
+    default:
+        SetCursor(wxNullCursor);
+    }
+}
 
 /*****************************************************************************/
 void MCCanvas::OnButtonDown(wxMouseEvent& event)
@@ -828,7 +917,7 @@ void MCCanvas::OnEraseBackground(wxEraseEvent& event)
  */
 void MCCanvas::OnMouseWheel(wxMouseEvent& event)
 {
-    int nScale = m_nScale;
+    unsigned nScale = m_nScale;
     int x, y;
 
     ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
@@ -877,6 +966,12 @@ void MCCanvas::OnKeyDown(wxKeyEvent& event)
     case 'V':
         StartTool(m_pointLastMousePos.x, m_pointLastMousePos.y, true);
         break;
+
+    case WXK_SHIFT:
+        m_bColorPickerActive = true;
+        UpdateCursorType();
+        bPropagateEvent = true;
+        break;
     }
 
     if (bPropagateEvent)
@@ -909,6 +1004,12 @@ void MCCanvas::OnKeyUp(wxKeyEvent& event)
     case 'C':
     case 'V':
         EndTool(m_pointLastMousePos.x, m_pointLastMousePos.y);
+        break;
+
+    case WXK_SHIFT:
+        m_bColorPickerActive = false;
+        UpdateCursorType();
+        bPropagateEvent = true;
         break;
     }
 
