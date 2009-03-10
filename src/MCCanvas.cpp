@@ -67,11 +67,11 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     m_yDragScrollStart(0),
     m_bColorPickerActive(false),
     m_cursorCloneBrush(MCApp::GetImage(wxT("cursors"), wxT("clonebrush.png"))),
+    m_cursorColorPicker(MCApp::GetImage(wxT("cursors"), wxT("colorpicker.png"))),
     m_cursorDots(MCApp::GetImage(wxT("cursors"), wxT("dots.png"))),
     m_cursorFloodFill(MCApp::GetImage(wxT("cursors"), wxT("floodfill.png"))),
     m_cursorFreehand(MCApp::GetImage(wxT("cursors"), wxT("freehand.png"))),
-    m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png"))),
-    m_cursorColorPicker(MCApp::GetImage(wxT("cursors"), wxT("colorpicker.png")))
+    m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png")))
 {
     m_listCanvasInstances.push_back(this);
 

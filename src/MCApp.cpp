@@ -32,6 +32,7 @@
 #include <wx/stdpaths.h>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
+#include <wx/cmdline.h>
 
 #include "MCApp.h"
 #include "MCMainFrame.h"
@@ -44,6 +45,16 @@
 #include "MCToolFill.h"
 #include "MCToolCloneBrush.h"
 #include "MCToolColorPicker.h"
+
+static const wxCmdLineEntryDesc cmdLineDesc[] =
+{
+    {
+        wxCMD_LINE_PARAM,  NULL, NULL, wxT("image file"),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_PARAM_MULTIPLE | wxCMD_LINE_PARAM_OPTIONAL
+    },
+    { wxCMD_LINE_NONE }
+};
 
 IMPLEMENT_APP(MCApp);
 
@@ -68,6 +79,13 @@ MCApp::~MCApp()
 /*****************************************************************************/
 bool MCApp::OnInit()
 {
+    size_t i;
+
+    wxCmdLineParser cmdLineParser(cmdLineDesc, argc, argv);
+
+    if (cmdLineParser.Parse() != 0)
+        return false;
+
     wxInitAllImageHandlers();
 
     m_pMainFrame = new MCMainFrame(m_pMainFrame, _("MultiColor"));
@@ -76,6 +94,12 @@ bool MCApp::OnInit()
     SetTopWindow(m_pMainFrame);
 
     AllocateTools();
+
+    // open all files given on the command line
+    for (i = 0; i < cmdLineParser.GetParamCount(); ++i)
+    {
+        m_pMainFrame->LoadDoc(cmdLineParser.GetParam(i));
+    }
 
     return true;
 }

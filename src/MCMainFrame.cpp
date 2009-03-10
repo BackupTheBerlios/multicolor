@@ -318,6 +318,23 @@ void MCMainFrame::SetDocName(const MCDoc* pDoc, const wxString name)
 
 /*****************************************************************************/
 /*
+ * Open a document with the given file name. This will be done in a new
+ * document window (notebook page).
+ */
+void MCMainFrame::LoadDoc(const wxString& name)
+{
+    // Create a new document and load the file into it
+    MCDoc* pDoc = new MCDoc();
+    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
+    pCanvas->SetDoc(pDoc);
+    m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
+    pDoc->Load(name);
+    pCanvas->Show();
+}
+
+
+/*****************************************************************************/
+/*
  * The page has been changed. Update the active document and set the focus to
  * the canvas.
  */

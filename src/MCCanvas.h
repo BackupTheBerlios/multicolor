@@ -161,11 +161,11 @@ protected:
     bool        m_bColorPickerActive;
 
     wxCursor    m_cursorCloneBrush;
-    wxCursor    m_cursorDots;
-    wxCursor    m_cursorFreehand;
-    wxCursor    m_cursorFloodFill;
-    wxCursor    m_cursorLines;
     wxCursor    m_cursorColorPicker;
+    wxCursor    m_cursorDots;
+    wxCursor    m_cursorFloodFill;
+    wxCursor    m_cursorFreehand;
+    wxCursor    m_cursorLines;
 };
 
 

@@ -48,6 +48,7 @@ public:
     MCCanvas* GetActiveCanvas();
     void ShowMousePos(int x, int y);
     void SetDocName(const MCDoc* pDoc, const wxString stringName);
+    void LoadDoc(const wxString& name);
 
 protected:
     void InitToolBar();
