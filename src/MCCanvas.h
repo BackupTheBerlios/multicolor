@@ -121,9 +121,6 @@ protected:
     void OnLeave(wxMouseEvent& event);
     void OnTimer(wxTimerEvent& event);
 
-    void FixCoordinates(int* px1, int* py1,
-            int* px2, int* py2);
-
     // Points to the currently active tool or NULL
     MCToolBase* m_pActiveTool;
 

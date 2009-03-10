@@ -116,6 +116,9 @@ MCCanvas::~MCCanvas()
 /*
  * This is called when the document contents has changed, the parameters
  * report the area to be updated. Coordinates are in bitmap space.
+ * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
+ * It may by possible that x1 == x2 or y1 == y2. All coordinates are
+ * clipped to the image size already.
  *
  * We must force a redraw immediately, otherwise it may take a while
  * until we get to the event loop again
@@ -124,8 +127,6 @@ MCCanvas::~MCCanvas()
 void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 {
     wxRect   rect;
-
-    FixCoordinates(&x1, &y1, &x2, &y2);
 
     // Calculate the rectangle to be redrawn in screen coordinates
     ToCanvasCoord(&rect.x, &rect.y, x1, y1);
@@ -137,7 +138,6 @@ void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 
     RefreshRect(rect, false);
     Update();
-    UpdateCursorType();
 }
 
 /*****************************************************************************/
@@ -231,7 +231,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
             x2 = x1 + upd.GetW() / (2 * m_nScale) + 3;
             y2 = y1 + upd.GetH() / m_nScale + 3;
 
-            FixCoordinates(&x1, &y1, &x2, &y2);
+            m_pDoc->SortAndClip(&x1, &y1, &x2, &y2);
 
             if (m_nScale <= 2)
                 DrawScaleSmall(&rDC, x1, y1, x2, y2);
@@ -1044,50 +1044,3 @@ void MCCanvas::OnTimer(wxTimerEvent& event)
         }
     }
 }
-
-
-/*****************************************************************************/
-/*
- * Sort and clip these coordinates so that x1/y1 <= x2/y2 and all of them are
- * clipped to the coordinate range of the document.
- */
-void MCCanvas::FixCoordinates(int* px1, int* py1, int* px2, int* py2)
-{
-    int tmp;
-
-    if (*px1 < 0)
-        *px1 = 0;
-    else if (*px1 >= MC_X)
-        *px1 = MC_X - 1;
-
-    if (*py1 < 0)
-        *py1 = 0;
-    else if (*py1 >= MC_Y)
-        *py1 = MC_Y - 1;
-
-    if (*px2 < 0)
-        *px2 = 0;
-    else if (*px2 >= MC_X)
-        *px2 = MC_X - 1;
-
-    if (*py2 < 0)
-        *py2 = 0;
-    else if (*py2 >= MC_Y)
-        *py2 = MC_Y - 1;
-
-
-    if (*px1 > *px2)
-    {
-        tmp  = *px1;
-        *px1 = *px2;
-        *px2 = tmp; // swap
-    }
-
-    if (*py1 > *py2)
-    {
-        tmp  = *py1;
-        *py1 = *py2;
-        *py2 = tmp; // swap
-    }
-}
-

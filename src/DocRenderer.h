@@ -42,9 +42,11 @@ public:
     /*
      * This is called when the document contents has changed, the parameters
      * report the area to be updated. Coordinates are in bitmap space.
+     * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
+     * It may by possible that x1 == x2 or y1 == y2. All coordinates are
+     * clipped to the image size already.
      */
-    virtual void OnDocChanged(
-            int x1, int y1, int x2, int y2) = 0;
+    virtual void OnDocChanged(int x1, int y1, int x2, int y2) = 0;
 
     /*
      * This is called when the mouse has been moved in one of the views.

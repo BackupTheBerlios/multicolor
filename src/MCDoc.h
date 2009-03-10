@@ -41,9 +41,7 @@ class MCDoc
 public:
     MCDoc();
     virtual ~MCDoc();
-    void Refresh(
-            unsigned x1 = 0, unsigned y1 = 0,
-            unsigned x2 = MC_X - 1, unsigned y2 = MC_Y - 1);
+    void Refresh(int x1 = 0, int y1 = 0, int x2 = MC_X - 1, int y2 = MC_Y - 1);
     void PrepareUndo();
     void Undo();
     void Redo();
@@ -62,6 +60,8 @@ public:
 
     bool IsModified();
     void Modify(bool bModified);
+
+    void SortAndClip(int* px1, int* py1, int* px2, int* py2);
 
     MCBitmap  m_bitmap;
 
