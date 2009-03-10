@@ -20,6 +20,8 @@
   * Color picker added
     * Can be activated using Shift key, menu or toolbar
   * Special mouse cursors added for all tools
+  * Get file to load from command line
+  * Changed default file suffix for Koala to *.kla
 
 0.1.1 - 25.03.2009
   * Current Cell view added
