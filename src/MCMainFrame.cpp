@@ -679,8 +679,6 @@ void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnTool(wxCommandEvent &event)
 {
-    MCDoc* pDoc;
-
     wxGetApp().SetDrawingTool(event.GetId());
     MCCanvas::UpdateAllCursorTypes();
 }

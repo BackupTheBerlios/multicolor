@@ -847,7 +847,10 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
     int xFactor, yFactor;
     int xScroll, yScroll;
 
-    m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
+    if (!m_timerScrolling.IsRunning())
+    {
+        m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
+    }
 
     if (m_bDragScrollActive)
     {

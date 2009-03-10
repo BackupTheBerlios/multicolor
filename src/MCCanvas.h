@@ -39,7 +39,7 @@
 #define MCCANVAS_SCROLL_TIMER_ID 1
 
 // If we are closer as that many (screen) pixels to the border, we scroll
-#define MCCANVAS_SCROLL_THRESHOLD 40
+#define MCCANVAS_SCROLL_THRESHOLD 48
 
 // This is the timeout before scrolling the first time [ms]
 #define MCCANVAS_SCROLL_DELAY 750
