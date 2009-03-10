@@ -17,6 +17,9 @@
     * F1 to F5 for tools
     * Cursor keys move the drawing cursor
     * 'C' and 'V' act like left and right mouse button
+  * Keyboard bindings for colors
+    * 1 to 8, Shift 1 to 8
+    * Same with Ctrl for secondary color
   * Color picker added
     * Can be activated using Shift key, menu or toolbar
   * Special mouse cursors added for all tools
