@@ -169,7 +169,7 @@ void MCMainFrame::InitToolBar()
     pToolBar->AddTool(wxID_ZOOM_OUT, _T("Zoom out"),
             MCApp::GetBitmap(wxT("24x24"), wxT("zoomout.png")), _T("Zoom out"));
 
-    pToolBar->AddTool(wxID_ZOOM_IN, _T("Zoom in\t+"),
+    pToolBar->AddTool(wxID_ZOOM_IN, _T("Zoom in"),
             MCApp::GetBitmap(wxT("24x24"), wxT("zoomin.png")), _T("Zoom in"));
 
     bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("tv.png"));
@@ -262,8 +262,8 @@ void MCMainFrame::InitMenuBar()
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_4, _T("Zoom &4:1"));
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_8, _T("Zoom &8:1"));
     pViewMenu->AppendRadioItem(MC_ID_ZOOM_16, _T("Zoom 1&6:1"));
-    pViewMenu->Append(wxID_ZOOM_IN, _T("Zoom &in\t+"));
-    pViewMenu->Append(wxID_ZOOM_OUT, _T("Zoom &out\t-"));
+    pViewMenu->Append(wxID_ZOOM_IN, _T("Zoom &in"));
+    pViewMenu->Append(wxID_ZOOM_OUT, _T("Zoom &out"));
     pViewMenu->AppendSeparator();
     pViewMenu->Append(MC_ID_TV_MODE, _T("&TV Mode"), _T("Blur the image a little bit"), wxITEM_CHECK);
 
