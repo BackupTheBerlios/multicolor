@@ -658,7 +658,7 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
 /*****************************************************************************/
 void MCMainFrame::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox(_("MultiColor 0.1.1"), _("Welcome to..."));
+    wxMessageBox(_("MultiColor 0.2.0"), _("Welcome to..."));
 }
 
 
