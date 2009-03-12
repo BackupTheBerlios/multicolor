@@ -374,8 +374,8 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
 	wxString stringFilter;
 
-	stringFilter.append(wxT("All image files (*.kla;*.koa;*.ami)|*.kla;*.koa;*.ami|"));
-    stringFilter.append(wxT("Koala files (*.kla;*.koa)|*.kla;*.koa|"));
+	stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
+    stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));
 	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
     stringFilter.append(wxT("All files (*)|*"));
 
@@ -440,8 +440,8 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 	wxString stringFilter;
 
     /* !!! Keep the filter list in sync with the code below !!! */
-	stringFilter.append(wxT("All image files (*.kla;*.koa;*.ami)|*.kla;*.koa;*.ami|"));
-    stringFilter.append(wxT("Koala files (*.kla;*.koa)|*.kla;*.koa|"));
+    stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
+    stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));
 	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
     stringFilter.append(wxT("All files (*)|*"));
     /* !!! Keep the filter list in sync with the code below !!! */
@@ -457,11 +457,11 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
         // didn't the user supply an extension?
         if (name.GetExt() == wxT(""))
         {
-            // then add .kla, except if he has .ami chosen
+            // then add .koa, except if .ami is selected
             if (pFileDialog->GetFilterIndex() == 2)
                 name.SetExt(wxT("ami"));
             else
-                name.SetExt(wxT("kla"));
+                name.SetExt(wxT("koa"));
         }
 
         // Try to save the file
