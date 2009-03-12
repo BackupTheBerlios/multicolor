@@ -204,7 +204,7 @@ void MCMainFrame::InitToolBar()
 
     // to make sure it is consistent:
     pToolBar->ToggleTool(MC_ID_TOOL_DOTS, true);
-    wxGetApp().SetDrawingTool(MC_ID_TOOL_DOTS);
+    wxGetApp().SetDrawingTool(MC_ID_TOOL_FREEHAND);
 
     pToolBar->Realize();
 }
