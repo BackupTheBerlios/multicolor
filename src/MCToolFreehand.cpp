@@ -37,6 +37,23 @@ MCToolFreehand::~MCToolFreehand()
 
 /*****************************************************************************/
 /*
+ * Start the tool at the given coordinates (i.e. Mouse button down).
+ *
+ * Just draw a dot at the given coordinates.
+ * X and y are bitmap coordinates.
+ * bSecondaryFunction is true if the tool was invoked with a
+ * secondary (i.e. right) mouse button.
+ */
+void MCToolFreehand::Start(int x, int y, bool bSecondaryFunction)
+{
+    MCToolBase::Start(x, y, bSecondaryFunction);
+
+    m_pDoc->m_bitmap.SetPixel(x, y, m_nColorSelected, m_drawingMode);
+    m_pDoc->Refresh(x, y, x, y);
+}
+
+/*****************************************************************************/
+/*
  * Mouse has been moved while the button was kept pressed.
  *
  * Draw a line segment.
