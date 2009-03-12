@@ -49,12 +49,14 @@ public:
     void ShowMousePos(int x, int y);
     void SetDocName(const MCDoc* pDoc, const wxString stringName);
     void LoadDoc(const wxString& name);
+    void FixFocus();
 
 protected:
     void InitToolBar();
     void InitMenuBar();
 
     void OnPageChanged(wxCommandEvent &event);
+    void OnFocus(wxFocusEvent& event);
 
     void OnNew(wxCommandEvent &event);
 

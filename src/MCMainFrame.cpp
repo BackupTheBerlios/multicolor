@@ -62,6 +62,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     SetStatusText(_("!?"), 1);
 
     Connect(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxCommandEventHandler(MCMainFrame::OnPageChanged));
+    Connect(wxEVT_SET_FOCUS, wxFocusEventHandler(MCMainFrame::OnFocus));
 
     Connect(wxID_NEW, wxEVT_COMMAND_MENU_SELECTED,
             wxCommandEventHandler(MCMainFrame::OnNew));
@@ -335,6 +336,19 @@ void MCMainFrame::LoadDoc(const wxString& name)
 
 /*****************************************************************************/
 /*
+ * Set the focus to the selected notebook page.
+ */
+void MCMainFrame::FixFocus()
+{
+    int nSelected = m_pNotebook->GetSelection();
+    if (nSelected >= 0)
+    {
+        m_pNotebook->GetPage(nSelected)->SetFocus();
+    }
+}
+
+/*****************************************************************************/
+/*
  * The page has been changed. Update the active document and set the focus to
  * the canvas.
  */
@@ -354,6 +368,22 @@ void MCMainFrame::OnPageChanged(wxCommandEvent &event)
     wxGetApp().SetActiveDoc(pDoc);
     pCanvas->SetFocus();
 }
+
+
+/*****************************************************************************/
+/*
+ * Set the focus to the current notebook page each time our main window gets
+ * the focus.
+ *
+ * On Windows after minimizing and restoring the window the shortcuts bound to
+ * the canvas (e.g. Shift for color picker) didn't work anymore.
+ */
+void MCMainFrame::OnFocus(wxFocusEvent& event)
+{
+    FixFocus();
+    event.Skip();
+}
+
 
 /*****************************************************************************/
 /*
@@ -859,3 +889,4 @@ void MCMainFrame::OnKeyDown(wxKeyEvent& event)
                 nColor, (event.GetModifiers() & wxMOD_CONTROL) != 0);
     }
 }
+
