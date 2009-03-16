@@ -1,0 +1,11 @@
+diff -Naur odcctools-20060413-orig/configure odcctools-20060413/configure
+--- odcctools-20060413-orig/configure	2009-03-16 22:58:53.347837637 +0100
++++ odcctools-20060413/configure	2009-03-16 22:59:23.816047564 +0100
+@@ -3335,6 +3335,7 @@
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
+ const char hw[] = "Hello, World\n";
++void* do_warn = 23;
+ _ACEOF
+ rm -f conftest.$ac_objext
+ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
