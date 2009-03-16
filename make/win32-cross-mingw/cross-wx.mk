@@ -2,7 +2,7 @@
 # MultiColor - An image manipulation tool for Commodore 8-bit computers'
 #              graphic formats
 #
-# (c) 2003-2008 Thomas Giesel
+# (c) 2003-2009 Thomas Giesel
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,12 @@
 #
 # Thomas Giesel skoe@directbox.com
 #
- 
+
+wx-version     := wxMSW-2.8.9
+wx-archive-dir := $(here)/archive
+wx-build-dir  := wx-build
+wx-prefix      := /opt/cross/$(cross)-$(wx-version)
+
 ###############################################################################
 # Rules to check the cross compiling environment
 #
@@ -30,25 +35,14 @@
 check-environment: out/check-environment.ok
 
 out/check-environment.ok:
-	i586-mingw32msvc-c++ --version > /dev/null || $(MAKE) no-compiler
-	$(wx-prefix)/bin/wx-config --version > /dev/null || $(MAKE) no-wx
+	$(MAKE) check-mingw
+	$(MAKE) check-wx
 	mkdir -p out
 	touch $@
 
-.PHONY: no-compiler
-no-compiler:
-	$(warning ========================================================================)
-	$(warning No cross compiler found.)
-	$(warning )
-	$(warning You probably don't have the mingw cross compiler installed.)
-	$(warning e.g. on *ubuntu you can do this with:)
-	$(warning )
-	$(warning sudo apt-get install mingw32)
-	$(warning )
-	$(warning Check http://wiki.wxwidgets.org/Install_The_Mingw_Cross-Compiler)
-	$(warning for other systems.)
-	$(warning ========================================================================)
-	$(error stop.)
+.PHONY: check-wx
+check-wx:
+	$(wx-prefix)/bin/wx-config --version > /dev/null || $(MAKE) no-wx
 
 .PHONY: no-wx
 no-wx:
@@ -65,7 +59,7 @@ no-wx:
 	$(warning which is unlikely to collide with other versions. Otherwise it may)
 	$(warning become a pain in the ass to get the config running.)
 	$(warning )
-	$(warning You can install is using this makefile by invoking:)
+	$(warning You can install it using this makefile by invoking:)
 	$(warning make install-wxwidgets)
 	$(warning This needs you to be a sudoer, because some commands use sudo)
 	$(warning ========================================================================)
@@ -75,22 +69,27 @@ no-wx:
 # Rules for installing cross-wxWidgets
 #
 .PHONY: install-wxwidgets
-install-wxwidgets: $(wx-build-path)/$(wx-version)/3-installed
+install-wxwidgets: $(wx-build-dir)/$(wx-version)/3-installed
 
-$(wx-build-path)/$(wx-version):
-	mkdir -p $(wx-build-path)
-	cd $(wx-build-path) && wget "http://downloads.sourceforge.net/wxwindows/$(wx-version).tar.bz2"
-	cd $(wx-build-path) && tar xjf $(wx-version).tar.bz2
-
-$(wx-build-path)/$(wx-version)/1-configured: $(wx-build-path)/$(wx-version)
-	cd $(wx-build-path)/$(wx-version) && \
-		./configure --prefix=$(wx-prefix) --disable-shared --host=i586-mingw32msvc --build=`uname -m`-linux
+$(wx-build-dir)/$(wx-version)/1-configured: $(wx-build-dir)/$(wx-version)
+	cd $(wx-build-dir)/$(wx-version) && \
+		PATH=$(path) ./configure --prefix=$(wx-prefix) --disable-shared --host=$(cross) --build=`uname -m`-linux
 	touch $@
 
-$(wx-build-path)/$(wx-version)/2-compiled: $(wx-build-path)/$(wx-version)/1-configured
-	make -C $(wx-build-path)/$(wx-version)
+$(wx-build-dir)/$(wx-version)/2-compiled: $(wx-build-dir)/$(wx-version)/1-configured
+	PATH=$(path) make -C $(wx-build-dir)/$(wx-version)
 	touch $@
 
-$(wx-build-path)/$(wx-version)/3-installed: $(wx-build-path)/$(wx-version)/2-compiled
-	sudo make -C $(wx-build-path)/$(wx-version) install
+$(wx-build-dir)/$(wx-version)/3-installed: $(wx-build-dir)/$(wx-version)/2-compiled
+	PATH=$(path) sudo make -C $(wx-build-dir)/$(wx-version) install
 	touch $@
+
+# unpack wxwidgets
+$(wx-build-dir)/$(wx-version): $(wx-archive-dir)/$(wx-version).tar.bz2
+	mkdir -p $(wx-build-dir)
+	tar xjf $(wx-archive-dir)/$(wx-version).tar.bz2 -C $(wx-build-dir)
+
+# download wxwidgets
+$(wx-archive-dir)/$(wx-version).tar.bz2:
+	mkdir -p $(wx-archive-dir)
+	cd $(wx-archive-dir) && wget "http://downloads.sourceforge.net/wxwindows/$(wx-version).tar.bz2"
