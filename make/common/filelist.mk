@@ -1,5 +1,4 @@
 
-outbase       := out
 outdir        := $(outbase)/MultiColor
 objdir        := $(outbase)/obj
 srcdir        := ../../src
@@ -7,7 +6,8 @@ srcdir        := ../../src
 ###############################################################################
 # This is the list of source files to be compiled
 #
-src := 
+src :=
+src += BitmapBase.cpp
 src += C64Color.cpp
 src += MCApp.cpp
 src += MCBitmap.cpp
@@ -79,15 +79,15 @@ res += lgpl-2.1.txt
 
 ###############################################################################
 # Transform all names foo.cpp in $src to out/obj/foo.o
-# 
+#
 obj := $(addprefix $(objdir)/, $(src:.cpp=.o))
 
 ###############################################################################
 # Transform all names in $res to out/MultiColor/res/*
-# 
+#
 outres := $(addprefix $(outdir)/res/, $(res))
 
 ###############################################################################
 # Poor men's dependencies: Let all files depend from all header files
-# 
+#
 headers := $(wildcard $(srcdir)/*.h)

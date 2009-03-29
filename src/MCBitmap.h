@@ -28,6 +28,7 @@
 
 #include "MCBlock.h"
 #include "MCToolBase.h"
+#include "BitmapBase.h"
 
 #define MCBITMAP_XBLOCKS 40
 #define MCBITMAP_YBLOCKS 25
@@ -36,11 +37,16 @@
 #define MC_X 160
 #define MC_Y 200
 
-class MCBitmap
+class MCBitmap : public BitmapBase
 {
 public:
     MCBitmap(void);
     ~MCBitmap(void);
+
+    virtual unsigned GetWidth() const;
+    virtual unsigned GetHeight() const;
+    virtual unsigned GetPixelXFactor() const;
+    virtual const C64Color* GetColor(unsigned x, unsigned y) const;
 
     void SetBackground(C64Color col);
     unsigned char GetBackground() const;
@@ -54,8 +60,6 @@ public:
     void SetBitmapRAM(unsigned offset, unsigned char val);
     unsigned char GetBitmapRAM(unsigned offset);
 
-    const C64Color* GetColor(unsigned x, unsigned y) const;
-
     const MCBlock* GetMCBlock(unsigned x, unsigned y) const;
     bool SetPixel(unsigned x, unsigned y, const C64Color& col,
             MCDrawingMode mode = MCDrawingModeIgnore);
@@ -68,15 +72,6 @@ public:
 
 protected:
     MCBlock m_aMCBlock[MCBITMAP_YBLOCKS][MCBITMAP_XBLOCKS];
-};
-
-
-inline const C64Color* MCBitmap::GetColor(unsigned x, unsigned y) const
-{
-    if ((x < MC_X) && (y < MC_Y))
-        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
-    else
-        return &black;
 };
 
 #endif

@@ -42,6 +42,50 @@ MCBitmap::~MCBitmap(void)
 {
 }
 
+
+/******************************************************************************/
+/**
+ * Return the width of this image.
+ */
+unsigned MCBitmap::GetWidth() const
+{
+    return MC_X;
+}
+
+
+/******************************************************************************/
+/**
+ * Return the height of this image.
+ */
+unsigned MCBitmap::GetHeight() const
+{
+    return MC_Y;
+}
+
+
+/******************************************************************************/
+/**
+ * Return the pixel factor in X-direction. 2 for MC.
+ */
+unsigned MCBitmap::GetPixelXFactor() const
+{
+    return 2;
+}
+
+
+/******************************************************************************/
+/**
+ * Return the color of a pixel.
+ */
+const C64Color* MCBitmap::GetColor(unsigned x, unsigned y) const
+{
+    if ((x < MC_X) && (y < MC_Y))
+        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
+    else
+        return &black;
+}
+
+
 /*****************************************************************************/
 void MCBitmap::SetBackground(C64Color col)
 {

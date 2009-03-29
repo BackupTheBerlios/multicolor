@@ -10,9 +10,11 @@ cxx           := c++
 ifeq ($(DEBUG), YES)
 cxxflags      := -g `wx-config --cxxflags`
 ldflags       := -g
+outbase       := debug
 else
 cxxflags      := -O2 `wx-config --cxxflags`
 ldflags       :=
+outbase       := release
 endif
 
 include ../common/filelist.mk
@@ -34,7 +36,7 @@ install: all
 
 ###############################################################################
 # This rule can link <here>/out/obj/*.o to <here>/out/MultiColor/MultiColor.exe
-# 
+#
 $(outdir)/multicolor: $(obj) | $(outdir) check-environment
 	$(cxx) $(ldflags) $(obj) -o $@ \
 		`wx-config --libs`
