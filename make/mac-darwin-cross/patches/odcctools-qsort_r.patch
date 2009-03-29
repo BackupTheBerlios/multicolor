@@ -1,0 +1,23 @@
+--- a/configure	2009-03-20 21:03:17.186402265 +0100
++++ b/configure	2009-03-20 21:03:55.658398426 +0100
+@@ -6078,8 +6078,7 @@
+ 
+ 
+ 
+-
+-for ac_func in strmode qsort_r qsort getattrlist NSIsSymbolNameDefined strlcpy
++for ac_func in strmode qsort getattrlist NSIsSymbolNameDefined strlcpy
+ do
+ as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ { echo "$as_me:$LINENO: checking for $ac_func" >&5
+--- a/configure.ac	2009-03-20 21:03:07.993394564 +0100
++++ b/configure.ac	2009-03-20 21:03:44.206401524 +0100
+@@ -274,7 +274,7 @@
+ )
+ 
+ AC_CHECK_FUNCS(
+-    [strmode qsort_r qsort getattrlist NSIsSymbolNameDefined strlcpy])
++    [strmode qsort getattrlist NSIsSymbolNameDefined strlcpy])
+ 
+ AC_CHECK_DECLS([getc_unlocked])
+ AH_VERBATIM([HAVE_DECL_GETC_UNLOCKED_REPLACEMENT],

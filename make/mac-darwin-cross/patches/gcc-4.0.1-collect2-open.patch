@@ -1,0 +1,12 @@
+diff -Naur gcc-4.0.1-orig/gcc/collect2.c gcc-4.0.1/gcc/collect2.c
+--- gcc-4.0.1-orig/gcc/collect2.c	2009-03-17 22:01:29.426111195 +0100
++++ gcc-4.0.1/gcc/collect2.c	2009-03-17 22:02:55.596178480 +0100
+@@ -1577,7 +1577,7 @@
+   if (redir)
+     {
+       /* Open response file.  */
+-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
++      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+ 
+       /* Duplicate the stdout and stderr file handles
+ 	 so they can be restored later.  */
