@@ -60,7 +60,7 @@ void MCToolColorPicker::Start(int x, int y, bool bSecondaryFunction)
 
     MCToolBase::Start(x, y, bSecondaryFunction);
 
-    nColor = m_pDoc->m_bitmap.GetColor(x, y)->GetColor();
+    nColor = m_pDoc->GetBitmap()->GetColor(x, y)->GetColor();
 
     wxGetApp().GetPalettePanel()->SelectColor(nColor, bSecondaryFunction);
 }

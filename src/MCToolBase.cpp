@@ -71,7 +71,7 @@ void MCToolBase::SetColors(int nColorPrimary, int nColorSecondary)
  */
 void MCToolBase::Start(int x, int y, bool bSecondaryFunction)
 {
-    m_pDoc->m_bitmapToolCopy = m_pDoc->m_bitmap;
+    m_pDoc->BackupBitmap();
 
     m_xStart = x;
     m_yStart = y;

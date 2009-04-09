@@ -77,8 +77,8 @@ void MCToolLines::Move(int x, int y)
 {
     int x1, y1, x2, y2;
 
-    m_pDoc->m_bitmap = m_pDoc->m_bitmapToolCopy;
-    m_pDoc->m_bitmap.Line(m_xStart, m_yStart, x, y, m_nColorSelected,
+    m_pDoc->RestoreBitmap();
+    m_pDoc->GetBitmap()->Line(m_xStart, m_yStart, x, y, m_nColorSelected,
             m_drawingMode);
 
     // redraw an area that includes the previous line preview and this line

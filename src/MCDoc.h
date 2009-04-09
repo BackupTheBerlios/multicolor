@@ -41,7 +41,13 @@ class MCDoc
 public:
     MCDoc();
     virtual ~MCDoc();
-    void Refresh(int x1 = 0, int y1 = 0, int x2 = MC_X - 1, int y2 = MC_Y - 1);
+
+    const BitmapBase* GetBitmap() const;
+    BitmapBase* GetBitmap();
+    void BackupBitmap();
+    void RestoreBitmap();
+
+    void Refresh(int x1 = 0, int y1 = 0, int x2 = 4096, int y2 = 4096);
     void PrepareUndo();
     void Undo();
     void Redo();
@@ -61,23 +67,22 @@ public:
     bool IsModified();
     void Modify(bool bModified);
 
-    void SortAndClip(int* px1, int* py1, int* px2, int* py2);
-
-    MCBitmap  m_bitmap;
-
-    // Die Original-Bitmap waehrend der Benutzung des Werkzeugs.
-    MCBitmap  m_bitmapToolCopy;
-
     std::vector<MCBitmap> m_listUndo;
     unsigned       m_nRedoPos;
 
 protected:
     static unsigned m_nDocNumber;
 
-    // the full path and file name
+    /// The bitmap under work
+    MCBitmap  m_bitmap;
+
+    /// Backup which holds the original state when a tool is in use
+    MCBitmap  m_bitmapBackup;
+
+    /// the full path and file name
     wxFileName m_fileName;
 
-    // true if the document has been changed but not saved
+    /// true if the document has been changed but not saved
     bool m_bModified;
 
     // last mouse position reported by one of my views (bitmap coordinates)
@@ -96,8 +101,48 @@ protected:
 
 
 /******************************************************************************/
-/*
- * Get a const reference to out file name.
+/**
+ * Return a pointer to our bitmap (const).
+ */
+inline const BitmapBase* MCDoc::GetBitmap() const
+{
+    return &m_bitmap;
+}
+
+
+/******************************************************************************/
+/**
+ * Return a pointer to our bitmap.
+ */
+inline BitmapBase* MCDoc::GetBitmap()
+{
+    return &m_bitmap;
+}
+
+
+/******************************************************************************/
+/**
+ * Create a temporary backup of the current document bitmap state.
+ */
+inline void MCDoc::BackupBitmap()
+{
+    m_bitmapBackup = m_bitmap;
+}
+
+
+/******************************************************************************/
+/**
+ * Restore the current bitmap from the temporary backup.
+ */
+inline void MCDoc::RestoreBitmap()
+{
+    m_bitmap = m_bitmapBackup;
+}
+
+
+/******************************************************************************/
+/**
+ * Get a const reference to the file name.
  */
 inline const wxFileName& MCDoc::GetFileName() const
 {

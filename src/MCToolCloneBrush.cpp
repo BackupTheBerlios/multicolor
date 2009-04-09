@@ -180,6 +180,6 @@ void MCToolCloneBrush::ClonePixel(int x, int y)
         m_dy = y - m_ySource;
     }
 
-    col = *m_pDocSource->m_bitmap.GetColor(x - m_dx, y - m_dy);
-    m_pDocDest->m_bitmap.SetPixel(x, y, col, m_drawingMode);
+    col = *m_pDocSource->GetBitmap()->GetColor(x - m_dx, y - m_dy);
+    m_pDocDest->GetBitmap()->SetPixel(x, y, col, m_drawingMode);
 }

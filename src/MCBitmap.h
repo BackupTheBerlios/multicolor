@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2008 Thomas Giesel
+ * (c) 2003-2009 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,12 +30,13 @@
 #include "MCToolBase.h"
 #include "BitmapBase.h"
 
-#define MCBITMAP_XBLOCKS 40
-#define MCBITMAP_YBLOCKS 25
 #define MCBITMAP_BYTES_PER_BLOCK 8
 
 #define MC_X 160
 #define MC_Y 200
+
+#define MCBITMAP_XBLOCKS (MC_X / 4)
+#define MCBITMAP_YBLOCKS (MC_Y / 8)
 
 class MCBitmap : public BitmapBase
 {
@@ -47,6 +48,8 @@ public:
     virtual unsigned GetHeight() const;
     virtual unsigned GetPixelXFactor() const;
     virtual const C64Color* GetColor(unsigned x, unsigned y) const;
+    virtual void SetPixel(unsigned x, unsigned y, const C64Color& col,
+                          MCDrawingMode mode = MCDrawingModeIgnore);
 
     void SetBackground(C64Color col);
     unsigned char GetBackground() const;
@@ -61,12 +64,6 @@ public:
     unsigned char GetBitmapRAM(unsigned offset);
 
     const MCBlock* GetMCBlock(unsigned x, unsigned y) const;
-    bool SetPixel(unsigned x, unsigned y, const C64Color& col,
-            MCDrawingMode mode = MCDrawingModeIgnore);
-    bool FloodFill(unsigned x, unsigned y, const C64Color& col,
-            MCDrawingMode mode = MCDrawingModeIgnore);
-    bool Line(int x1, int y1, int x2, int y2,
-            const C64Color& col, MCDrawingMode mode);
 
     static const C64Color black;
 

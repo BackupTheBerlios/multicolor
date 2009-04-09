@@ -95,11 +95,6 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(MCCanvas::OnKeyDown));
     Connect(wxEVT_KEY_UP, wxKeyEventHandler(MCCanvas::OnKeyUp));
 
-    // set min size incl. borders so the preview won't get scroll bars
-    wxSize size(GetWindowBorderSize());
-    size.IncBy(2 * MC_X * m_nScale, MC_Y * m_nScale);
-    SetMinSize(size);
-
     UpdateCursorType();
 }
 
@@ -173,6 +168,8 @@ void MCCanvas::OnDocDestroy(MCDoc* pDoc)
  */
 void MCCanvas::SetDoc(MCDoc* pDoc)
 {
+    BitmapBase* pB;
+
     // remove me from the previous document
     if (m_pDoc)
         m_pDoc->RemoveRenderer(this);
@@ -182,6 +179,13 @@ void MCCanvas::SetDoc(MCDoc* pDoc)
     // add me to the new document
     if (m_pDoc)
         m_pDoc->AddRenderer(this);
+
+    // set min size incl. borders so the preview won't get scroll bars
+    pB = pDoc->GetBitmap();
+    wxSize size(GetWindowBorderSize());
+    size.IncBy(pB->GetPixelXFactor() * pB->GetWidth(),
+               pB->GetPixelYFactor() * pB->GetHeight());
+    SetMinSize(size);
 
     // make sure the image will be reallocated next time it must be drawn
     m_image.Destroy();
@@ -219,6 +223,7 @@ void MCCanvas::SetScale(unsigned nScale)
 void MCCanvas::OnDraw(wxDC& rDC)
 {
     int x1, y1, x2, y2;
+    BitmapBase* pB;
 
     if (m_pDoc)
     {
@@ -231,7 +236,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
             x2 = x1 + upd.GetW() / (2 * m_nScale) + 3;
             y2 = y1 + upd.GetH() / m_nScale + 3;
 
-            m_pDoc->SortAndClip(&x1, &y1, &x2, &y2);
+            m_pDoc->GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
             if (m_nScale <= 2)
                 DrawScaleSmall(&rDC, x1, y1, x2, y2);
@@ -241,12 +246,16 @@ void MCCanvas::OnDraw(wxDC& rDC)
         }
 
         // erase the area around the bitmap
+        pB = m_pDoc->GetBitmap();
         rDC.SetPen(*wxTRANSPARENT_PEN);
         rDC.SetBrush(*wxGREY_BRUSH);
-        rDC.DrawRectangle(rDC.DeviceToLogicalX(0), MC_Y * m_nScale,
-                GetSize().GetWidth(), GetSize().GetHeight());
-        rDC.DrawRectangle(2 * MC_X * m_nScale, rDC.DeviceToLogicalY(0),
-                GetSize().GetWidth(), GetSize().GetHeight());
+        rDC.DrawRectangle(
+            rDC.DeviceToLogicalX(0),
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale,
+            GetSize().GetWidth(), GetSize().GetHeight());
+        rDC.DrawRectangle(
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale, rDC.DeviceToLogicalY(0),
+            GetSize().GetWidth(), GetSize().GetHeight());
     }
     else
     {
@@ -273,12 +282,12 @@ void MCCanvas::OnDraw(wxDC& rDC)
  * Paint the scaled bitmap into the cache image at scale 1:1 and 2:1.
  *
  * The caller must make sure that:
- * x1 <= x2, y1 <= y2, 0 <= x < MC_X, 0 <= y <= MC_Y
+ * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
  */
 void MCCanvas::DrawScaleSmall(wxDC* pDC,
         unsigned x1, unsigned y1, unsigned x2, unsigned y2)
 {
-    const MCBitmap* pMCB = &m_pDoc->m_bitmap;
+    const BitmapBase* pB = m_pDoc->GetBitmap();
     MC_RGB   col;
     int      fixr, fixg, fixb, tmpr, tmpg, tmpb;
     const int aFilters[] = {0, 2, 1};
@@ -292,28 +301,32 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
 
     if (!m_image.IsOk())
     {
-        m_image.Create(2 * MC_X * m_nScale, MC_Y * m_nScale, false);
+        m_image.Create(
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale,
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale, false);
         // in this case we have to render the whole image
         x1 = 0;
         y1 = 0;
-        x2 = MC_X - 1;
-        y2 = MC_Y - 1;
+        x2 = pB->GetWidth() - 1;
+        y2 = pB->GetHeight() - 1;
     }
 
     pPixels = m_image.GetData();
     nPitch  = m_image.GetWidth() * 3;
 
     // We draw all full lines of the area so the blur has the right effect
-    for (y = y1; y <= y2 * m_nScale; ++y)
+    for (y =  y1 * pB->GetPixelYFactor();
+         y <= y2 * pB->GetPixelYFactor() * m_nScale;
+         ++y)
     {
         fixr = fixg = fixb = 64 << FIXP_SHIFT;
         p = pPixels + y * nPitch;
 
-        for (x = 0; x < MC_X * 2 * m_nScale; ++x)
+        for (x = 0; x < pB->GetPixelXFactor() * pB->GetWidth() * m_nScale; ++x)
         {
             if (x % (2 * m_nScale) == 0)
             {
-                col = pMCB->GetColor(x / (2 * m_nScale), y / m_nScale)->GetRGB();
+                col = pB->GetColor(x / (2 * m_nScale), y / m_nScale)->GetRGB();
                 tmpr = (col & 0xff) << FIXP_SHIFT;
                 tmpg = ((col >> 8) & 0xff) << FIXP_SHIFT;
                 tmpb = ((col >> 16) & 0xff) << FIXP_SHIFT;
@@ -344,12 +357,12 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
  * Draw the scaled bitmap at scale 4:1 and higher.
  *
  * The caller must make sure that:
- * x1 <= x2, y1 <= y2, 0 <= x < MC_X, 0 <= y <= MC_Y
+ * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
  */
 void MCCanvas::DrawScaleBig(wxDC* pDC,
         unsigned x1, unsigned y1, unsigned x2, unsigned y2)
 {
-    const MCBitmap* pMCB = &m_pDoc->m_bitmap;
+    const BitmapBase* pB = m_pDoc->GetBitmap();
     wxBrush        brush(*wxBLACK);
     wxPen          pen(*wxBLACK);
     MC_RGB         rgb;
@@ -369,7 +382,7 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
         {
             rect.x = 2 * m_nScale * x + 1;
 
-            rgb = pMCB->GetColor(x, y)->GetRGB();
+            rgb = pB->GetColor(x, y)->GetRGB();
             brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
 
             pDC->SetBrush(brush);
@@ -403,7 +416,7 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     {
         for (x = x1; x < x2; x += 8 * m_nScale)
         {
-            rgb = pMCB->GetColor(
+            rgb = pB->GetColor(
                 x / (2 * m_nScale), y / m_nScale)->GetContrastRGB();
             pen.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
             pDC->SetPen(pen);
@@ -418,9 +431,21 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
 /******************************************************************************
  * Convert window point to bitmap coordinates. Scroll position and zoom are
  * taken into account. The coordinates are clipped to fit into the bitmap.
+ *
+ * Must only be called if there is a Document assigned.
  */
 void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
 {
+    BitmapBase* pB;
+
+    if (!m_pDoc)
+    {
+        *px = *py = 0;
+        return;
+    }
+
+    pB = m_pDoc->GetBitmap();
+
     CalcUnscrolledPosition(x, y, px, py);
 
     *px /= (2 * (int)m_nScale);
@@ -428,8 +453,8 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
 
     if (*px < 0) *px = 0;
     if (*py < 0) *py = 0;
-    if (*px > MC_X - 1) *px = MC_X - 1;
-    if (*py > MC_Y - 1) *py = MC_Y - 1;
+    if (*px > pB->GetWidth() - 1)  *px = pB->GetWidth() - 1;
+    if (*py > pB->GetHeight() - 1) *py = pB->GetHeight() - 1;
 }
 
 
@@ -541,8 +566,18 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
  */
 void MCCanvas::UpdateVirtualSize()
 {
-    SetVirtualSize(MC_X * 2 * m_nScale, MC_Y * m_nScale);
-    SetScrollRate(2 * m_nScale, m_nScale);
+    BitmapBase* pB;
+
+    if (m_pDoc)
+    {
+        pB = m_pDoc->GetBitmap();
+        SetVirtualSize(
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale,
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale);
+        SetScrollRate(
+            pB->GetPixelXFactor() * m_nScale,
+            pB->GetPixelYFactor() * m_nScale);
+    }
 }
 
 
@@ -647,9 +682,15 @@ int MCCanvas::CheckScrollingOneDirection(
  */
 void MCCanvas::MoveCursorWithKey(int nKeyCode)
 {
-    bool bMoved = false;
+    BitmapBase* pB;
     int  x, y;
     int  xCanvas, yCanvas;
+    bool bMoved = false;
+
+    if (!m_pDoc)
+        return;
+
+    pB = m_pDoc->GetBitmap();
 
     x = m_pointLastMousePos.x;
     y = m_pointLastMousePos.y;
@@ -665,7 +706,7 @@ void MCCanvas::MoveCursorWithKey(int nKeyCode)
         break;
 
     case WXK_DOWN:
-        if (y < MC_Y - 1)
+        if (y < pB->GetHeight() - 1)
         {
             ++y;
             bMoved = true;
@@ -681,7 +722,7 @@ void MCCanvas::MoveCursorWithKey(int nKeyCode)
         break;
 
     case WXK_RIGHT:
-        if (x < MC_X - 1)
+        if (x < pB->GetWidth() - 1)
         {
             ++x;
             bMoved = true;
@@ -746,15 +787,18 @@ void MCCanvas::StartTool(int x, int y, bool bSecondary)
  */
 void MCCanvas::UpdateCursorPosition(int x, int y, bool bCanvasCoordinates)
 {
+    BitmapBase* pB;
+
     if (m_pDoc)
     {
         if (bCanvasCoordinates)
             ToBitmapCoord(&x, &y, x, y);
 
+        pB = m_pDoc->GetBitmap();
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-        if (x > MC_X - 1) x = MC_X - 1;
-        if (y > MC_Y - 1) y = MC_Y - 1;
+        if (x > pB->GetWidth() - 1) x = pB->GetWidth() - 1;
+        if (y > pB->GetHeight() - 1) y = pB->GetHeight() - 1;
 
         m_pDoc->SetMousePos(x, y);
 
@@ -923,22 +967,25 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
     unsigned nScale = m_nScale;
     int x, y;
 
-    ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
-
-    if ((event.GetWheelRotation() > 0) && (nScale > 1))
+    if (m_pDoc)
     {
-        nScale /= 2;
-    }
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
 
-    if ((event.GetWheelRotation() < 0) && (nScale < MC_MAX_ZOOM))
-    {
-        nScale *= 2;
-    }
+        if ((event.GetWheelRotation() > 0) && (nScale > 1))
+        {
+            nScale /= 2;
+        }
 
-    if (m_nScale != nScale)
-    {
-        SetScale(nScale);
-        CenterBitmapPoint(x, y);
+        if ((event.GetWheelRotation() < 0) && (nScale < MC_MAX_ZOOM))
+        {
+            nScale *= 2;
+        }
+
+        if (m_nScale != nScale)
+        {
+            SetScale(nScale);
+            CenterBitmapPoint(x, y);
+        }
     }
 }
 

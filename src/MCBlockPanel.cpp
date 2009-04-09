@@ -33,12 +33,12 @@
 #include "MCDoc.h"
 
 /*****************************************************************************/
-/*
+/**
  * Create a palette panel.
  */
 MCBlockPanel::MCBlockPanel(wxWindow* pParent) :
-    wxWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(m_nWTotal, m_nHTotal)),
-    m_pDoc(NULL)
+        wxWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(m_nWTotal, m_nHTotal)),
+        m_pDoc(NULL)
 {
     SetMinSize(GetSize());
     SetMaxSize(GetSize());
@@ -55,7 +55,7 @@ MCBlockPanel::~MCBlockPanel()
 }
 
 /*****************************************************************************/
-/*
+/**
  * This is called when the document contents has changed, the parameters
  * report the area to be updated. Coordinates are in bitmap space.
  */
@@ -66,7 +66,7 @@ void MCBlockPanel::OnDocChanged(int x1, int y1, int x2, int y2)
 
 
 /*****************************************************************************/
-/*
+/**
  * This is called when the mouse has been moved in one of the views.
  * Coordinates are in bitmap space.
  */
@@ -77,7 +77,7 @@ void MCBlockPanel::OnDocMouseMoved(int x, int y)
 
 
 /*****************************************************************************/
-/*
+/**
  * This is called when a document is destroyed which is rendered by me
  */
 void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
@@ -91,7 +91,7 @@ void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
 
 
 /*****************************************************************************/
-/*
+/**
  * Paint it.
  */
 void MCBlockPanel::OnPaint(wxPaintEvent& event)
@@ -105,14 +105,14 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
         dc.DrawRectangle(
-                m_nWBorder, m_nWBorder,
-                MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
+            m_nWBorder, m_nWBorder,
+            MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
     }
 }
 
 
 /*****************************************************************************/
-/*
+/**
  * Set the Document this view refers to. If it is NULL, this preview just
  * shows a black block from now.
  */
@@ -133,7 +133,7 @@ void MCBlockPanel::SetDoc(MCDoc* pDoc)
 
 
 /*****************************************************************************/
-/*
+/**
  * Show the block which contains the given bitmap coordinates.
  */
 void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
@@ -146,7 +146,8 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
     wxString  str;
     wxSize    textExtent;
 
-    const MCBlock* pBlock = pDoc->m_bitmap.GetMCBlock(pDoc->GetMousePos().x, y);
+    MCBitmap* pMCB = (MCBitmap*) pDoc->GetBitmap();
+    const MCBlock* pBlock = pMCB->GetMCBlock(pDoc->GetMousePos().x, y);
     if (!pBlock)
         return;
 
@@ -162,7 +163,7 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
         for (xx = 0; xx < MCBLOCK_WIDTH; ++xx)
         {
             if ((xx == x % MCBLOCK_WIDTH) &&
-                (yy == y % MCBLOCK_HEIGHT))
+                    (yy == y % MCBLOCK_HEIGHT))
             {
                 pDC->SetPen(*wxWHITE_PEN);
             }
@@ -219,8 +220,8 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
         textExtent = pDC->GetTextExtent(str);
 
         pDC->DrawText(str,
-                rect.x + (rect.width - textExtent.x) / 2,
-                rect.y + (rect.height - textExtent.y) / 2);
+                      rect.x + (rect.width - textExtent.x) / 2,
+                      rect.y + (rect.height - textExtent.y) / 2);
         rect.y += 2 * m_nHBox;
     }
 }

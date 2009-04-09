@@ -53,7 +53,7 @@ unsigned MCDoc::m_nDocNumber;
  */
 MCDoc::MCDoc()
     : m_bitmap()
-    , m_bitmapToolCopy()
+    , m_bitmapBackup()
     , m_listUndo()
     , m_nRedoPos(0)
     , m_fileName()
@@ -97,7 +97,7 @@ void MCDoc::Refresh(int x1, int y1, int x2, int y2)
     std::list<DocRenderer*>::iterator i;
 
     // bring them to the right order
-    SortAndClip(&x1, &y1, &x2, &y2);
+    GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
     // Extend the area to be refreshed to whole cells, otherwise color
     // replacement artifacts may remain
@@ -109,7 +109,7 @@ void MCDoc::Refresh(int x1, int y1, int x2, int y2)
     y2 |= 7;
 
     // clip them again (is this needed?)
-    SortAndClip(&x1, &y1, &x2, &y2);
+    GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
     for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
     {
@@ -625,50 +625,5 @@ unsigned char* MCDoc::SaveAmicaFlush(
     }
 
     return pBuff;
-}
-
-/*****************************************************************************/
-/*
- * Sort and clip these coordinates so that x1/y1 <= x2/y2 and all of them are
- * clipped to the coordinate range of this document.
- */
-void MCDoc::SortAndClip(int* px1, int* py1, int* px2, int* py2)
-{
-    int tmp;
-
-    if (*px1 < 0)
-        *px1 = 0;
-    else if (*px1 >= MC_X)
-        *px1 = MC_X - 1;
-
-    if (*py1 < 0)
-        *py1 = 0;
-    else if (*py1 >= MC_Y)
-        *py1 = MC_Y - 1;
-
-    if (*px2 < 0)
-        *px2 = 0;
-    else if (*px2 >= MC_X)
-        *px2 = MC_X - 1;
-
-    if (*py2 < 0)
-        *py2 = 0;
-    else if (*py2 >= MC_Y)
-        *py2 = MC_Y - 1;
-
-
-    if (*px1 > *px2)
-    {
-        tmp  = *px1;
-        *px1 = *px2;
-        *px2 = tmp; // swap
-    }
-
-    if (*py1 > *py2)
-    {
-        tmp  = *py1;
-        *py1 = *py2;
-        *py2 = tmp; // swap
-    }
 }
 

@@ -24,6 +24,7 @@
  */
 
 #include "BitmapBase.h"
+#include "C64Color.h"
 
 /*****************************************************************************/
 /**
@@ -42,4 +43,150 @@ unsigned BitmapBase::GetPixelXFactor() const
 unsigned BitmapBase::GetPixelYFactor() const
 {
     return 1;
+}
+
+
+/*****************************************************************************/
+/*
+ * Sort and clip these coordinates so that x1/y1 <= x2/y2 and all of them are
+ * clipped to the coordinate range of this document.
+ */
+void BitmapBase::SortAndClip(int* px1, int* py1, int* px2, int* py2)
+{
+    int tmp;
+
+    if (*px1 < 0)
+        *px1 = 0;
+    else if (*px1 >= GetWidth())
+        *px1 = GetWidth() - 1;
+
+    if (*py1 < 0)
+        *py1 = 0;
+    else if (*py1 >= GetHeight())
+        *py1 = GetHeight() - 1;
+
+    if (*px2 < 0)
+        *px2 = 0;
+    else if (*px2 >= GetWidth())
+        *px2 = GetWidth() - 1;
+
+    if (*py2 < 0)
+        *py2 = 0;
+    else if (*py2 >= GetHeight())
+        *py2 = GetHeight() - 1;
+
+    if (*px1 > *px2)
+    {
+        tmp  = *px1;
+        *px1 = *px2;
+        *px2 = tmp; // swap
+    }
+
+    if (*py1 > *py2)
+    {
+        tmp  = *py1;
+        *py1 = *py2;
+        *py2 = tmp; // swap
+    }
+}
+
+
+/*****************************************************************************/
+/**
+ * Fill pixel x/y and the adjacent pixels with the same color as this one
+ * with color col. If a color limit is hit, do what the drawing mode requires.
+ */
+void BitmapBase::FloodFill(unsigned x, unsigned y,
+                           const C64Color& col, MCDrawingMode mode)
+{
+    typedef enum { FF_UNCHECKED = 0, FF_TOCHECK, FF_CHECKED } state_t;
+    C64Color colOld;
+    bool     bGoOn;
+
+    unsigned w = GetWidth();
+    unsigned h = GetHeight();
+
+    state_t  state[GetWidth()][GetHeight()];
+
+    memset(&state, FF_UNCHECKED, sizeof(state));
+    colOld = *GetColor(x, y);
+    state[y][x] = FF_TOCHECK;
+
+    do
+    {
+        bGoOn = false;
+        for (y = 0; y < h; ++y)
+        {
+            for (x = 0; x < w; ++x)
+            {
+                if (state[y][x] == FF_TOCHECK)
+                {
+                    if (x > 0 && state[y][x - 1] == FF_UNCHECKED &&
+                        *GetColor(x - 1, y) == colOld)
+                        state[y][x - 1] = FF_TOCHECK;
+                    if (x + 1 < w && state[y][x + 1] == FF_UNCHECKED &&
+                        *GetColor(x + 1, y) == colOld)
+                        state[y][x + 1] = FF_TOCHECK;
+                    if (y > 0 && state[y - 1][x] == FF_UNCHECKED &&
+                        *GetColor(x, y - 1) == colOld)
+                        state[y - 1][x] = FF_TOCHECK;
+                    if (y + 1 < h && state[y + 1][x] == FF_UNCHECKED &&
+                        *GetColor(x, y + 1) == colOld)
+                        state[y + 1][x] = FF_TOCHECK;
+                    state[y][x] = FF_CHECKED;
+                    SetPixel(x, y, col, mode);
+                    bGoOn = true;
+                }
+            }
+        }
+    }
+    while (bGoOn);
+}
+
+/*****************************************************************************/
+/**
+ * Draw a line with color col.
+ * If a color limit is hit, do what the drawing mode requires.
+ */
+void BitmapBase::Line(int x1, int y1, int x2, int y2,
+                      const C64Color& col, MCDrawingMode mode)
+{
+    int fixx, fixy, step;
+
+    if (abs(x2 - x1) > abs(y2 - y1))
+    {
+        /* horizontal */
+        if (x2 < x1)
+        {
+            step = x1; x1 = x2; x2 = step;
+            step = y1; y1 = y2; y2 = step;
+        }
+
+        fixy = y1 * 1024;
+        step = x2 == x1 ? 0 : 1024 * (y2 - y1) / (x2 - x1);
+        for (fixx = x1 * 1024; fixx <= x2 * 1024; fixx += 1024)
+        {
+            SetPixel((fixx + 512) / 1024, (fixy + 512) / 1024,
+                     col, mode);
+            fixy += step;
+        }
+    }
+    else
+    {
+        /* vertical */
+        if (y2 < y1)
+        {
+            step = x1; x1 = x2; x2 = step;
+            step = y1; y1 = y2; y2 = step;
+        }
+
+        fixx = x1 * 1024;
+        step = y2 == y1 ? 0 : 1024 * (x2 - x1) / (y2 - y1);
+        for (fixy = y1 * 1024; fixy <= y2 * 1024; fixy += 1024)
+        {
+            SetPixel((fixx + 512) / 1024, (fixy + 512) / 1024,
+                     col, mode);
+            fixx += step;
+        }
+    }
 }

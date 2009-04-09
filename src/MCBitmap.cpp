@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2008 Thomas Giesel
+ * (c) 2003-2009 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -75,11 +75,12 @@ unsigned MCBitmap::GetPixelXFactor() const
 
 /******************************************************************************/
 /**
- * Return the color of a pixel.
+ * Return the color of a pixel. If the coordinates are out of range, return
+ * black.
  */
 const C64Color* MCBitmap::GetColor(unsigned x, unsigned y) const
 {
-    if ((x < MC_X) && (y < MC_Y))
+    if ((x < GetWidth()) && (y < GetHeight()))
         return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
     else
         return &black;
@@ -176,7 +177,7 @@ unsigned char MCBitmap::GetBitmapRAM(unsigned offset)
  */
 const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
 {
-    if ((x < MC_X) && (y < MC_Y))
+    if ((x < GetWidth()) && (y < GetHeight()))
     {
         return &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
     }
@@ -188,116 +189,15 @@ const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
  * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon 3 Vordergrund-
  * farben, wird je nach "mode" verfahren. Siehe MCBlock::SetPixel
  */
-bool MCBitmap::SetPixel(unsigned x, unsigned y,
+void MCBitmap::SetPixel(unsigned x, unsigned y,
                         const C64Color& col, MCDrawingMode mode)
 {
     MCBlock* pBlock;
 
-    if ((x < MC_X) && (y < MC_Y))
+    if ((x < GetWidth()) && (y < GetHeight()))
     {
          pBlock = &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
-         return pBlock->SetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT,
-                                 col, mode);
+         pBlock->SetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT,
+                          col, mode);
     }
-    return false;
-}
-
-/****************************************************************************
- * Fuellt die gleichfarbige Umgebung des Pixel an x/y in der Farbe col. Gibt
- * es schon 3 Vordergrundfarben, wird je nach "mode" verfahren. Siehe
- * MCBlock::SetPixel.
- */
-bool MCBitmap::FloodFill(unsigned x, unsigned y,
-                         const C64Color& col, MCDrawingMode mode)
-{
-    typedef enum { FF_UNCHECKED = 0, FF_TOCHECK, FF_CHECKED } state_t;
-    C64Color colOld;
-    state_t  state[MC_Y][MC_X];
-    bool     b_go_on;
-
-    //ASSERT ((x < MC_X) && (y < MC_Y));
-
-    memset(&state, FF_UNCHECKED, sizeof(state));
-    colOld = *GetColor(x, y);
-    state[y][x] = FF_TOCHECK;
-
-    do
-    {
-        b_go_on = false;
-        for (y = 0; y < MC_Y; ++y)
-        {
-            for (x = 0; x < MC_X; ++x)
-            {
-                if (state[y][x] == FF_TOCHECK)
-                {
-                    if (x > 0 && state[y][x - 1] == FF_UNCHECKED &&
-                        *GetColor(x - 1, y) == colOld)
-                        state[y][x - 1] = FF_TOCHECK;
-                    if (x + 1 < MC_X && state[y][x + 1] == FF_UNCHECKED &&
-                        *GetColor(x + 1, y) == colOld)
-                        state[y][x + 1] = FF_TOCHECK;
-                    if (y > 0 && state[y - 1][x] == FF_UNCHECKED &&
-                        *GetColor(x, y - 1) == colOld)
-                        state[y - 1][x] = FF_TOCHECK;
-                    if (y + 1 < MC_Y && state[y + 1][x] == FF_UNCHECKED &&
-                        *GetColor(x, y + 1) == colOld)
-                        state[y + 1][x] = FF_TOCHECK;
-                    state[y][x] = FF_CHECKED;
-                    SetPixel(x, y, col, mode);
-                    b_go_on = true;
-                }
-            }
-        }
-    }
-    while (b_go_on);
-    return true;
-}
-
-/*****************************************************************************
- * Malt eine Linie in der Farbe col. Gibt es schon 3 Vordergrund-
- * farben, wird je nach "mode" verfahren. Siehe MCBlock::SetPixel
- */
-bool MCBitmap::Line(int x1, int y1, int x2, int y2,
-                    const C64Color& col, MCDrawingMode mode)
-{
-    int fixx, fixy, step;
-
-    if (abs(x2 - x1) > abs(y2 - y1))
-    {
-        /* horizontal */
-        if (x2 < x1)
-        {
-            step = x1; x1 = x2; x2 = step;
-            step = y1; y1 = y2; y2 = step;
-        }
-
-        fixy = y1 * 1024;
-        step = x2 == x1 ? 0 : 1024 * (y2 - y1) / (x2 - x1);
-        for (fixx = x1 * 1024; fixx <= x2 * 1024; fixx += 1024)
-        {
-            SetPixel((fixx + 512) / 1024, (fixy + 512) / 1024,
-                     col, mode);
-            fixy += step;
-        }
-    }
-    else
-    {
-        /* vertikal */
-        if (y2 < y1)
-        {
-            step = x1; x1 = x2; x2 = step;
-            step = y1; y1 = y2; y2 = step;
-        }
-
-        fixx = x1 * 1024;
-        step = y2 == y1 ? 0 : 1024 * (x2 - x1) / (y2 - y1);
-        for (fixy = y1 * 1024; fixy <= y2 * 1024; fixy += 1024)
-        {
-            SetPixel((fixx + 512) / 1024, (fixy + 512) / 1024,
-                     col, mode);
-            fixx += step;
-        }
-    }
-
-    return false;
 }
