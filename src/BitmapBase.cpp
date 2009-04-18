@@ -106,7 +106,7 @@ void BitmapBase::FloodFill(unsigned x, unsigned y,
     unsigned w = GetWidth();
     unsigned h = GetHeight();
 
-    state_t  state[GetWidth()][GetHeight()];
+    state_t  state[h][w];
 
     memset(&state, FF_UNCHECKED, sizeof(state));
     colOld = *GetColor(x, y);

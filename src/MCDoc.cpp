@@ -49,7 +49,29 @@ typedef struct KOALA_S
 unsigned MCDoc::m_nDocNumber;
 
 
-/******************************************************************************
+/******************************************************************************/
+/**
+ * This is a list of all Filters for this image format.
+ */
+static FormatInfo::Filter m_aFilters[] =
+{
+    { wxT("Koala files"), wxT("*.koa;*.kla") },
+    { wxT("Amica files"), wxT("*.ami") },
+    { NULL, NULL }
+};
+
+/**
+ * Information about this image format.
+ */
+FormatInfo MCDoc::m_formatInfo(
+    wxT("Multi Color Bitmap"),
+    m_aFilters,
+    MCDoc::Factory);
+
+
+/******************************************************************************/
+/**
+ *
  */
 MCDoc::MCDoc()
     : m_bitmap()
@@ -74,8 +96,8 @@ MCDoc::MCDoc()
 
 
 /******************************************************************************/
-/*
- * Tell it all my renderers.
+/**
+ * Tell all my renderers that I'm going to go.
  */
 MCDoc::~MCDoc()
 {
@@ -87,10 +109,20 @@ MCDoc::~MCDoc()
     }
 }
 
-/******************************************************************************/
-/*
- * Refresh the frame associated with this document.
 
+/******************************************************************************/
+/**
+ * Create an object of this class.
+ */
+DocBase* MCDoc::Factory()
+{
+    return new MCDoc;
+}
+
+
+/******************************************************************************/
+/**
+ * Refresh the frame associated with this document.
  */
 void MCDoc::Refresh(int x1, int y1, int x2, int y2)
 {

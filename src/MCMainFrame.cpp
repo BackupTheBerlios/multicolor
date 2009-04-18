@@ -30,6 +30,7 @@
 #include <wx/image.h>
 #include <wx/filedlg.h>
 
+#include "FormatInfo.h"
 #include "MCApp.h"
 #include "MCDoc.h"
 #include "MCMainFrame.h"
@@ -386,7 +387,7 @@ void MCMainFrame::OnFocus(wxFocusEvent& event)
 
 
 /*****************************************************************************/
-/*
+/**
  * Create a new file.
  */
 void MCMainFrame::OnNew(wxCommandEvent &event)
@@ -403,6 +404,8 @@ void MCMainFrame::OnNew(wxCommandEvent &event)
 void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
 	wxString stringFilter;
+
+    wxErrorDlg(FormatInfo::GetFullFilterString());
 
 	stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
     stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));

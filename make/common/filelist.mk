@@ -9,6 +9,7 @@ srcdir        := ../../src
 src :=
 src += BitmapBase.cpp
 src += C64Color.cpp
+src += FormatInfo.cpp
 src += MCApp.cpp
 src += MCBitmap.cpp
 src += MCBlock.cpp

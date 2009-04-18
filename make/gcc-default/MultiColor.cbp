@@ -21,8 +21,6 @@
 					<CompileFile command="$make -f $makefile $file" />
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -q -f $makefile DEBUG=YES" />
-					<SilentBuild command="$make -s -f $makefile DEBUG=YES" />
 				</MakeCommands>
 			</Target>
 			<Target title="Release">
@@ -42,8 +40,6 @@
 					<CompileFile command="$make -f $makefile $file" />
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -q -f $makefile" />
-					<SilentBuild command="$make -s -f $makefile" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -62,7 +58,11 @@
 		<Unit filename="../../src/BitmapBase.h" />
 		<Unit filename="../../src/C64Color.cpp" />
 		<Unit filename="../../src/C64Color.h" />
+		<Unit filename="../../src/DocBase.cpp" />
+		<Unit filename="../../src/DocBase.h" />
 		<Unit filename="../../src/DocRenderer.h" />
+		<Unit filename="../../src/FormatInfo.cpp" />
+		<Unit filename="../../src/FormatInfo.h" />
 		<Unit filename="../../src/MCApp.cpp" />
 		<Unit filename="../../src/MCApp.h" />
 		<Unit filename="../../src/MCBitmap.cpp" />
@@ -100,6 +100,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

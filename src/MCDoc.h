@@ -31,16 +31,19 @@
 #include <wx/gdicmn.h>
 
 #include "MCBitmap.h"
+#include "DocBase.h"
+#include "FormatInfo.h"
 
 #define MC_UNDO_LEN 100
 
 class DocRenderer;
 
-class MCDoc
+class MCDoc : public DocBase
 {
 public:
     MCDoc();
     virtual ~MCDoc();
+    static DocBase* Factory();
 
     const BitmapBase* GetBitmap() const;
     BitmapBase* GetBitmap();
@@ -71,6 +74,8 @@ public:
     unsigned       m_nRedoPos;
 
 protected:
+    static FormatInfo m_formatInfo;
+
     static unsigned m_nDocNumber;
 
     /// The bitmap under work
