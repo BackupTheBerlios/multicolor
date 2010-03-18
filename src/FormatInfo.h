@@ -29,6 +29,18 @@
 #include <wx/string.h>
 #include <list>
 
+/*
+ * -------------------             -------------------
+ * | pStrName        | *         1 | FormatInfo      |
+ * | pStrWildcard    | ---------<> |                 |
+ * |                 | m_pFilters  |                 |
+ * -------------------             -------------------
+ *
+ * e.g.                            e.g.
+ * Koala files / *.koa;*.kla       Multi Color Bitmap
+ * Amica files / *.ami
+ */
+
 class MCDoc;
 class DocBase;
 
@@ -45,9 +57,9 @@ public:
         const wxChar* pStrName,
         Filter* pFilters,
         DocBase* (*docFactory)() );
-    const std::string& GetName() const;
-    const std::string& GetFilterName() const;
+    const wxString& GetName() const;
     wxString GetFilterWildcards() const;
+    wxString GetFilters() const;
 
     static wxString GetFullFilterString();
     static const std::list<const FormatInfo*>* GetFormatList();

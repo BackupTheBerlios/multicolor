@@ -405,12 +405,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
 {
 	wxString stringFilter;
 
-    wxErrorDlg(FormatInfo::GetFullFilterString());
-
-	stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
-    stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));
-	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
-    stringFilter.append(wxT("All files (*)|*"));
+    stringFilter = FormatInfo::GetFullFilterString();
 
 	wxFileDialog* pFileDialog = new wxFileDialog(
             this, wxT("Open File"), wxT(""), wxT(""), stringFilter,

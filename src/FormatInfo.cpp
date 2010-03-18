@@ -47,6 +47,32 @@ FormatInfo::FormatInfo(
 
 /*****************************************************************************/
 /**
+ * Create a part for a filter string for wxFileDialog etc.
+ * This string contains:
+ * - One entry for each filter type of this format
+ */
+wxString FormatInfo::GetFilters() const
+{
+    int i;
+    wxString str;
+
+    for (i = 0; m_pFilters[i].pStrWildcard != NULL; i++)
+    {
+        str.append(m_pFilters[i].pStrName);
+        str.append(wxT(" ("));
+        str.append(m_pFilters[i].pStrWildcard);
+        str.append(wxT(")|"));
+        str.append(m_pFilters[i].pStrWildcard);
+        str.append(wxT("|"));
+    }
+
+    return str;
+}
+
+
+
+/*****************************************************************************/
+/**
  * Create a filter string for wxFileDialog etc. This string contains:
  * - All image files (all filters)
  * - One entry for each type
@@ -58,23 +84,32 @@ wxString FormatInfo::GetFullFilterString()
     std::list<const FormatInfo*>::iterator i;
     wxString strTmp;
     wxString str;
-    int k;
+    int n;
 
     // collect all filters
+    str = wxT("All image files (");
+    strTmp.clear();
     for (i = (*m_pListFormatInfo).begin();
-         i != (*m_pListFormatInfo).end();
-         i++)
+         i != (*m_pListFormatInfo).end(); i++)
     {
-        strTmp.append(i->GetFilterWildcards());
+        strTmp.append((*i)->GetFilterWildcards());
     }
-#error hier weitermachen
-#if 0
-    str.append("All image files (");
+    str.append(strTmp);
+    str.append(wxT(")|"));
+    str.append(strTmp);
+    str.append(wxT("|"));
+
+    // one filter for each format
     for (i =  (*m_pListFormatInfo).begin();
-         i != (*m_pListFormatInfo).end();
-         i++)
+         i != (*m_pListFormatInfo).end(); i++)
     {
-#endif
+        str.append((*i)->GetFilters());
+    }
+
+    // all files (the last one must be without "|" at the end
+    str.append(wxT("All files (*)|*"));
+
+    return str;
 }
 
 
@@ -109,3 +144,4 @@ const std::list<const FormatInfo*>* FormatInfo::GetFormatList()
 {
     return m_pListFormatInfo;
 }
+
