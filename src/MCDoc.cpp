@@ -546,7 +546,7 @@ int MCDoc::SaveKoala(unsigned char* pBuff)
 
     // start addr
     *p++ = 0x00;
-    *p++ = 0x44;
+    *p++ = 0x60;
 
     // bitmap
     for (i = 0; i < 8000; i++)
