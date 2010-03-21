@@ -903,11 +903,6 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
     int xFactor, yFactor;
     int xScroll, yScroll;
 
-    if (!m_timerScrolling.IsRunning())
-    {
-        m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
-    }
-
     if (m_bDragScrollActive)
     {
         GetScrollPixelsPerUnit(&xFactor, &yFactor);
@@ -920,6 +915,10 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
                   (event.GetY() - m_pointDragScrollStart.y) / yFactor;
 
         Scroll(xScroll, yScroll);
+    }
+    else if (!m_timerScrolling.IsRunning())
+    {
+        m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
     }
 
     UpdateCursorPosition(event.GetX(), event.GetY(), true);
