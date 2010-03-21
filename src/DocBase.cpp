@@ -47,6 +47,15 @@ DocBase::DocBase() :
 
 
 /******************************************************************************/
+/**
+ * Destruktor.
+ */
+DocBase::~DocBase()
+{
+}
+
+
+/******************************************************************************/
 /*
  * Add the renderer to the list of renderers showing this document.
  * Make sure it is only in the list once.

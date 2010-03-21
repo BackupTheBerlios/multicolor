@@ -66,6 +66,17 @@ int MCBitmap::GetHeight() const
 }
 
 
+/*****************************************************************************/
+/**
+ * Return the width of a attribute cell, if applicable. Return (todo) if
+ * this bitmap has no cells.
+ */
+int MCBitmap::GetCellWidth() const
+{
+    return 4;
+}
+
+
 /******************************************************************************/
 /**
  * Return the pixel factor in X-direction. 2 for MC.
@@ -73,6 +84,16 @@ int MCBitmap::GetHeight() const
 int MCBitmap::GetPixelXFactor() const
 {
     return 2;
+}
+
+
+/*****************************************************************************/
+/**
+ * Return the number of color indexes in this mode.
+ */
+int MCBitmap::GetNIndexes() const
+{
+    return 4;
 }
 
 

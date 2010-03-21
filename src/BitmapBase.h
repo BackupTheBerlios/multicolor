@@ -40,8 +40,13 @@ public:
     virtual int GetWidth() const = 0;
     virtual int GetHeight() const = 0;
 
+    virtual int GetCellWidth() const;
+    virtual int GetCellHeight() const;
+
     virtual int GetPixelXFactor() const;
     virtual int GetPixelYFactor() const;
+
+    virtual int GetNIndexes() const = 0;
 
     void SortAndClip(int* px1, int* py1, int* px2, int* py2);
     void ResetDirty();

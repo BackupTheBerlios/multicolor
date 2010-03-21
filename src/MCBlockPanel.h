@@ -56,7 +56,7 @@ protected:
     DocBase* m_pDoc;
 
     void OnPaint(wxPaintEvent& event);
-    void DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y);
+    void DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y);
 };
 
 #endif /* MCBLOCKPANEL_H_ */

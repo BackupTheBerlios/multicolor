@@ -97,7 +97,7 @@ void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
 void MCBlockPanel::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-#if 0 // todo
+
     if (m_pDoc)
         DrawBlock(&dc, m_pDoc, m_pDoc->GetMousePos().x, m_pDoc->GetMousePos().y);
     else
@@ -108,7 +108,6 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
             m_nWBorder, m_nWBorder,
             MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
     }
-#endif
 }
 
 
@@ -137,9 +136,11 @@ void MCBlockPanel::SetDoc(DocBase* pDoc)
 /**
  * Show the block which contains the given bitmap coordinates.
  */
-void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
+void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
 {
-    unsigned  xx, yy;
+    int       xx, yy;
+    int       xCell, yCell, wCell, hCell;
+    int       nIndexes;
     MC_RGB    rgb;
     wxRect    rect;
     wxBrush   brush(*wxBLACK);
@@ -147,33 +148,36 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
     wxString  str;
     wxSize    textExtent;
 
-    MCBitmap* pMCB = (MCBitmap*) pDoc->GetBitmap();
-    const MCBlock* pBlock = pMCB->GetMCBlock(pDoc->GetMousePos().x, y);
+    BitmapBase* pB = pDoc->GetBitmap();
+    /*const MCBlock* pBlock = pMCB->GetMCBlock(pDoc->GetMousePos().x, y);
     if (!pBlock)
-        return;
+        return;*/
 
     pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
+
+    // cell size
+    wCell = pDoc->GetBitmap()->GetCellWidth();
+    hCell = pDoc->GetBitmap()->GetCellHeight();
+
+    // make x and y cell-aligned
+    xCell = x - x % wCell;
+    yCell = y - y % hCell;
 
     // draw the block of pixels
     rect.width = m_nWBox;
     rect.height = m_nHBox;
     rect.y = m_nWBorder;
-    for (yy = 0; yy < MCBLOCK_HEIGHT; ++yy)
+    for (yy = 0; yy < hCell; ++yy)
     {
         rect.x = m_nWBorder;
-        for (xx = 0; xx < MCBLOCK_WIDTH; ++xx)
+        for (xx = 0; xx < wCell; ++xx)
         {
-            if ((xx == x % MCBLOCK_WIDTH) &&
-                    (yy == y % MCBLOCK_HEIGHT))
-            {
+            if ((xx == x % wCell) && (yy == y % hCell))
                 pDC->SetPen(*wxWHITE_PEN);
-            }
             else
-            {
                 pDC->SetPen(pen);
-            }
 
-            rgb = pBlock->GetColor(xx, yy)->GetRGB();
+            rgb = pB->GetColor(xCell + xx, yCell + yy)->GetRGB();
             brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
             pDC->SetBrush(brush);
             pDC->DrawRectangle(rect);
@@ -186,9 +190,11 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
     pDC->SetTextForeground(*wxBLACK);
     rect.height = 2 * m_nHBox;
     rect.width = 2 * m_nWBox;
-    rect.x = m_nWBorder + MCBLOCK_WIDTH * m_nWBox + m_nWBorder;
+    rect.x = m_nWBorder + wCell * m_nWBox + m_nWBorder;
     rect.y = m_nWBorder;
-    for (yy = 0; yy < 4; ++yy)
+    nIndexes = pB->GetNIndexes();
+
+    for (yy = 0; yy < nIndexes; ++yy)
     {
         str = wxString::Format(wxT("C%d"), yy);
         textExtent = pDC->GetTextExtent(str);
@@ -196,7 +202,7 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
         pDC->DrawText(str, rect.x, rect.y + (rect.height - textExtent.y) / 2);
         rect.y += 2 * m_nHBox;
     }
-
+#if 0
     // count the 4 colors
     pDC->SetPen(*wxBLACK_PEN);
     rect.x += textExtent.x + 1;
@@ -225,4 +231,5 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y)
                       rect.y + (rect.height - textExtent.y) / 2);
         rect.y += 2 * m_nHBox;
     }
+#endif
 }

@@ -46,7 +46,13 @@ public:
 
     virtual int GetWidth() const;
     virtual int GetHeight() const;
+
+    virtual int GetCellWidth() const;
+
     virtual int GetPixelXFactor() const;
+
+    virtual int GetNIndexes() const;
+
     virtual const C64Color* GetColor(int x, int y) const;
     virtual void SetPixel(int x, int y, const C64Color& col,
                           MCDrawingMode mode = MCDrawingModeIgnore);

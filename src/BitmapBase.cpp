@@ -39,6 +39,28 @@ BitmapBase::BitmapBase() :
 
 /*****************************************************************************/
 /**
+ * Return the width of a attribute cell, if applicable. Return (todo) if
+ * this bitmap has no cells.
+ */
+int BitmapBase::GetCellWidth() const
+{
+    return 8;
+}
+
+
+/*****************************************************************************/
+/**
+ * Return the height of an attribute cell, if applicable. Return (todo) if
+ * this bitmap has no cells.
+ */
+int BitmapBase::GetCellHeight() const
+{
+    return 8;
+}
+
+
+/*****************************************************************************/
+/**
  * Return the pixel factor in X-direction. e.g. 1 for hires, 2 for MC.
  */
 int BitmapBase::GetPixelXFactor() const

@@ -37,6 +37,7 @@ class DocBase
 {
 public:
     DocBase();
+    virtual ~DocBase();
 
     void AddRenderer(DocRenderer* pRenderer);
     void RemoveRenderer(DocRenderer* pRenderer);
