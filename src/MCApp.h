@@ -34,6 +34,7 @@
 
 class PalettePanel;
 class MCToolBase;
+class DocBase;
 class MCChildFrame;
 
 class MCApp : public wxApp
@@ -49,9 +50,9 @@ public:
     void SetDrawingTool(int id);
     MCToolBase* GetDrawingTool(int idTool = 0);
 
-    void SetActiveDoc(MCDoc* pDoc);
+    void SetActiveDoc(DocBase* pDoc);
     void SetMousePos(int x, int y);
-    void SetDocName(const MCDoc* pDoc, const wxString stringName);
+    void SetDocName(const DocBase* pDoc, const wxString stringName);
 
     MCMainFrame* GetMainFrame();
     PalettePanel* GetPalettePanel();

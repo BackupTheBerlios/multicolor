@@ -35,6 +35,9 @@ const C64Color MCBitmap::black;
 /*****************************************************************************/
 MCBitmap::MCBitmap(void)
 {
+    int x;
+    for (x = 0; x < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS; ++x)
+        m_aMCBlock[0][x].SetParent(this);
 }
 
 /*****************************************************************************/
@@ -47,7 +50,7 @@ MCBitmap::~MCBitmap(void)
 /**
  * Return the width of this image.
  */
-unsigned MCBitmap::GetWidth() const
+int MCBitmap::GetWidth() const
 {
     return MC_X;
 }
@@ -57,7 +60,7 @@ unsigned MCBitmap::GetWidth() const
 /**
  * Return the height of this image.
  */
-unsigned MCBitmap::GetHeight() const
+int MCBitmap::GetHeight() const
 {
     return MC_Y;
 }
@@ -67,7 +70,7 @@ unsigned MCBitmap::GetHeight() const
 /**
  * Return the pixel factor in X-direction. 2 for MC.
  */
-unsigned MCBitmap::GetPixelXFactor() const
+int MCBitmap::GetPixelXFactor() const
 {
     return 2;
 }
@@ -78,9 +81,9 @@ unsigned MCBitmap::GetPixelXFactor() const
  * Return the color of a pixel. If the coordinates are out of range, return
  * black.
  */
-const C64Color* MCBitmap::GetColor(unsigned x, unsigned y) const
+const C64Color* MCBitmap::GetColor(int x, int y) const
 {
-    if ((x < GetWidth()) && (y < GetHeight()))
+    if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
         return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
     else
         return &black;
@@ -189,15 +192,19 @@ const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
  * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon 3 Vordergrund-
  * farben, wird je nach "mode" verfahren. Siehe MCBlock::SetPixel
  */
-void MCBitmap::SetPixel(unsigned x, unsigned y,
+void MCBitmap::SetPixel(int x, int y,
                         const C64Color& col, MCDrawingMode mode)
 {
     MCBlock* pBlock;
 
-    if ((x < GetWidth()) && (y < GetHeight()))
+    if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
     {
-         pBlock = &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
-         pBlock->SetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT,
-                          col, mode);
+        pBlock = &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
+        pBlock->SetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT,
+                         col, mode);
+
+        // this may change the whole block
+        Dirty(x & ~(MCBLOCK_WIDTH - 1), y & ~(MCBLOCK_HEIGHT - 1));
+        Dirty(x |  (MCBLOCK_WIDTH - 1), y |  (MCBLOCK_HEIGHT - 1));
     }
 }

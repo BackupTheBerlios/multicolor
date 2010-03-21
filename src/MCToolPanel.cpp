@@ -78,7 +78,7 @@ MCToolPanel::~MCToolPanel()
  * Set the active document which shall be used to update the preview
  * and so on from now. NULL means nothing to draw.
  */
-void MCToolPanel::SetActiveDoc(MCDoc* pDoc)
+void MCToolPanel::SetActiveDoc(DocBase* pDoc)
 {
     if (pDoc)
     {

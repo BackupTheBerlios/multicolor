@@ -1,0 +1,11 @@
+syntax: glob
+*.o
+*.tar.*
+*~
+*.bak
+*.bck
+*.obj
+*.orig
+
+debug/*
+release/*

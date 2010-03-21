@@ -44,6 +44,10 @@ protected:
     wxRadioButton* m_pButtonIgnore;
     wxRadioButton* m_pButtonReplaceCurrent;
     wxRadioButton* m_pButtonReplaceLeastUsed;
+    wxRadioButton* m_pButtonIndex0;
+    wxRadioButton* m_pButtonIndex1;
+    wxRadioButton* m_pButtonIndex2;
+    wxRadioButton* m_pButtonIndex3;
 
     MCDrawingMode  m_drawingMode;
 };

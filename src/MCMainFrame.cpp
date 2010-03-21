@@ -300,7 +300,7 @@ void MCMainFrame::ShowMousePos(int x, int y)
  * This is done in this strange way so the right window titles can be set
  * even if there is no simple relationship between them.
  */
-void MCMainFrame::SetDocName(const MCDoc* pDoc, const wxString name)
+void MCMainFrame::SetDocName(const DocBase* pDoc, const wxString name)
 {
     MCCanvas* pCanvas;
     size_t n;
@@ -357,7 +357,7 @@ void MCMainFrame::OnPageChanged(wxCommandEvent &event)
 {
     int nSelected;
     MCCanvas* pCanvas;
-    MCDoc* pDoc;
+    DocBase* pDoc;
 
     nSelected = m_pNotebook->GetSelection();
     if (nSelected < 0)
@@ -506,7 +506,7 @@ void MCMainFrame::OnFileClose(wxCommandEvent &event)
     int result;
     int nSelected;
     MCCanvas* pCanvas;
-    MCDoc* pDoc;
+    DocBase* pDoc;
 
     nSelected = m_pNotebook->GetSelection();
     if (nSelected < 0)
@@ -642,7 +642,7 @@ void MCMainFrame::OnRedo(wxCommandEvent &event)
 /*
  * Get a pointer to the active document or NULL.
  */
-MCDoc* MCMainFrame::GetActiveDoc()
+DocBase* MCMainFrame::GetActiveDoc()
 {
     MCCanvas* pCanvas = GetActiveCanvas();
 

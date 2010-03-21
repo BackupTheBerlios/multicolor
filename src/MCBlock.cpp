@@ -25,9 +25,11 @@
 
 #include <string.h>
 #include "MCBlock.h"
+#include "MCBitmap.h"
 
 /*****************************************************************************/
-MCBlock::MCBlock(void)
+MCBlock::MCBlock() :
+    m_pParent(NULL)
 {
     memset(m_aBitmap, 0, sizeof(m_aBitmap));
     m_c64Color[0].SetColor(MC_BLACK);
@@ -118,13 +120,27 @@ int MCBlock::CountMCIndex(int index) const
  *                gegen die neue Farbe ersetzt. Dann wird der Pixel gesetzt.
  * FORCE:         Die des Pixels x/y wird in diesem Block mit der neuen Farbe
  *                ersetzt.
+ *
+ * Es koennen auch Farben mit festem Index gesetzt werden, 0..3
  */
 bool MCBlock::SetPixel(unsigned x, unsigned y,
                        const C64Color& col, MCDrawingMode mode)
 {
     int i;
 
-    //ASSERT ((x >= 0) && (x < 4) && (y >= 0) && (y < 8));
+    // Set colors with fixed index first
+    i = (int)(mode - MCDrawingModeIndex0);
+    if (mode >= MCDrawingModeIndex0 && mode <= MCDrawingModeIndex3)
+    {
+        if (i == 0 && m_pParent)
+            m_pParent->SetBackground(col);
+        else
+            SetMCColor(i, col);
+
+        m_aBitmap[y][x] = i;
+        return true;
+    }
+
     /* Die 4 Farben durchgehen und nachsehen, ob geeignet */
     /* HG-Farbe immer verwenden, wenn moeglich */
     if (m_c64Color[0] == col)
@@ -151,7 +167,7 @@ bool MCBlock::SetPixel(unsigned x, unsigned y,
             return true;
         }
     }
-    /* 4-Farb-Problem, je nach Modus weiterverfahren */
+    /* Color Clash, je nach Modus weiterverfahren */
     if (mode == MCDrawingModeIgnore)
         return false;
 

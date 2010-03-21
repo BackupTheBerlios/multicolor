@@ -27,14 +27,18 @@
 #define MCTOOLBASE_H
 
 // forward declarations
-class MCDoc;
+class DocBase;
 
 
 typedef enum DrawingMode_e
 {
     MCDrawingModeIgnore,
     MCDrawingModeForce,
-    MCDrawingModeLeast
+    MCDrawingModeLeast,
+    MCDrawingModeIndex0,
+    MCDrawingModeIndex1,
+    MCDrawingModeIndex2,
+    MCDrawingModeIndex3,
 }
 MCDrawingMode;
 
@@ -50,7 +54,7 @@ public:
     void SetColors(int nColorPrimary, int nColorSecondary);
 
     // Set the document we have to work with
-    void SetDoc(MCDoc* pDoc);
+    void SetDoc(DocBase* pDoc);
 
     void SetDrawingMode(MCDrawingMode drawingMode);
 
@@ -74,7 +78,7 @@ protected:
     unsigned m_xStart;
     unsigned m_yStart;
     MCDrawingMode m_drawingMode;
-    MCDoc* m_pDoc;
+    DocBase* m_pDoc;
 };
 
 
@@ -92,7 +96,7 @@ inline void MCToolBase::SetDrawingMode(MCDrawingMode drawingMode)
 /*
  * Set the document we have to work with.
  */
-inline void MCToolBase::SetDoc(MCDoc* pDoc)
+inline void MCToolBase::SetDoc(DocBase* pDoc)
 {
     m_pDoc = pDoc;
 }

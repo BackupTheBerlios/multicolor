@@ -14,6 +14,7 @@ src += MCApp.cpp
 src += MCBitmap.cpp
 src += MCBlock.cpp
 src += MCCanvas.cpp
+src += DocBase.cpp
 src += MCDoc.cpp
 src += MCMainFrame.cpp
 src += MCToolBase.cpp

@@ -49,7 +49,7 @@
 
 
 class MCToolBase;
-class MCDoc;
+class DocBase;
 
 class MCCanvas: public wxScrolledWindow, public DocRenderer
 {
@@ -63,8 +63,8 @@ public:
 
     virtual void OnDraw(wxDC& dc);
 
-    void SetDoc(MCDoc* pDoc);
-    MCDoc* GetDoc();
+    void SetDoc(DocBase* pDoc);
+    DocBase* GetDoc();
 
     void SetEmulateTV(bool bTV);
     bool GetEmulateTV();
@@ -79,7 +79,7 @@ protected:
     static std::list<MCCanvas*> m_listCanvasInstances;
 
     // Pointer to Document to be rendered or NULL
-    MCDoc* m_pDoc;
+    DocBase* m_pDoc;
 
     typedef struct
     {
@@ -95,7 +95,7 @@ protected:
     void DrawScaleBig(wxDC* pDC,
             unsigned x1, unsigned y1, unsigned x2, unsigned y2);
 
-    void ToBitmapCoord(int* px, int* py, int x, int y);
+    void ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll);
     void ToCanvasCoord(int* px, int* py, int x, int y);
     void DrawMousePos(wxDC* pDC);
     void UpdateVirtualSize();
@@ -190,7 +190,7 @@ inline unsigned MCCanvas::GetScale()
 /*
  * Return the pointer to the document related to this Canvas.
  */
-inline MCDoc* MCCanvas::GetDoc()
+inline DocBase* MCCanvas::GetDoc()
 {
     return m_pDoc;
 }

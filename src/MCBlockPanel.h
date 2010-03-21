@@ -42,7 +42,7 @@ public:
     virtual void OnDocMouseMoved(int x, int y);
     virtual void OnDocDestroy(MCDoc* pDoc);
 
-    void SetDoc(MCDoc* pDoc);
+    void SetDoc(DocBase* pDoc);
 
 protected:
     static const int m_nWTotal = 160;
@@ -53,7 +53,7 @@ protected:
 
     static const int m_nWBorder = (m_nHTotal - MCBLOCK_HEIGHT * m_nHBox) / 2;
 
-    MCDoc* m_pDoc;
+    DocBase* m_pDoc;
 
     void OnPaint(wxPaintEvent& event);
     void DrawBlock(wxDC* pDC, MCDoc* pDoc, unsigned x, unsigned y);

@@ -194,7 +194,7 @@ wxImage MCApp::GetImage(const wxString& dir, const wxString& name)
 
 
 /*****************************************************************************/
-/*
+/**
  * Load a bitmap from our ressources. If our executable is located in $(X),
  * search in $(X)/res first and then in $(X)/../share/multicolor.
  */
@@ -205,11 +205,11 @@ wxBitmap MCApp::GetBitmap(const wxString& dir, const wxString& name)
 
 
 /*****************************************************************************/
-/*
+/**
  * Set the active document which shall be used to update the preview
  * and so on from now. NULL means nothing to draw.
  */
-void MCApp::SetActiveDoc(MCDoc* pDoc)
+void MCApp::SetActiveDoc(DocBase* pDoc)
 {
     m_pMainFrame->GetToolPanel()->SetActiveDoc(pDoc);
 }
@@ -220,7 +220,7 @@ void MCApp::SetActiveDoc(MCDoc* pDoc)
  * This is done in this strange way so the right window titles can be set
  * even if there is no simple relationship between them.
  */
-void MCApp::SetDocName(const MCDoc* pDoc, const wxString name)
+void MCApp::SetDocName(const DocBase* pDoc, const wxString name)
 {
     m_pMainFrame->SetDocName(pDoc, name);
 }

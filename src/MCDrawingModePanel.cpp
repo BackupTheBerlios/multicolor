@@ -26,6 +26,7 @@
 #include <wx/sizer.h>
 #include <wx/radiobut.h>
 #include <wx/msgdlg.h>
+#include <wx/stattext.h>
 
 #include "MCDrawingModePanel.h"
 
@@ -39,11 +40,25 @@ MCDrawingModePanel::MCDrawingModePanel(wxWindow* pParent):
     m_pButtonReplaceCurrent =
         new wxRadioButton(this, wxID_ANY, wxT("Replace current"));
     m_pButtonIgnore =
-        new wxRadioButton(this, wxID_ANY, wxT("Ignore 4th color"));
+        new wxRadioButton(this, wxID_ANY, wxT("Ignore new color"));
+    m_pButtonIndex0 =
+        new wxRadioButton(this, wxID_ANY, wxT("Use index 0"));
+    m_pButtonIndex1 =
+        new wxRadioButton(this, wxID_ANY, wxT("Use index 1"));
+    m_pButtonIndex2 =
+        new wxRadioButton(this, wxID_ANY, wxT("Use index 2"));
+    m_pButtonIndex3 =
+        new wxRadioButton(this, wxID_ANY, wxT("Use index 3"));
 
+    pSizer->Add(new wxStaticText(this, wxID_ANY, _T("On color clash:")));
     pSizer->Add(m_pButtonReplaceLeastUsed);
     pSizer->Add(m_pButtonReplaceCurrent);
     pSizer->Add(m_pButtonIgnore);
+    pSizer->Add(new wxStaticText(this, wxID_ANY, _T("Fixed indexes:")));
+    pSizer->Add(m_pButtonIndex0);
+    pSizer->Add(m_pButtonIndex1);
+    pSizer->Add(m_pButtonIndex2);
+    pSizer->Add(m_pButtonIndex3);
 
     SetSizer(pSizer);
     pSizer->Fit(this);
@@ -79,5 +94,21 @@ void MCDrawingModePanel::OnRadioButtonSelected(wxCommandEvent& event)
     else if (event.GetEventObject() == m_pButtonIgnore)
     {
         m_drawingMode = MCDrawingModeIgnore;
+    }
+    else if (event.GetEventObject() == m_pButtonIndex0)
+    {
+        m_drawingMode = MCDrawingModeIndex0;
+    }
+    else if (event.GetEventObject() == m_pButtonIndex1)
+    {
+        m_drawingMode = MCDrawingModeIndex1;
+    }
+    else if (event.GetEventObject() == m_pButtonIndex2)
+    {
+        m_drawingMode = MCDrawingModeIndex2;
+    }
+    else if (event.GetEventObject() == m_pButtonIndex3)
+    {
+        m_drawingMode = MCDrawingModeIndex3;
     }
 }

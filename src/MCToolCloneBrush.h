@@ -39,12 +39,12 @@ public:
     virtual void End(int x, int y);
 
 protected:
-    MCDoc* m_pDocSource;
-    MCDoc* m_pDocDest;
-    int    m_xSource;
-    int    m_ySource;
-    int    m_dx;
-    int    m_dy;
+    DocBase* m_pDocSource;
+    DocBase* m_pDocDest;
+    int      m_xSource;
+    int      m_ySource;
+    int      m_dx;
+    int      m_dy;
 
     void CloneLine(int x1, int y1, int x2, int y2);
     void ClonePixel(int x, int y);

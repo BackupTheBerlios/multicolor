@@ -34,7 +34,7 @@ class wxNotebook;
 #define MC_MAX_ZOOM 16
 
 class PalettePanel;
-class MCDoc;
+class DocBase;
 class MCCanvas;
 
 class MCMainFrame: public wxFrame
@@ -44,10 +44,10 @@ public:
             const wxString& title);
 
     MCToolPanel* GetToolPanel();
-    MCDoc* GetActiveDoc();
+    DocBase* GetActiveDoc();
     MCCanvas* GetActiveCanvas();
     void ShowMousePos(int x, int y);
-    void SetDocName(const MCDoc* pDoc, const wxString stringName);
+    void SetDocName(const DocBase* pDoc, const wxString stringName);
     void LoadDoc(const wxString& name);
     void FixFocus();
 

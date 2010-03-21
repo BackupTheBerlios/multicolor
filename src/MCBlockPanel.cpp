@@ -97,7 +97,7 @@ void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
 void MCBlockPanel::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-
+#if 0 // todo
     if (m_pDoc)
         DrawBlock(&dc, m_pDoc, m_pDoc->GetMousePos().x, m_pDoc->GetMousePos().y);
     else
@@ -108,6 +108,7 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
             m_nWBorder, m_nWBorder,
             MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
     }
+#endif
 }
 
 
@@ -116,7 +117,7 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
  * Set the Document this view refers to. If it is NULL, this preview just
  * shows a black block from now.
  */
-void MCBlockPanel::SetDoc(MCDoc* pDoc)
+void MCBlockPanel::SetDoc(DocBase* pDoc)
 {
     // remove me from the previous document
     if (m_pDoc)

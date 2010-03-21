@@ -26,6 +26,8 @@
 #ifndef BITMAPBASE_H
 #define BITMAPBASE_H
 
+#include <wx/gdicmn.h>
+
 #include "MCToolBase.h"
 
 class C64Color;
@@ -33,21 +35,26 @@ class C64Color;
 class BitmapBase
 {
 public:
-    virtual unsigned GetWidth() const = 0;
-    virtual unsigned GetHeight() const = 0;
+    BitmapBase();
 
-    virtual unsigned GetPixelXFactor() const;
-    virtual unsigned GetPixelYFactor() const;
+    virtual int GetWidth() const = 0;
+    virtual int GetHeight() const = 0;
+
+    virtual int GetPixelXFactor() const;
+    virtual int GetPixelYFactor() const;
 
     void SortAndClip(int* px1, int* py1, int* px2, int* py2);
+    void ResetDirty();
+    void Dirty(int x, int y);
+    const wxRect& GetDirtyRect() const;
 
     /**
      * Return the color of a pixel. If the coordinates are out of range, return
      * black.
      */
-    virtual const C64Color* GetColor(unsigned x, unsigned y) const = 0;
+    virtual const C64Color* GetColor(int x, int y) const = 0;
 
-    virtual void SetPixel(unsigned x, unsigned y, const C64Color& col,
+    virtual void SetPixel(int x, int y, const C64Color& col,
                           MCDrawingMode mode = MCDrawingModeIgnore) = 0;
 
     virtual void FloodFill(unsigned x, unsigned y, const C64Color& col,
@@ -57,6 +64,13 @@ public:
                       const C64Color& col, MCDrawingMode mode);
 
 protected:
+    wxRect m_rectDirty;
 };
+
+
+inline const wxRect& BitmapBase::GetDirtyRect() const
+{
+    return m_rectDirty;
+}
 
 #endif // BITMAPBASE_H

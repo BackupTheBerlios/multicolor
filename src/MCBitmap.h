@@ -44,11 +44,11 @@ public:
     MCBitmap(void);
     ~MCBitmap(void);
 
-    virtual unsigned GetWidth() const;
-    virtual unsigned GetHeight() const;
-    virtual unsigned GetPixelXFactor() const;
-    virtual const C64Color* GetColor(unsigned x, unsigned y) const;
-    virtual void SetPixel(unsigned x, unsigned y, const C64Color& col,
+    virtual int GetWidth() const;
+    virtual int GetHeight() const;
+    virtual int GetPixelXFactor() const;
+    virtual const C64Color* GetColor(int x, int y) const;
+    virtual void SetPixel(int x, int y, const C64Color& col,
                           MCDrawingMode mode = MCDrawingModeIgnore);
 
     void SetBackground(C64Color col);

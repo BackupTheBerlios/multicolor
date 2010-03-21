@@ -65,7 +65,7 @@ void MCToolLines::Start(int x, int y, bool bSecondaryFunction)
 }
 
 /*****************************************************************************/
-/*
+/**
  * Mouse has been moved while the button was kept pressed.
  *
  * Restory the documents bitmap from a saved one and draw a preview of the
@@ -93,7 +93,7 @@ void MCToolLines::Move(int x, int y)
     if (m_yOld < y1) y1 = m_yOld;
     if (m_yOld > y2) y2 = m_yOld;
 
-    m_pDoc->Refresh(x1, y1, x2, y2);
+    m_pDoc->Refresh(x1, y1, x2, y2); // ???
 
     m_xOld = x;
     m_yOld = y;

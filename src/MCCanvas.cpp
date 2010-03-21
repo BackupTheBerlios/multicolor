@@ -46,7 +46,7 @@
 #define PAINT_FILTER(F,X,CONST) ( (F)+=(X)-(F) - (((X)-(F))>>(CONST)) )
 
 /* define this to get some extra debug effects */
-//#define MC_DEBUG_REDRAW
+// #define MC_DEBUG_REDRAW
 
 std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 
@@ -108,7 +108,7 @@ MCCanvas::~MCCanvas()
 }
 
 /*****************************************************************************/
-/*
+/**
  * This is called when the document contents has changed, the parameters
  * report the area to be updated. Coordinates are in bitmap space.
  * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
@@ -121,15 +121,17 @@ MCCanvas::~MCCanvas()
  */
 void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 {
-    wxRect   rect;
+    wxRect      rect;
+    BitmapBase* pB;
 
     // Calculate the rectangle to be redrawn in screen coordinates
     ToCanvasCoord(&rect.x, &rect.y, x1, y1);
+    pB = m_pDoc->GetBitmap();
 
     // x2 = x1 is a rect with width = 1, that's why + 1
     // 2 extra pixels to b e refreshed in x direction because of TV emulation
-    rect.SetWidth((x2 - x1 + 3) * 2 * m_nScale);
-    rect.SetHeight((y2 - y1 + 1) * m_nScale);
+    rect.SetWidth ((x2 - x1 + 3) * pB->GetPixelXFactor() * m_nScale);
+    rect.SetHeight((y2 - y1 + 1) * pB->GetPixelYFactor() * m_nScale);
 
     RefreshRect(rect, false);
     Update();
@@ -166,7 +168,7 @@ void MCCanvas::OnDocDestroy(MCDoc* pDoc)
  * Set the Document this view refers to. If it is NULL, this canvas just
  * shows a black screen from now.
  */
-void MCCanvas::SetDoc(MCDoc* pDoc)
+void MCCanvas::SetDoc(DocBase* pDoc)
 {
     BitmapBase* pB;
 
@@ -222,7 +224,7 @@ void MCCanvas::SetScale(unsigned nScale)
 /*****************************************************************************/
 void MCCanvas::OnDraw(wxDC& rDC)
 {
-    int x1, y1, x2, y2;
+    int x1, y1, x2, y2, ww, hh;
     BitmapBase* pB;
 
     if (m_pDoc)
@@ -232,9 +234,11 @@ void MCCanvas::OnDraw(wxDC& rDC)
         // iterate through all rectangles to be refreshed
         while (upd)
         {
-            ToBitmapCoord(&x1, &y1, upd.GetX(), upd.GetY());
-            x2 = x1 + upd.GetW() / (2 * m_nScale) + 3;
-            y2 = y1 + upd.GetH() / m_nScale + 3;
+            // calculate bitmap coordinates from window coordinates
+            ToBitmapCoord(&x1, &y1, upd.GetX(), upd.GetY(), true);
+            ToBitmapCoord(&ww, &hh, upd.GetW(), upd.GetH(), false);
+            x2 = x1 + ww;
+            y2 = y1 + hh;
 
             m_pDoc->GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
@@ -283,6 +287,8 @@ void MCCanvas::OnDraw(wxDC& rDC)
  *
  * The caller must make sure that:
  * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
+ *
+ * x1, y1, x2, y2 are in bitmap space
  */
 void MCCanvas::DrawScaleSmall(wxDC* pDC,
         unsigned x1, unsigned y1, unsigned x2, unsigned y2)
@@ -358,6 +364,8 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
  *
  * The caller must make sure that:
  * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
+ *
+ * x1, y1, x2, y2 are in bitmap space
  */
 void MCCanvas::DrawScaleBig(wxDC* pDC,
         unsigned x1, unsigned y1, unsigned x2, unsigned y2)
@@ -429,12 +437,13 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
 
 
 /******************************************************************************
- * Convert window point to bitmap coordinates. Scroll position and zoom are
- * taken into account. The coordinates are clipped to fit into the bitmap.
+ * Convert window point to bitmap coordinates. Scroll position is taken into
+ * account if bScroll ist true. Zoom is always used.
+ * The coordinates are clipped to fit into the bitmap.
  *
  * Must only be called if there is a Document assigned.
  */
-void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
+void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll)
 {
     BitmapBase* pB;
 
@@ -448,8 +457,8 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y)
 
     CalcUnscrolledPosition(x, y, px, py);
 
-    *px /= (2 * (int)m_nScale);
-    *py /= (int)m_nScale;
+    *px /= pB->GetPixelXFactor() * (int)m_nScale;
+    *py /= pB->GetPixelYFactor() * (int)m_nScale;
 
     if (*px < 0) *px = 0;
     if (*py < 0) *py = 0;
@@ -774,6 +783,7 @@ void MCCanvas::StartTool(int x, int y, bool bSecondary)
         m_pActiveTool->SetDrawingMode(mode);
 
         m_pActiveTool->Start(x, y, bSecondary);
+        m_pDoc->RefreshDirty();
     }
 }
 
@@ -792,7 +802,7 @@ void MCCanvas::UpdateCursorPosition(int x, int y, bool bCanvasCoordinates)
     if (m_pDoc)
     {
         if (bCanvasCoordinates)
-            ToBitmapCoord(&x, &y, x, y);
+            ToBitmapCoord(&x, &y, x, y, true);
 
         pB = m_pDoc->GetBitmap();
         if (x < 0) x = 0;
@@ -805,6 +815,7 @@ void MCCanvas::UpdateCursorPosition(int x, int y, bool bCanvasCoordinates)
         if (m_pActiveTool)
         {
             m_pActiveTool->Move(x, y);
+            m_pDoc->RefreshDirty();
         }
     }
 }
@@ -820,6 +831,7 @@ void MCCanvas::EndTool(int x, int y)
     {
         m_pActiveTool->End(x, y);
         m_pActiveTool = NULL;
+        m_pDoc->RefreshDirty();
     }
 }
 
@@ -879,7 +891,7 @@ void MCCanvas::OnButtonDown(wxMouseEvent& event)
 
     if (m_pDoc)
     {
-        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY(), true);
         StartTool(x, y, event.GetButton() == wxMOUSE_BTN_RIGHT);
     }
 }
@@ -921,7 +933,7 @@ void MCCanvas::OnButtonUp(wxMouseEvent& event)
 
     if (m_pDoc)
     {
-        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY(), true);
         EndTool(x, y);
     }
 }
@@ -969,7 +981,7 @@ void MCCanvas::OnMouseWheel(wxMouseEvent& event)
 
     if (m_pDoc)
     {
-        ToBitmapCoord(&x, &y, event.GetX(), event.GetY());
+        ToBitmapCoord(&x, &y, event.GetX(), event.GetY(), true);
 
         if ((event.GetWheelRotation() > 0) && (nScale > 1))
         {

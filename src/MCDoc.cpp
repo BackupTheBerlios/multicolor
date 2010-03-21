@@ -45,9 +45,6 @@ typedef struct KOALA_S
    unsigned char background;
 } KOALA_T;
 
-// This contains a number for unnamed documents
-unsigned MCDoc::m_nDocNumber;
-
 
 /******************************************************************************/
 /**
@@ -78,15 +75,11 @@ MCDoc::MCDoc()
     , m_bitmapBackup()
     , m_listUndo()
     , m_nRedoPos(0)
-    , m_fileName()
-    , m_bModified(false)
 {
     PrepareUndo();
 
     // PrepareUndo sets m_bModified, reset it
     m_bModified = false;
-
-    m_fileName.SetName(wxString::Format(_T("unnamed%d"), ++m_nDocNumber));
 
     if (sizeof(KOALA_T) != 10003)
     {
@@ -122,7 +115,7 @@ DocBase* MCDoc::Factory()
 
 /******************************************************************************/
 /**
- * Refresh the frame associated with this document.
+ * Refresh all renderers associated with this document.
  */
 void MCDoc::Refresh(int x1, int y1, int x2, int y2)
 {
@@ -131,26 +124,15 @@ void MCDoc::Refresh(int x1, int y1, int x2, int y2)
     // bring them to the right order
     GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
-    // Extend the area to be refreshed to whole cells, otherwise color
-    // replacement artifacts may remain
-    // todo: this may depend from the graphic mode, so do it more intelligent
-    // in future
-    x1 &= ~3;
-    y1 &= ~7;
-    x2 |= 3;
-    y2 |= 7;
-
-    // clip them again (is this needed?)
-    GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
-
     for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
     {
         (*i)->OnDocChanged(x1, y1, x2, y2);
     }
 }
 
+
 /******************************************************************************/
-/*
+/**
  * Save the current bitmap as undo step.
  */
 void MCDoc::PrepareUndo()
@@ -225,51 +207,6 @@ bool MCDoc::CanRedo()
 {
     return m_nRedoPos < m_listUndo.size();
 };
-
-
-/******************************************************************************/
-/*
- * Add the renderer to the list of renderers showing this document.
- * Make sure it is only in the list once.
- */
-void MCDoc::AddRenderer(DocRenderer* pRenderer)
-{
-    m_listDocRenderers.remove(pRenderer);
-    m_listDocRenderers.push_back(pRenderer);
-}
-
-
-/******************************************************************************/
-/*
- * Remove the renderer from the list if it is in there.
- */
-void MCDoc::RemoveRenderer(DocRenderer* pRenderer)
-{
-    m_listDocRenderers.remove(pRenderer);
-}
-
-
-/******************************************************************************/
-/*
- * Set the current mouse position to a point in this document. This allows
- * all Renderers to display the current position. The coordinates must be
- * in bitmap coordinates.
- */
-void MCDoc::SetMousePos(int x, int y)
-{
-    std::list<DocRenderer*>::iterator i;
-
-    m_pointMousePos.x = x;
-    m_pointMousePos.y = y;
-
-    wxGetApp().GetMainFrame()->ShowMousePos(x, y);
-    for (i  = m_listDocRenderers.begin();
-         i != m_listDocRenderers.end();
-         ++i)
-    {
-        (*i)->OnDocMouseMoved(x, y);
-    }
-}
 
 
 /******************************************************************************/
@@ -385,24 +322,6 @@ bool MCDoc::Save(const wxString& stringFilename)
 
     delete[] pBuff;
 	return bRet;
-}
-
-
-/*****************************************************************************/
-/*
- *
- */
-void MCDoc::Modify(bool bModified)
-{
-    wxString str;
-
-    m_bModified = bModified;
-
-    if (bModified)
-        str = wxT("*");
-
-    str.Append(m_fileName.GetFullName());
-    wxGetApp().SetDocName(this, str);
 }
 
 

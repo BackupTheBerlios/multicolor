@@ -32,16 +32,22 @@
 #define MCBLOCK_WIDTH 4
 #define MCBLOCK_HEIGHT 8
 
+class MCBitmap;
+
+
 class MCBlock
 {
 protected:
     C64Color m_c64Color[4];
     unsigned char m_aBitmap[MCBLOCK_HEIGHT][MCBLOCK_WIDTH];
+    MCBitmap* m_pParent;
 
 public:
 
-    MCBlock(void);
+    MCBlock();
     ~MCBlock(void);
+
+    void SetParent(MCBitmap* pParent);
 
     void SetMCColor(int index, C64Color col);
 
@@ -62,6 +68,11 @@ public:
 inline const C64Color* MCBlock::GetColor(unsigned x, unsigned y) const
 {
     return &(m_c64Color[m_aBitmap[y][x]]);
+}
+
+inline void MCBlock::SetParent(MCBitmap* pParent)
+{
+    m_pParent = pParent;
 }
 
 #endif

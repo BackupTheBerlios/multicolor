@@ -26,21 +26,33 @@
 #include "BitmapBase.h"
 #include "C64Color.h"
 
+
+/*****************************************************************************/
+/**
+ * Constructor.
+ */
+BitmapBase::BitmapBase() :
+    m_rectDirty(wxRect(-1, -1, 0, 0))
+{
+}
+
+
 /*****************************************************************************/
 /**
  * Return the pixel factor in X-direction. e.g. 1 for hires, 2 for MC.
  */
-unsigned BitmapBase::GetPixelXFactor() const
+int BitmapBase::GetPixelXFactor() const
 {
     return 1;
 }
+
 
 /*****************************************************************************/
 /**
  * Return the pixel factor in Y-direction. 1 for most modes, 2 for Y-expanded
  * sprites.
  */
-unsigned BitmapBase::GetPixelYFactor() const
+int BitmapBase::GetPixelYFactor() const
 {
     return 1;
 }
@@ -87,6 +99,35 @@ void BitmapBase::SortAndClip(int* px1, int* py1, int* px2, int* py2)
         tmp  = *py1;
         *py1 = *py2;
         *py2 = tmp; // swap
+    }
+}
+
+
+/*****************************************************************************/
+/**
+ * Reset the dirty area to size (0, 0).
+ */
+void BitmapBase::ResetDirty()
+{
+    m_rectDirty = wxRect(-1, -1, 0, 0);
+}
+
+/*****************************************************************************/
+/**
+ * Extend the dirty area to contain x/y.
+ */
+void BitmapBase::Dirty(int x, int y)
+{
+    if (m_rectDirty.GetRight() < 0)
+    {
+        m_rectDirty.SetX(x);
+        m_rectDirty.SetY(y);
+        m_rectDirty.SetWidth(1);
+        m_rectDirty.SetHeight(1);
+    }
+    else
+    {
+        m_rectDirty.Union(wxRect(x, y, 1, 1));
     }
 }
 
