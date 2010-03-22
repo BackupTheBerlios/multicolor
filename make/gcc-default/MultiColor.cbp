@@ -21,8 +21,6 @@
 					<CompileFile command="$make -f $makefile $file DEBUG=YES" />
 					<Clean command="$make -f $makefile clean DEBUG=YES" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -q -f $makefile DEBUG=YES" />
-					<SilentBuild command="$make -s -f $makefile DEBUG=YES" />
 				</MakeCommands>
 			</Target>
 			<Target title="Release">
@@ -42,8 +40,6 @@
 					<CompileFile command="$make -f $makefile $file" />
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -q -f $makefile $target" />
-					<SilentBuild command="$make -s -f $makefile $target" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -78,13 +74,12 @@
 		<Unit filename="../../src/MCCanvas.cpp" />
 		<Unit filename="../../src/MCCanvas.h" />
 		<Unit filename="../../src/MCDoc.cpp" />
+		<Unit filename="../../src/MCDoc.cpp.orig" />
 		<Unit filename="../../src/MCDoc.h" />
 		<Unit filename="../../src/MCDrawingModePanel.cpp" />
 		<Unit filename="../../src/MCDrawingModePanel.h" />
 		<Unit filename="../../src/MCMainFrame.cpp" />
 		<Unit filename="../../src/MCMainFrame.h" />
-		<Unit filename="../../src/MCToolBase.cpp" />
-		<Unit filename="../../src/MCToolBase.h" />
 		<Unit filename="../../src/MCToolCloneBrush.cpp" />
 		<Unit filename="../../src/MCToolCloneBrush.h" />
 		<Unit filename="../../src/MCToolColorPicker.cpp" />
@@ -101,6 +96,24 @@
 		<Unit filename="../../src/MCToolPanel.h" />
 		<Unit filename="../../src/PalettePanel.cpp" />
 		<Unit filename="../../src/PalettePanel.h" />
+		<Unit filename="../../src/ToolBase.cpp" />
+		<Unit filename="../../src/ToolBase.cpp" />
+		<Unit filename="../../src/ToolBase.h" />
+		<Unit filename="../../src/ToolBase.h" />
+		<Unit filename="../../src/ToolCloneBrush.cpp" />
+		<Unit filename="../../src/ToolCloneBrush.h" />
+		<Unit filename="../../src/ToolColorPicker.cpp" />
+		<Unit filename="../../src/ToolColorPicker.h" />
+		<Unit filename="../../src/ToolDots.cpp" />
+		<Unit filename="../../src/ToolDots.h" />
+		<Unit filename="../../src/ToolFill.cpp" />
+		<Unit filename="../../src/ToolFill.h" />
+		<Unit filename="../../src/ToolFreehand.cpp" />
+		<Unit filename="../../src/ToolFreehand.h" />
+		<Unit filename="../../src/ToolLines.cpp" />
+		<Unit filename="../../src/ToolLines.h" />
+		<Unit filename="../../src/ToolPanel.cpp" />
+		<Unit filename="../../src/ToolPanel.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

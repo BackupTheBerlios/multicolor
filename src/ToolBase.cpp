@@ -25,10 +25,10 @@
 
 #include <wx/string.h>
 
-#include "MCToolBase.h"
+#include "ToolBase.h"
 #include "MCDoc.h"
 
-MCToolBase::MCToolBase()
+ToolBase::ToolBase()
     : m_nColorPrimary(1)
     , m_nColorSecondary(0)
     , m_nColorSelected(1)
@@ -40,7 +40,7 @@ MCToolBase::MCToolBase()
 {
 }
 
-MCToolBase::~MCToolBase()
+ToolBase::~ToolBase()
 {
 }
 
@@ -52,7 +52,7 @@ MCToolBase::~MCToolBase()
  * Note that not all tools will use both or even only one of these colors.
  * X and y are bitmap coordinates.
  */
-void MCToolBase::SetColors(int nColorPrimary, int nColorSecondary)
+void ToolBase::SetColors(int nColorPrimary, int nColorSecondary)
 {
     m_nColorPrimary   = nColorPrimary;
     m_nColorSecondary = nColorSecondary;
@@ -69,7 +69,7 @@ void MCToolBase::SetColors(int nColorPrimary, int nColorSecondary)
  * bSecondaryFunction is true if the tool was invoked with a
  * secondary (i.e. right) mouse button.
  */
-void MCToolBase::Start(int x, int y, bool bSecondaryFunction)
+void ToolBase::Start(int x, int y, bool bSecondaryFunction)
 {
     m_pDoc->BackupBitmap();
 
@@ -85,7 +85,7 @@ void MCToolBase::Start(int x, int y, bool bSecondaryFunction)
  * The default implementation does nothing.
  * X and y are bitmap coordinates.
  */
-void MCToolBase::Move(int x, int y)
+void ToolBase::Move(int x, int y)
 {
 }
 
@@ -96,6 +96,6 @@ void MCToolBase::Move(int x, int y)
  * The default implementation does nothing.
  * X and y are bitmap coordinates.
  */
-void MCToolBase::End(int x, int y)
+void ToolBase::End(int x, int y)
 {
 }

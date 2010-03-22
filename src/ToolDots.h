@@ -23,25 +23,18 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLLINES_H
-#define MCTOOLLINES_H
+#ifndef TOOLDOTS_H
+#define TOOLDOTS_H
 
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
-class MCToolLines : public MCToolBase
+class ToolDots : public ToolBase
 {
 public:
-    MCToolLines();
-    virtual ~MCToolLines();
+    ToolDots();
+    virtual ~ToolDots();
     virtual int GetToolId();
     virtual void Start(int x, int y, bool bSecondaryFunction);
-    virtual void Move(int x, int y);
-    virtual void End(int x, int y);
-
-protected:
-    // End point of previous line preview
-    int m_xOld;
-    int m_yOld;
 };
 
-#endif /* MCTOOLLINES_H */
+#endif /* TOOLDOTS_H */

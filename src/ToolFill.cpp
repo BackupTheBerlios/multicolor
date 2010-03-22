@@ -23,18 +23,41 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLDOTS_H
-#define MCTOOLDOTS_H
+#include "ToolFill.h"
+#include "MCDoc.h"
+#include "MCApp.h"
 
-#include "MCToolBase.h"
-
-class MCToolDots : public MCToolBase
+ToolFill::ToolFill()
 {
-public:
-    MCToolDots();
-    virtual ~MCToolDots();
-    virtual int GetToolId();
-    virtual void Start(int x, int y, bool bSecondaryFunction);
-};
+}
 
-#endif /* MCTOOLDOTS_H */
+ToolFill::~ToolFill()
+{
+}
+
+
+/*****************************************************************************/
+/*
+ * Return the ID of this tool.
+ */
+int ToolFill::GetToolId()
+{
+    return MC_ID_TOOL_FILL;
+}
+
+/*****************************************************************************/
+/*
+ * Start the tool at the given coordinates (i.e. Mouse button down).
+ *
+ * Fill the area around the given point.
+ * X and y are bitmap coordinates.
+ * bSecondaryFunction is true if the tool was invoked with a
+ * secondary (i.e. right) mouse button.
+ */
+void ToolFill::Start(int x, int y, bool bSecondaryFunction)
+{
+    ToolBase::Start(x, y, bSecondaryFunction);
+
+    m_pDoc->GetBitmap()->FloodFill(x, y, m_nColorSelected, m_drawingMode);
+    m_pDoc->PrepareUndo();
+}

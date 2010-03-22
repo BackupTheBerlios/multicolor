@@ -25,14 +25,14 @@
 
 #include <wx/sizer.h>
 
-#include "MCToolPanel.h"
+#include "ToolPanel.h"
 #include "MCCanvas.h"
 #include "PalettePanel.h"
 #include "MCDrawingModePanel.h"
 #include "MCBlockPanel.h"
 
 
-MCToolPanel::MCToolPanel(wxWindow* parent):
+ToolPanel::ToolPanel(wxWindow* parent):
     wxPanel(parent)
 {
     wxBoxSizer*       pBoxSizerOuter;
@@ -68,7 +68,7 @@ MCToolPanel::MCToolPanel(wxWindow* parent):
 
 
 /*****************************************************************************/
-MCToolPanel::~MCToolPanel()
+ToolPanel::~ToolPanel()
 {
 }
 
@@ -78,7 +78,7 @@ MCToolPanel::~MCToolPanel()
  * Set the active document which shall be used to update the preview
  * and so on from now. NULL means nothing to draw.
  */
-void MCToolPanel::SetActiveDoc(DocBase* pDoc)
+void ToolPanel::SetActiveDoc(DocBase* pDoc)
 {
     if (pDoc)
     {
@@ -97,7 +97,7 @@ void MCToolPanel::SetActiveDoc(DocBase* pDoc)
 /*
  * Refresh the preview because the image may have changed.
  */
-void MCToolPanel::Refresh()
+void ToolPanel::Refresh()
 {
     m_pCanvas->Refresh();
 }

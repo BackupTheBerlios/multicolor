@@ -23,13 +23,13 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include "MCToolCloneBrush.h"
+#include "ToolCloneBrush.h"
 #include "MCDoc.h"
 #include "MCApp.h"
 
 
 /*****************************************************************************/
-MCToolCloneBrush::MCToolCloneBrush() :
+ToolCloneBrush::ToolCloneBrush() :
     m_pDocSource(NULL),
     m_pDocDest(NULL),
     m_dx(0),
@@ -39,7 +39,7 @@ MCToolCloneBrush::MCToolCloneBrush() :
 
 
 /*****************************************************************************/
-MCToolCloneBrush::~MCToolCloneBrush()
+ToolCloneBrush::~ToolCloneBrush()
 {
 }
 
@@ -48,7 +48,7 @@ MCToolCloneBrush::~MCToolCloneBrush()
 /*
  * Return the ID of this tool.
  */
-int MCToolCloneBrush::GetToolId()
+int ToolCloneBrush::GetToolId()
 {
     return MC_ID_TOOL_CLONE_BRUSH;
 }
@@ -63,9 +63,9 @@ int MCToolCloneBrush::GetToolId()
  * bSecondaryFunction is true if the tool was invoked with a
  * secondary (i.e. right) mouse button.
  */
-void MCToolCloneBrush::Start(int x, int y, bool bSecondaryFunction)
+void ToolCloneBrush::Start(int x, int y, bool bSecondaryFunction)
 {
-    MCToolBase::Start(x, y, bSecondaryFunction);
+    ToolBase::Start(x, y, bSecondaryFunction);
 
     if (bSecondaryFunction)
     {
@@ -87,7 +87,7 @@ void MCToolCloneBrush::Start(int x, int y, bool bSecondaryFunction)
  *
  * X and y are bitmap coordinates.
  */
-void MCToolCloneBrush::Move(int x, int y)
+void ToolCloneBrush::Move(int x, int y)
 {
     if (!m_bSecondaryFunction)
     {
@@ -105,7 +105,7 @@ void MCToolCloneBrush::Move(int x, int y)
  *
  * X and y are bitmap coordinates.
  */
-void MCToolCloneBrush::End(int x, int y)
+void ToolCloneBrush::End(int x, int y)
 {
     m_pDoc->PrepareUndo();
 }
@@ -113,7 +113,7 @@ void MCToolCloneBrush::End(int x, int y)
 /*****************************************************************************
  *
  */
-void MCToolCloneBrush::CloneLine(int x1, int y1, int x2, int y2)
+void ToolCloneBrush::CloneLine(int x1, int y1, int x2, int y2)
 {
     double fx, fy, step;
     int    tmp;
@@ -162,7 +162,7 @@ void MCToolCloneBrush::CloneLine(int x1, int y1, int x2, int y2)
  *
  * X and y are bitmap coordinates.
  */
-void MCToolCloneBrush::ClonePixel(int x, int y)
+void ToolCloneBrush::ClonePixel(int x, int y)
 {
     C64Color col;
 

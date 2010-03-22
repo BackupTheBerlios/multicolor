@@ -25,15 +25,15 @@
 
 #include <wx/gdicmn.h>
 
-#include "MCToolLines.h"
+#include "ToolLines.h"
 #include "MCDoc.h"
 #include "MCApp.h"
 
-MCToolLines::MCToolLines()
+ToolLines::ToolLines()
 {
 }
 
-MCToolLines::~MCToolLines()
+ToolLines::~ToolLines()
 {
 }
 
@@ -41,7 +41,7 @@ MCToolLines::~MCToolLines()
 /*
  * Return the ID of this tool.
  */
-int MCToolLines::GetToolId()
+int ToolLines::GetToolId()
 {
     return MC_ID_TOOL_LINES;
 }
@@ -55,9 +55,9 @@ int MCToolLines::GetToolId()
  * bSecondaryFunction is true if the tool was invoked with a
  * secondary (i.e. right) mouse button.
  */
-void MCToolLines::Start(int x, int y, bool bSecondaryFunction)
+void ToolLines::Start(int x, int y, bool bSecondaryFunction)
 {
-    MCToolBase::Start(x, y, bSecondaryFunction);
+    ToolBase::Start(x, y, bSecondaryFunction);
 
     // initialise the "previous" preview line end coordinates
     m_xOld = x;
@@ -73,7 +73,7 @@ void MCToolLines::Start(int x, int y, bool bSecondaryFunction)
  *
  * X and y are bitmap coordinates.
  */
-void MCToolLines::Move(int x, int y)
+void ToolLines::Move(int x, int y)
 {
     int x1, y1, x2, y2;
 
@@ -106,7 +106,7 @@ void MCToolLines::Move(int x, int y)
  * Draw the line.
  * X and y are bitmap coordinates.
  */
-void MCToolLines::End(int x, int y)
+void ToolLines::End(int x, int y)
 {
     Move(x, y);
     m_pDoc->PrepareUndo();

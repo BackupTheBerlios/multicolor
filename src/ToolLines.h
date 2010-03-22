@@ -23,44 +23,25 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include "MCToolColorPicker.h"
-#include "MCDoc.h"
-#include "MCApp.h"
-#include "PalettePanel.h"
+#ifndef TOOLLINES_H
+#define TOOLLINES_H
 
-MCToolColorPicker::MCToolColorPicker()
+#include "ToolBase.h"
+
+class ToolLines : public ToolBase
 {
-}
+public:
+    ToolLines();
+    virtual ~ToolLines();
+    virtual int GetToolId();
+    virtual void Start(int x, int y, bool bSecondaryFunction);
+    virtual void Move(int x, int y);
+    virtual void End(int x, int y);
 
-MCToolColorPicker::~MCToolColorPicker()
-{
-}
+protected:
+    // End point of previous line preview
+    int m_xOld;
+    int m_yOld;
+};
 
-/*****************************************************************************/
-/*
- * Return the ID of this tool.
- */
-int MCToolColorPicker::GetToolId()
-{
-    return MC_ID_TOOL_COLOR_PICKER;
-}
-
-/*****************************************************************************/
-/*
- * Start the tool at the given coordinates (i.e. Mouse button down).
- *
- * Just draw a dot at the given coordinates.
- * X and y are bitmap coordinates.
- * bSecondaryFunction is true if the tool was invoked with a
- * secondary (i.e. right) mouse button.
- */
-void MCToolColorPicker::Start(int x, int y, bool bSecondaryFunction)
-{
-    int nColor;
-
-    MCToolBase::Start(x, y, bSecondaryFunction);
-
-    nColor = m_pDoc->GetBitmap()->GetColor(x, y)->GetColor();
-
-    wxGetApp().GetPalettePanel()->SelectColor(nColor, bSecondaryFunction);
-}
+#endif /* TOOLLINES_H */

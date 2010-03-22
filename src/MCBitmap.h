@@ -27,7 +27,7 @@
 #define MCBITMAP_H
 
 #include "MCBlock.h"
-#include "MCToolBase.h"
+#include "ToolBase.h"
 #include "BitmapBase.h"
 
 #define MCBITMAP_BYTES_PER_BLOCK 8

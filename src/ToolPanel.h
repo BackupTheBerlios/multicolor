@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) Thomas Giesel
+ * (c) 2003-2009 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,18 +23,48 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLFILL_H
-#define MCTOOLFILL_H
+#ifndef TOOLPANEL_H_
+#define TOOLPANEL_H_
 
-#include "MCToolBase.h"
+#include <wx/panel.h>
 
-class MCToolFill : public MCToolBase
+class DocBase;
+class MCCanvas;
+class PalettePanel;
+class MCDrawingModePanel;
+class MCBlockPanel;
+
+class ToolPanel : public wxPanel
 {
 public:
-    MCToolFill();
-    virtual ~MCToolFill();
-    virtual int GetToolId();
-    virtual void Start(int x, int y, bool bSecondaryFunction);
+    ToolPanel(wxWindow* parent);
+    virtual ~ToolPanel();
+
+    void SetActiveDoc(DocBase* pDoc);
+
+    void Refresh();
+    PalettePanel* GetPalettePanel();
+    MCDrawingModePanel* GetDrawingModePanel();
+
+protected:
+    MCCanvas*     m_pCanvas;
+    PalettePanel* m_pPalettePanel;
+    MCDrawingModePanel* m_pDrawingModePanel;
+    MCBlockPanel* m_pBlockPanel;
 };
 
-#endif /* MCTOOLFILL_H */
+/*****************************************************************************/
+inline PalettePanel* ToolPanel::GetPalettePanel()
+{
+    return m_pPalettePanel;
+}
+
+
+/*****************************************************************************/
+inline MCDrawingModePanel* ToolPanel::GetDrawingModePanel()
+{
+    return m_pDrawingModePanel;
+}
+
+
+#endif /* TOOLPANEL_H_ */

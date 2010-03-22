@@ -23,25 +23,16 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include "MCToolDots.h"
+#include "ToolFreehand.h"
 #include "MCDoc.h"
 #include "MCApp.h"
 
-MCToolDots::MCToolDots()
+ToolFreehand::ToolFreehand()
 {
 }
 
-MCToolDots::~MCToolDots()
+ToolFreehand::~ToolFreehand()
 {
-}
-
-/*****************************************************************************/
-/*
- * Return the ID of this tool.
- */
-int MCToolDots::GetToolId()
-{
-    return MC_ID_TOOL_DOTS;
 }
 
 /*****************************************************************************/
@@ -53,10 +44,47 @@ int MCToolDots::GetToolId()
  * bSecondaryFunction is true if the tool was invoked with a
  * secondary (i.e. right) mouse button.
  */
-void MCToolDots::Start(int x, int y, bool bSecondaryFunction)
+void ToolFreehand::Start(int x, int y, bool bSecondaryFunction)
 {
-    MCToolBase::Start(x, y, bSecondaryFunction);
+    ToolBase::Start(x, y, bSecondaryFunction);
 
     m_pDoc->GetBitmap()->SetPixel(x, y, m_nColorSelected, m_drawingMode);
+}
+
+/*****************************************************************************/
+/*
+ * Mouse has been moved while the button was kept pressed.
+ *
+ * Draw a line segment.
+ * X and y are bitmap coordinates.
+ */
+void ToolFreehand::Move(int x, int y)
+{
+    m_pDoc->GetBitmap()->Line(m_xStart, m_yStart, x, y,
+            m_nColorSelected, m_drawingMode);
+
+    // prepare start point for next segment
+    m_xStart = x;
+    m_yStart = y;
+}
+
+/*****************************************************************************/
+/*
+ * Finish the tool at the given coordinates (i.e. Mouse button up)
+ *
+ * Remember the current state for undo.
+ * X and y are bitmap coordinates.
+ */
+void ToolFreehand::End(int x, int y)
+{
     m_pDoc->PrepareUndo();
+}
+
+/*****************************************************************************/
+/*
+ * Return the ID of this tool.
+ */
+int ToolFreehand::GetToolId()
+{
+    return MC_ID_TOOL_FREEHAND;
 }

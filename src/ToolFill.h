@@ -23,31 +23,18 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLCLONEBRUSH_H
-#define MCTOOLCLONEBRUSH_H
+#ifndef TOOLFILL_H
+#define TOOLFILL_H
 
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
-class MCToolCloneBrush : public MCToolBase
+class ToolFill : public ToolBase
 {
 public:
-	MCToolCloneBrush();
-	virtual ~MCToolCloneBrush();
+    ToolFill();
+    virtual ~ToolFill();
     virtual int GetToolId();
     virtual void Start(int x, int y, bool bSecondaryFunction);
-    virtual void Move(int x, int y);
-    virtual void End(int x, int y);
-
-protected:
-    DocBase* m_pDocSource;
-    DocBase* m_pDocDest;
-    int      m_xSource;
-    int      m_ySource;
-    int      m_dx;
-    int      m_dy;
-
-    void CloneLine(int x1, int y1, int x2, int y2);
-    void ClonePixel(int x, int y);
 };
 
-#endif /* MCTOOLCLONEBRUSH_H */
+#endif /* TOOLFILL_H */

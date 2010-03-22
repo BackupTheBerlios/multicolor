@@ -27,7 +27,7 @@
 #define MCBLOCK_H
 
 #include "C64Color.h"
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
 #define MCBLOCK_WIDTH 4
 #define MCBLOCK_HEIGHT 8

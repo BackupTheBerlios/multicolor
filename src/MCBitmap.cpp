@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MCBitmap.h"
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
 
 const C64Color MCBitmap::black;

@@ -23,8 +23,8 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLBASE_H
-#define MCTOOLBASE_H
+#ifndef TOOLBASE_H
+#define TOOLBASE_H
 
 // forward declarations
 class DocBase;
@@ -43,12 +43,12 @@ typedef enum DrawingMode_e
 MCDrawingMode;
 
 
-class MCToolBase
+class ToolBase
 {
 public:
 
-    MCToolBase();
-    virtual ~MCToolBase();
+    ToolBase();
+    virtual ~ToolBase();
 
     // Set the primary and secondary color for the tool before starting it
     void SetColors(int nColorPrimary, int nColorSecondary);
@@ -86,7 +86,7 @@ protected:
 /*
  * Set the drawing mode to be used.
  */
-inline void MCToolBase::SetDrawingMode(MCDrawingMode drawingMode)
+inline void ToolBase::SetDrawingMode(MCDrawingMode drawingMode)
 {
     m_drawingMode = drawingMode;
 }
@@ -96,9 +96,9 @@ inline void MCToolBase::SetDrawingMode(MCDrawingMode drawingMode)
 /*
  * Set the document we have to work with.
  */
-inline void MCToolBase::SetDoc(DocBase* pDoc)
+inline void ToolBase::SetDoc(DocBase* pDoc)
 {
     m_pDoc = pDoc;
 }
 
-#endif /* MCTOOLBASE_H */
+#endif /* TOOLBASE_H */

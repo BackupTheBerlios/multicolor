@@ -23,20 +23,20 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLFREEHAND_H
-#define MCTOOLFREEHAND_H
+#ifndef TOOLFREEHAND_H
+#define TOOLFREEHAND_H
 
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
-class MCToolFreehand : public MCToolBase
+class ToolFreehand : public ToolBase
 {
 public:
-	MCToolFreehand();
-	virtual ~MCToolFreehand();
+	ToolFreehand();
+	virtual ~ToolFreehand();
     virtual int GetToolId();
     virtual void Start(int x, int y, bool bSecondaryFunction);
     virtual void Move(int x, int y);
     virtual void End(int x, int y);
 };
 
-#endif /* MCTOOLFREEHAND_H */
+#endif /* TOOLFREEHAND_H */

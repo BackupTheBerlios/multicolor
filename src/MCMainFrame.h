@@ -28,7 +28,7 @@
 
 #include <wx/frame.h>
 
-class MCToolPanel;
+class ToolPanel;
 class wxNotebook;
 
 #define MC_MAX_ZOOM 16
@@ -43,7 +43,7 @@ public:
     MCMainFrame(wxFrame* parent,
             const wxString& title);
 
-    MCToolPanel* GetToolPanel();
+    ToolPanel* GetToolPanel();
     DocBase* GetActiveDoc();
     MCCanvas* GetActiveCanvas();
     void ShowMousePos(int x, int y);
@@ -92,12 +92,12 @@ protected:
 
     void OnKeyDown(wxKeyEvent& event);
 
-    MCToolPanel*    m_pToolPanel;
+    ToolPanel*      m_pToolPanel;
     wxNotebook*     m_pNotebook;
 };
 
 /*****************************************************************************/
-inline MCToolPanel* MCMainFrame::GetToolPanel()
+inline ToolPanel* MCMainFrame::GetToolPanel()
 {
     return m_pToolPanel;
 }

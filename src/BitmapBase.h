@@ -28,7 +28,7 @@
 
 #include <wx/gdicmn.h>
 
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
 class C64Color;
 

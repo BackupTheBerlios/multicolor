@@ -37,14 +37,14 @@
 #include "MCApp.h"
 #include "MCMainFrame.h"
 #include "MCDoc.h"
-#include "MCToolPanel.h"
+#include "ToolPanel.h"
 
-#include "MCToolDots.h"
-#include "MCToolFreehand.h"
-#include "MCToolLines.h"
-#include "MCToolFill.h"
-#include "MCToolCloneBrush.h"
-#include "MCToolColorPicker.h"
+#include "ToolDots.h"
+#include "ToolFreehand.h"
+#include "ToolLines.h"
+#include "ToolFill.h"
+#include "ToolCloneBrush.h"
+#include "ToolColorPicker.h"
 
 static const wxCmdLineEntryDesc cmdLineDesc[] =
 {
@@ -112,12 +112,12 @@ bool MCApp::OnInit()
  */
 void MCApp::AllocateTools()
 {
-    m_listTools.push_back(new MCToolDots);
-    m_listTools.push_back(new MCToolFreehand);
-    m_listTools.push_back(new MCToolLines);
-    m_listTools.push_back(new MCToolFill);
-    m_listTools.push_back(new MCToolCloneBrush);
-    m_listTools.push_back(new MCToolColorPicker);
+    m_listTools.push_back(new ToolDots);
+    m_listTools.push_back(new ToolFreehand);
+    m_listTools.push_back(new ToolLines);
+    m_listTools.push_back(new ToolFill);
+    m_listTools.push_back(new ToolCloneBrush);
+    m_listTools.push_back(new ToolColorPicker);
 }
 
 /*****************************************************************************/
@@ -143,9 +143,9 @@ void MCApp::FreeTools()
  *
  * Returns NULL if there is no tool chosen.
  */
-MCToolBase* MCApp::GetDrawingTool(int idTool /* = 0 */)
+ToolBase* MCApp::GetDrawingTool(int idTool /* = 0 */)
 {
-    std::list<MCToolBase*>::iterator i;
+    std::list<ToolBase*>::iterator i;
 
     if (idTool == 0)
     {

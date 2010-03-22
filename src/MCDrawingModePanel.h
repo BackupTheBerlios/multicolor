@@ -27,7 +27,7 @@
 #define MCDRAWINGMODEPANEL_H_
 
 #include <wx/panel.h>
-#include "MCToolBase.h"
+#include "ToolBase.h"
 
 class wxRadioButton;
 

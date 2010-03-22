@@ -48,7 +48,7 @@
 #define MCCANVAS_SCROLL_INTERVAL 150
 
 
-class MCToolBase;
+class ToolBase;
 class DocBase;
 
 class MCCanvas: public wxScrolledWindow, public DocRenderer
@@ -122,7 +122,7 @@ protected:
     void OnTimer(wxTimerEvent& event);
 
     // Points to the currently active tool or NULL
-    MCToolBase* m_pActiveTool;
+    ToolBase* m_pActiveTool;
 
     // true if this is the small preview window
     bool        m_bPreviewWindow;

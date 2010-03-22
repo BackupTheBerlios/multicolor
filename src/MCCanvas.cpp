@@ -34,7 +34,7 @@
 #include "MCDoc.h"
 #include "PalettePanel.h"
 #include "MCDrawingModePanel.h"
-#include "MCToolBase.h"
+#include "ToolBase.h"
 #include "MCMainFrame.h"
 #include "MCDoc.h"
 
@@ -842,7 +842,7 @@ void MCCanvas::EndTool(int x, int y)
  */
 void MCCanvas::UpdateCursorType()
 {
-    MCToolBase* pSelectedTool;
+    ToolBase* pSelectedTool;
     int idTool;
 
     if (m_bColorPickerActive)

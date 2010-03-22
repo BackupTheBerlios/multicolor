@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2009 Thomas Giesel
+ * (c) Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,48 +23,31 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCTOOLPANEL_H_
-#define MCTOOLPANEL_H_
+#ifndef TOOLCLONEBRUSH_H
+#define TOOLCLONEBRUSH_H
 
-#include <wx/panel.h>
+#include "ToolBase.h"
 
-class DocBase;
-class MCCanvas;
-class PalettePanel;
-class MCDrawingModePanel;
-class MCBlockPanel;
-
-class MCToolPanel : public wxPanel
+class ToolCloneBrush : public ToolBase
 {
 public:
-    MCToolPanel(wxWindow* parent);
-    virtual ~MCToolPanel();
-
-    void SetActiveDoc(DocBase* pDoc);
-
-    void Refresh();
-    PalettePanel* GetPalettePanel();
-    MCDrawingModePanel* GetDrawingModePanel();
+	ToolCloneBrush();
+	virtual ~ToolCloneBrush();
+    virtual int GetToolId();
+    virtual void Start(int x, int y, bool bSecondaryFunction);
+    virtual void Move(int x, int y);
+    virtual void End(int x, int y);
 
 protected:
-    MCCanvas*     m_pCanvas;
-    PalettePanel* m_pPalettePanel;
-    MCDrawingModePanel* m_pDrawingModePanel;
-    MCBlockPanel* m_pBlockPanel;
+    DocBase* m_pDocSource;
+    DocBase* m_pDocDest;
+    int      m_xSource;
+    int      m_ySource;
+    int      m_dx;
+    int      m_dy;
+
+    void CloneLine(int x1, int y1, int x2, int y2);
+    void ClonePixel(int x, int y);
 };
 
-/*****************************************************************************/
-inline PalettePanel* MCToolPanel::GetPalettePanel()
-{
-    return m_pPalettePanel;
-}
-
-
-/*****************************************************************************/
-inline MCDrawingModePanel* MCToolPanel::GetDrawingModePanel()
-{
-    return m_pDrawingModePanel;
-}
-
-
-#endif /* MCTOOLPANEL_H_ */
+#endif /* TOOLCLONEBRUSH_H */

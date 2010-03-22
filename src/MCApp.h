@@ -30,10 +30,10 @@
 #include <list>
 
 #include "MCMainFrame.h"
-#include "MCToolPanel.h"
+#include "ToolPanel.h"
 
 class PalettePanel;
-class MCToolBase;
+class ToolBase;
 class DocBase;
 class MCChildFrame;
 
@@ -48,7 +48,7 @@ public:
     static wxBitmap GetBitmap(const wxString& dir, const wxString& name);
 
     void SetDrawingTool(int id);
-    MCToolBase* GetDrawingTool(int idTool = 0);
+    ToolBase* GetDrawingTool(int idTool = 0);
 
     void SetActiveDoc(DocBase* pDoc);
     void SetMousePos(int x, int y);
@@ -61,7 +61,7 @@ protected:
     MCMainFrame*    m_pMainFrame;
 
     int             m_idDrawingTool;
-    std::list<MCToolBase*> m_listTools;
+    std::list<ToolBase*> m_listTools;
 
 private:
     void AllocateTools();

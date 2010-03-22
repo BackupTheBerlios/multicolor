@@ -52,7 +52,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     m_pToolPanel(NULL),
     m_pNotebook(NULL)
 {
-    m_pToolPanel = new MCToolPanel(this);
+    m_pToolPanel = new ToolPanel(this);
     m_pNotebook = new wxNotebook(this, wxID_ANY);
 
     InitMenuBar();
@@ -694,7 +694,7 @@ void MCMainFrame::OnAbout(wxCommandEvent &event)
 void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
 {
     int id;
-    MCToolBase* pTool;
+    ToolBase* pTool;
 
     pTool = wxGetApp().GetDrawingTool();
     id = pTool ? pTool->GetToolId() : -1;

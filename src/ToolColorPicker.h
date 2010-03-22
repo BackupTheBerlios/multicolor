@@ -23,41 +23,18 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#include "MCToolFill.h"
-#include "MCDoc.h"
-#include "MCApp.h"
+#ifndef TOOLCOLORPICKER_H
+#define TOOLCOLORPICKER_H
 
-MCToolFill::MCToolFill()
+#include "ToolBase.h"
+
+class ToolColorPicker : public ToolBase
 {
-}
+public:
+    ToolColorPicker();
+    virtual ~ToolColorPicker();
+    virtual int GetToolId();
+    virtual void Start(int x, int y, bool bSecondaryFunction);
+};
 
-MCToolFill::~MCToolFill()
-{
-}
-
-
-/*****************************************************************************/
-/*
- * Return the ID of this tool.
- */
-int MCToolFill::GetToolId()
-{
-    return MC_ID_TOOL_FILL;
-}
-
-/*****************************************************************************/
-/*
- * Start the tool at the given coordinates (i.e. Mouse button down).
- *
- * Fill the area around the given point.
- * X and y are bitmap coordinates.
- * bSecondaryFunction is true if the tool was invoked with a
- * secondary (i.e. right) mouse button.
- */
-void MCToolFill::Start(int x, int y, bool bSecondaryFunction)
-{
-    MCToolBase::Start(x, y, bSecondaryFunction);
-
-    m_pDoc->GetBitmap()->FloodFill(x, y, m_nColorSelected, m_drawingMode);
-    m_pDoc->PrepareUndo();
-}
+#endif /* TOOLCOLORPICKER_H */
