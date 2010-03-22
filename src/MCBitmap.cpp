@@ -99,6 +99,35 @@ int MCBitmap::GetNIndexes() const
 
 /******************************************************************************/
 /**
+ * Return the color for of an index which is set for the macro cell which
+ * contains the given coordinates. If the coordinates are out of range,
+ * return black.
+ */
+const C64Color* MCBitmap::GetColorByIndex(int x, int y, int index) const
+{
+    if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
+        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetMCColor(index);
+    else
+        return &black;
+}
+
+
+/******************************************************************************/
+/**
+ * Return the number of pixels of an index for the macro cell which contains
+ * the given coordinates. If the coordinates are out of range, return 0.
+ */
+int MCBitmap::CountColorByIndex(int x, int y, int index) const
+{
+    if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
+        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].CountMCIndex(index);
+    else
+        return 0;
+}
+
+
+/******************************************************************************/
+/**
  * Return the color of a pixel. If the coordinates are out of range, return
  * black.
  */
@@ -117,6 +146,9 @@ void MCBitmap::SetBackground(C64Color col)
     int x;
     for (x = 0; x < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS; ++x)
         m_aMCBlock[0][x].SetMCColor(0, col);
+
+    // this may change the whole bitmap
+    Dirty(0, 0, MC_X, MC_Y);
 }
 
 /*****************************************************************************/
@@ -225,7 +257,7 @@ void MCBitmap::SetPixel(int x, int y,
                          col, mode);
 
         // this may change the whole block
-        Dirty(x & ~(MCBLOCK_WIDTH - 1), y & ~(MCBLOCK_HEIGHT - 1));
-        Dirty(x |  (MCBLOCK_WIDTH - 1), y |  (MCBLOCK_HEIGHT - 1));
+        Dirty(x & ~(MCBLOCK_WIDTH - 1), y & ~(MCBLOCK_HEIGHT - 1),
+              MCBLOCK_WIDTH, MCBLOCK_HEIGHT);
     }
 }

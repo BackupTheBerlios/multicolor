@@ -52,6 +52,8 @@ public:
     virtual int GetPixelXFactor() const;
 
     virtual int GetNIndexes() const;
+    virtual const C64Color* GetColorByIndex(int x, int y, int index) const;
+    virtual int CountColorByIndex(int x, int y, int index) const;
 
     virtual const C64Color* GetColor(int x, int y) const;
     virtual void SetPixel(int x, int y, const C64Color& col,

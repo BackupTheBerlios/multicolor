@@ -138,7 +138,7 @@ void MCBlockPanel::SetDoc(DocBase* pDoc)
  */
 void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
 {
-    int       xx, yy;
+    int       xx, yy, index, count;
     int       xCell, yCell, wCell, hCell;
     int       nIndexes;
     MC_RGB    rgb;
@@ -149,9 +149,6 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
     wxSize    textExtent;
 
     BitmapBase* pB = pDoc->GetBitmap();
-    /*const MCBlock* pBlock = pMCB->GetMCBlock(pDoc->GetMousePos().x, y);
-    if (!pBlock)
-        return;*/
 
     pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
 
@@ -194,22 +191,24 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
     rect.y = m_nWBorder;
     nIndexes = pB->GetNIndexes();
 
-    for (yy = 0; yy < nIndexes; ++yy)
+    for (index = 0; index < nIndexes; ++index)
     {
-        str = wxString::Format(wxT("C%d"), yy);
+        str = wxString::Format(wxT("C%d"), index);
         textExtent = pDC->GetTextExtent(str);
 
         pDC->DrawText(str, rect.x, rect.y + (rect.height - textExtent.y) / 2);
         rect.y += 2 * m_nHBox;
     }
-#if 0
+
     // count the 4 colors
     pDC->SetPen(*wxBLACK_PEN);
     rect.x += textExtent.x + 1;
     rect.y = m_nWBorder;
-    for (yy = 0; yy < 4; ++yy)
+    for (index = 0; index < nIndexes; ++index)
     {
-        rgb = pBlock->GetMCColor(yy)->GetRGB();
+        rgb   = pB->GetColorByIndex(xCell, yCell, index)->GetRGB();
+        count = pB->CountColorByIndex(xCell, yCell, index);
+
         brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
         pDC->SetBrush(brush);
         pDC->DrawRectangle(rect);
@@ -223,7 +222,7 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
             pDC->SetTextForeground(*wxWHITE);
         }
 
-        str = wxString::Format(wxT("%dx"), pBlock->CountMCIndex(yy));
+        str = wxString::Format(wxT("%dx"), count);
         textExtent = pDC->GetTextExtent(str);
 
         pDC->DrawText(str,
@@ -231,5 +230,4 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
                       rect.y + (rect.height - textExtent.y) / 2);
         rect.y += 2 * m_nHBox;
     }
-#endif
 }

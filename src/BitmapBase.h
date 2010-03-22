@@ -48,15 +48,15 @@ public:
 
     virtual int GetNIndexes() const = 0;
 
+    virtual const C64Color* GetColorByIndex(int x, int y, int index) const = 0;
+    virtual int CountColorByIndex(int x, int y, int index) const = 0;
+
     void SortAndClip(int* px1, int* py1, int* px2, int* py2);
     void ResetDirty();
     void Dirty(int x, int y);
+    void Dirty(int x, int y, int w, int h);
     const wxRect& GetDirtyRect() const;
 
-    /**
-     * Return the color of a pixel. If the coordinates are out of range, return
-     * black.
-     */
     virtual const C64Color* GetColor(int x, int y) const = 0;
 
     virtual void SetPixel(int x, int y, const C64Color& col,

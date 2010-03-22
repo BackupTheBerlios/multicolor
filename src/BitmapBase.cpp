@@ -156,6 +156,26 @@ void BitmapBase::Dirty(int x, int y)
 
 /*****************************************************************************/
 /**
+ * Extend the dirty area to contain x/y/w/h.
+ */
+void BitmapBase::Dirty(int x, int y, int w, int h)
+{
+    if (m_rectDirty.GetRight() < 0)
+    {
+        m_rectDirty.SetX(x);
+        m_rectDirty.SetY(y);
+        m_rectDirty.SetWidth(w);
+        m_rectDirty.SetHeight(h);
+    }
+    else
+    {
+        m_rectDirty.Union(wxRect(x, y, w, h));
+    }
+}
+
+
+/*****************************************************************************/
+/**
  * Fill pixel x/y and the adjacent pixels with the same color as this one
  * with color col. If a color limit is hit, do what the drawing mode requires.
  */
