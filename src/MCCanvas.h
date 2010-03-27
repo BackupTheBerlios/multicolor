@@ -59,7 +59,7 @@ public:
 
     virtual void OnDocChanged(int x1, int y1, int x2, int y2);
     virtual void OnDocMouseMoved(int x, int y);
-    virtual void OnDocDestroy(MCDoc* pDoc);
+    virtual void OnDocDestroy(DocBase* pDoc);
 
     virtual void OnDraw(wxDC& dc);
 

@@ -26,7 +26,7 @@
 #ifndef DOCRENDERER_H_
 #define DOCRENDERER_H_
 
-class MCDoc;
+class DocBase;
 
 /*****************************************************************************/
 /*
@@ -57,7 +57,7 @@ public:
     /*
      * This is called when a document is destroyed which is rendered by me
      */
-    virtual void OnDocDestroy(MCDoc* pDoc) = 0;
+    virtual void OnDocDestroy(DocBase* pDoc) = 0;
 };
 
 #endif /*DOCRENDERER_H_*/

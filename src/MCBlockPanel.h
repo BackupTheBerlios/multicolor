@@ -40,7 +40,7 @@ public:
 
     virtual void OnDocChanged(int x1, int y1, int x2, int y2);
     virtual void OnDocMouseMoved(int x, int y);
-    virtual void OnDocDestroy(MCDoc* pDoc);
+    virtual void OnDocDestroy(DocBase* pDoc);
 
     void SetDoc(DocBase* pDoc);
 
@@ -48,7 +48,7 @@ protected:
     static const int m_nWTotal = 160;
     static const int m_nHTotal = 80;
 
-    static const int m_nWBox = 16;
+    static const int m_nWBox = 8;
     static const int m_nHBox = 8;
 
     static const int m_nWBorder = (m_nHTotal - MCBLOCK_HEIGHT * m_nHBox) / 2;

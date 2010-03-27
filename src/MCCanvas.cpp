@@ -53,7 +53,7 @@ std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 
 /*****************************************************************************/
 MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
-    wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition, wxDefaultSize, nStyle),
+    wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(320, 200), nStyle),
     m_pDoc(NULL),
     m_pActiveTool(NULL),
     m_bPreviewWindow(bPreview),
@@ -151,10 +151,10 @@ void MCCanvas::OnDocMouseMoved(int x, int y)
 }
 
 /*****************************************************************************/
-/*
+/**
  * This is called when a document is destroyed which is rendered by me
  */
-void MCCanvas::OnDocDestroy(MCDoc* pDoc)
+void MCCanvas::OnDocDestroy(DocBase* pDoc)
 {
     if (m_pDoc == pDoc)
     {
@@ -298,7 +298,7 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
     int      fixr, fixg, fixb, tmpr, tmpg, tmpb;
     const int aFilters[] = {0, 2, 1};
     int      filter;
-    unsigned        x, y;
+    unsigned        x, y, w, xFactor;
     unsigned char*  pPixels;
     unsigned char*  p;
     unsigned        nPitch;
@@ -319,6 +319,8 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
 
     pPixels = m_image.GetData();
     nPitch  = m_image.GetWidth() * 3;
+    xFactor = pB->GetPixelXFactor() * m_nScale;
+    w       = xFactor * pB->GetWidth();
 
     // We draw all full lines of the area so the blur has the right effect
     for (y =  y1 * pB->GetPixelYFactor();
@@ -328,11 +330,11 @@ void MCCanvas::DrawScaleSmall(wxDC* pDC,
         fixr = fixg = fixb = 64 << FIXP_SHIFT;
         p = pPixels + y * nPitch;
 
-        for (x = 0; x < pB->GetPixelXFactor() * pB->GetWidth() * m_nScale; ++x)
+        for (x = 0; x < w; ++x)
         {
-            if (x % (2 * m_nScale) == 0)
+            if (x % xFactor == 0)
             {
-                col = pB->GetColor(x / (2 * m_nScale), y / m_nScale)->GetRGB();
+                col = pB->GetColor(x / xFactor, y / m_nScale)->GetRGB();
                 tmpr = (col & 0xff) << FIXP_SHIFT;
                 tmpg = ((col >> 8) & 0xff) << FIXP_SHIFT;
                 tmpb = ((col >> 16) & 0xff) << FIXP_SHIFT;
@@ -375,20 +377,22 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     wxPen          pen(*wxBLACK);
     MC_RGB         rgb;
     wxRect         rect;
-    unsigned       x, y, i;
+    unsigned       x, y, i, xFactor;
+
+    xFactor = pB->GetPixelXFactor() * m_nScale;
 
     pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
 
     // Draw blocks for pixels
     pDC->SetPen(*wxTRANSPARENT_PEN);
     rect.height = m_nScale - 1;
-    rect.width  = 2 * m_nScale - 1;
+    rect.width  = xFactor - 1;
     for (y = y1; y <= y2; ++y)
     {
         rect.y = m_nScale * y + 1;
         for (x = x1; x <= x2; ++x)
         {
-            rect.x = 2 * m_nScale * x + 1;
+            rect.x = xFactor * x + 1;
 
             rgb = pB->GetColor(x, y)->GetRGB();
             brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
@@ -402,30 +406,30 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     pDC->SetPen(pen);
     for (x = x1; x <= x2; ++x)
     {
-        i = 2 * m_nScale * x;
+        i = xFactor * x;
         pDC->DrawLine(i, m_nScale * y1, i, m_nScale * (y2 + 1));
     }
     for (y = y1; y <= y2; ++y)
     {
         i = m_nScale * y;
-        pDC->DrawLine(2 * m_nScale * x1, i, 2 * m_nScale * (x2 + 1), i);
+        pDC->DrawLine(xFactor * x1, i, xFactor * (x2 + 1), i);
     }
 
-    // Draw the 4x8 grid, we extend the area to the next 4x8 border at the
+    // Draw the cell grid, we extend the area to the next border at the
     // upper left corner
-    x1 &= ~3;
-    x1 *= 2 * m_nScale;
-    y1 &= ~7;
+    x1 -= x1 % pB->GetCellWidth();
+    x1 *= xFactor;
+    y1 -= y1 % pB->GetCellHeight();
     y1 *= m_nScale;
 
-    x2 *= 2 * m_nScale;
+    x2 *= xFactor;
     y2 *= m_nScale;
     for (y = y1; y <= y2; y += 8 * m_nScale)
     {
         for (x = x1; x < x2; x += 8 * m_nScale)
         {
             rgb = pB->GetColor(
-                x / (2 * m_nScale), y / m_nScale)->GetContrastRGB();
+                x / xFactor, y / m_nScale)->GetContrastRGB();
             pen.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
             pDC->SetPen(pen);
 
@@ -472,8 +476,11 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll)
  */
 void MCCanvas::ToCanvasCoord(int* px, int* py, int x, int y)
 {
-    *px = x * (2 * m_nScale);
-    *py = y * m_nScale;
+    BitmapBase* pB;
+    pB = m_pDoc->GetBitmap();
+
+    *px = x * pB->GetPixelXFactor() * m_nScale;
+    *py = y * pB->GetPixelYFactor() * m_nScale;
     CalcScrolledPosition(*px, *py, px, py);
 }
 
@@ -488,12 +495,15 @@ void MCCanvas::CenterBitmapPoint(int x, int y)
     int xScroll, yScroll;
     int xFactor, yFactor;
     int wClient, hClient;
+    BitmapBase* pB;
+
+    pB = m_pDoc->GetBitmap();
 
     GetClientSize(&wClient, &hClient);
     GetScrollPixelsPerUnit(&xFactor, &yFactor);
 
-    x *= 2 * m_nScale;
-    y *= m_nScale;
+    x *= pB->GetPixelXFactor() * m_nScale;
+    y *= pB->GetPixelYFactor() * m_nScale;
 
     xScroll = (x - wClient / 2) / xFactor;
     yScroll = (y - hClient / 2) / yFactor;
@@ -545,27 +555,38 @@ void MCCanvas::InvalidateMouseRect()
  */
 void MCCanvas::DrawMousePos(wxDC* pDC)
 {
-    int x, y;
+    int x, y, xFactor, yFactor, c;
+    BitmapBase* pB;
 
     if (!m_pDoc)
         return;
 
-    x = m_pointLastMousePos.x * m_nScale * 2;
-    y = m_pointLastMousePos.y * m_nScale;
+    pB = m_pDoc->GetBitmap();
+    xFactor = pB->GetPixelXFactor() * m_nScale;
+    yFactor = pB->GetPixelYFactor() * m_nScale;
+
+    x = m_pointLastMousePos.x * xFactor;
+    y = m_pointLastMousePos.y * yFactor;
 
     pDC->SetBrush(*wxTRANSPARENT_BRUSH);
     pDC->SetPen(*wxWHITE_PEN);
 
     if (m_nScale >= 4)
     {
-        pDC->DrawRectangle(x, y, 2 * m_nScale + 1, m_nScale + 1);
+        pDC->DrawRectangle(x, y, xFactor + 1, yFactor + 1);
     }
 
-    pDC->DrawLine(x - 3, y + m_nScale / 2, x, y + m_nScale / 2);
-    pDC->DrawLine(x + 2 * m_nScale, y + m_nScale / 2, x + 2 * m_nScale + 3, y
-            + m_nScale / 2);
-    pDC->DrawLine(x + m_nScale, y - 3, x + m_nScale, y);
-    pDC->DrawLine(x + m_nScale, y + m_nScale, x + m_nScale, y + m_nScale + 3);
+    c = y + yFactor / 2;
+    pDC->DrawLine(x - 3,           c,
+                  x,               c);
+    pDC->DrawLine(x + xFactor,     c,
+                  x + xFactor + 3, c);
+
+    c = x + xFactor / 2;
+    pDC->DrawLine(c, y - 3,
+                  c, y);
+    pDC->DrawLine(c, y + yFactor,
+                  c, y + yFactor + 3);
 }
 
 
@@ -597,12 +618,6 @@ void MCCanvas::UpdateVirtualSize()
  * If we have to scroll we will start the timer (again) to re-check later.
  *
  * xMouse and yMouse are window coordinates.
- *
- * If bStopOnly is set we do not really scroll. When being called with this
- * and if we find out that the conditions for scrolling are not fulfilled
- * anymore, we stop the timer. This is useful in this scenario: Mouse goes to
- * scroll area, timer started, mouse leaves scroll area, mouse comes back
- * exactly when the timer expires...
  *
  * Return true if we scrolled and false if not.
  */
@@ -916,10 +931,12 @@ void MCCanvas::OnMouseMove(wxMouseEvent& event)
 
         Scroll(xScroll, yScroll);
     }
+#ifndef N2C
     else if (!m_timerScrolling.IsRunning())
     {
         m_timerScrolling.Start(MCCANVAS_SCROLL_DELAY, MCCANVAS_SCROLL_TIMER_ID);
     }
+#endif
 
     UpdateCursorPosition(event.GetX(), event.GetY(), true);
 }

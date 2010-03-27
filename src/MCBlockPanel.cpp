@@ -80,7 +80,7 @@ void MCBlockPanel::OnDocMouseMoved(int x, int y)
 /**
  * This is called when a document is destroyed which is rendered by me
  */
-void MCBlockPanel::OnDocDestroy(MCDoc* pDoc)
+void MCBlockPanel::OnDocDestroy(DocBase* pDoc)
 {
     if (m_pDoc == pDoc)
     {
@@ -100,14 +100,6 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
 
     if (m_pDoc)
         DrawBlock(&dc, m_pDoc, m_pDoc->GetMousePos().x, m_pDoc->GetMousePos().y);
-    else
-    {
-        dc.SetPen(*wxTRANSPARENT_PEN);
-        dc.SetBrush(*wxBLACK_BRUSH);
-        dc.DrawRectangle(
-            m_nWBorder, m_nWBorder,
-            MCBLOCK_WIDTH * m_nWBox, MCBLOCK_HEIGHT * m_nHBox);
-    }
 }
 
 
@@ -161,8 +153,8 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
     yCell = y - y % hCell;
 
     // draw the block of pixels
-    rect.width = m_nWBox;
-    rect.height = m_nHBox;
+    rect.width  = pB->GetPixelXFactor() * m_nWBox;
+    rect.height = pB->GetPixelYFactor() * m_nHBox;
     rect.y = m_nWBorder;
     for (yy = 0; yy < hCell; ++yy)
     {
@@ -178,17 +170,18 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
             brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
             pDC->SetBrush(brush);
             pDC->DrawRectangle(rect);
-            rect.x += m_nWBox;
+            rect.x += rect.width;
         }
-        rect.y += m_nHBox;
+        rect.y += rect.height;
     }
 
-    // 4 little strings C0..C3
+    // 4 little labels C0..C3
     pDC->SetTextForeground(*wxBLACK);
     rect.height = 2 * m_nHBox;
-    rect.width = 2 * m_nWBox;
-    rect.x = m_nWBorder + wCell * m_nWBox + m_nWBorder;
-    rect.y = m_nWBorder;
+    rect.width = 4 * m_nWBox;
+    // x depends from code above!
+    rect.x += m_nWBorder;
+    rect.y  = m_nWBorder;
     nIndexes = pB->GetNIndexes();
 
     for (index = 0; index < nIndexes; ++index)
@@ -200,7 +193,7 @@ void MCBlockPanel::DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y)
         rect.y += 2 * m_nHBox;
     }
 
-    // count the 4 colors
+    // count the colors
     pDC->SetPen(*wxBLACK_PEN);
     rect.x += textExtent.x + 1;
     rect.y = m_nWBorder;
