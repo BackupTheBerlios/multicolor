@@ -13,6 +13,7 @@ ldflags       := -g
 outbase       := debug
 else
 cxxflags      := -O2 `wx-config --cxxflags`
+#cxxflags      += -DN2C
 ldflags       :=
 outbase       := release
 endif

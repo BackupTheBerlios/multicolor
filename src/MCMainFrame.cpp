@@ -36,6 +36,7 @@
 #include "MCMainFrame.h"
 #include "MCCanvas.h"
 #include "PalettePanel.h"
+#include "NewFileDialog.h"
 
 /*
  * On Windows the png icons with alpha channel look very strange in the toolbar
@@ -289,7 +290,12 @@ void MCMainFrame::InitMenuBar()
  */
 void MCMainFrame::ShowMousePos(int x, int y)
 {
+#ifdef N2C
+    int bcpos(320*(y/8)+(x/4)*8); int bpos=bcpos+(y&7); int cpos=(40*(y/8)+(x/4));
+    wxString strPosition(wxString::Format(wxT("%d:%d\t$%04x\t$%04x\t$%04x"), x, y, cpos,bcpos,bpos));
+#else
     wxString strPosition(wxString::Format(wxT("%d:%d"), x, y));
+#endif
     SetStatusText(strPosition, 1);
 }
 
@@ -392,11 +398,19 @@ void MCMainFrame::OnFocus(wxFocusEvent& event)
  */
 void MCMainFrame::OnNew(wxCommandEvent &event)
 {
-    MCDoc* pDoc = new MCDoc();
-    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
-    pCanvas->SetDoc(pDoc);
-    m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
-    pCanvas->Show();
+    DocBase* pDoc;
+    NewFileDialog dlg(this);
+
+    dlg.ShowModal();
+    if (dlg.GetSelectedFormatInfo())
+    {
+        pDoc = dlg.GetSelectedFormatInfo()->Factory();
+
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
+        pCanvas->SetDoc(pDoc);
+        m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
+        pCanvas->Show();
+    }
 }
 
 

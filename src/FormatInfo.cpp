@@ -47,6 +47,16 @@ FormatInfo::FormatInfo(
 
 /*****************************************************************************/
 /**
+ * Return the name of this format.
+ */
+const wxString& FormatInfo::GetName() const
+{
+    return m_stringName;
+}
+
+
+/*****************************************************************************/
+/**
  * Create a part for a filter string for wxFileDialog etc.
  * This string contains:
  * - One entry for each filter type of this format
@@ -93,7 +103,11 @@ wxString FormatInfo::GetFullFilterString()
          i != (*m_pListFormatInfo).end(); i++)
     {
         strTmp.append((*i)->GetFilterWildcards());
+        strTmp.append(wxT(";"));
     }
+    // remove the last semicolon
+    if (strTmp.Len())
+        strTmp = strTmp.Left(strTmp.Len() - 1);
     str.append(strTmp);
     str.append(wxT(")|"));
     str.append(strTmp);

@@ -53,16 +53,18 @@ public:
         const wxChar* pStrWildcard;
     } Filter;
 
-    FormatInfo(
-        const wxChar* pStrName,
-        Filter* pFilters,
-        DocBase* (*docFactory)() );
+    FormatInfo(const wxChar* pStrName,
+               Filter* pFilters,
+               DocBase* (*docFactory)() );
+
     const wxString& GetName() const;
     wxString GetFilterWildcards() const;
     wxString GetFilters() const;
 
     static wxString GetFullFilterString();
     static const std::list<const FormatInfo*>* GetFormatList();
+
+    DocBase* Factory() const;
 
 protected:
     wxString m_stringName;
@@ -73,5 +75,15 @@ private:
     static std::list<const FormatInfo*>* m_pListFormatInfo;
 
 };
+
+
+/*****************************************************************************/
+/**
+ * Create and return a document of this format using its Factor method.
+ */
+inline DocBase* FormatInfo::Factory() const
+{
+    return m_docFactory();
+}
 
 #endif // FORMATINFO_H

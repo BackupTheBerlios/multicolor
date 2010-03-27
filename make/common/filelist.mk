@@ -17,6 +17,7 @@ src += MCCanvas.cpp
 src += DocBase.cpp
 src += MCDoc.cpp
 src += MCMainFrame.cpp
+src += NewFileDialog.cpp
 src += ToolBase.cpp
 src += ToolCloneBrush.cpp
 src += ToolColorPicker.cpp
