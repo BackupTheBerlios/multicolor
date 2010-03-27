@@ -38,25 +38,33 @@ MCBlock::MCBlock() :
     m_c64Color[3].SetColor(MC_BLACK);
 }
 
-/*****************************************************************************/
-MCBlock::~MCBlock(void)
-{
-}
 
 /*****************************************************************************/
-void MCBlock::SetMCColor(int index, C64Color col)
+void MCBlock::SetIndexedColor(int index, C64Color col)
 {
     if (index < 4)
         m_c64Color[index] = col;
 }
 
+
 /*****************************************************************************/
-const C64Color* MCBlock::GetMCColor(int index) const
+const C64Color* MCBlock::GetIndexedColor(int index) const
 {
     if (index < 4)
         return &m_c64Color[index];
     else
         return NULL;
+}
+
+
+/*****************************************************************************/
+int MCBlock::CountIndexedColor(int index) const
+{
+    int i, cnt = 0;
+
+    for (i = 0; i < MCBLOCK_WIDTH * MCBLOCK_HEIGHT; ++i)
+        if (m_aBitmap[0][i] == index) ++cnt;
+    return cnt;
 }
 
 
@@ -101,19 +109,9 @@ unsigned char MCBlock::GetBitmapRAM(unsigned y) const
     return v;
 }
 
-/*****************************************************************************/
-
-int MCBlock::CountMCIndex(int index) const
-{
-    int i, cnt = 0;
-
-    for (i = 0; i < 4 * 8; ++i)
-        if (m_aBitmap[0][i] == index) ++cnt;
-    return cnt;
-}
 
 /*****************************************************************************
- * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon 3 Vordergrund-
+ * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon alle Vordergrund-
  * farben, wird je nach "mode" verfahren.
  * IGNORE:        SetPixel schlaegt fehl und gibt false zurueck.
  * LEAST:         Die in diesem Block am wenigsten benutzte Farbe wird
@@ -121,9 +119,9 @@ int MCBlock::CountMCIndex(int index) const
  * FORCE:         Die des Pixels x/y wird in diesem Block mit der neuen Farbe
  *                ersetzt.
  *
- * Es koennen auch Farben mit festem Index gesetzt werden, 0..3
+ * Es koennen auch Farben mit festem Index gesetzt werden
  */
-bool MCBlock::SetPixel(unsigned x, unsigned y,
+void MCBlock::SetPixel(unsigned x, unsigned y,
                        const C64Color& col, MCDrawingMode mode)
 {
     int i;
@@ -135,41 +133,41 @@ bool MCBlock::SetPixel(unsigned x, unsigned y,
         if (i == 0 && m_pParent)
             m_pParent->SetBackground(col);
         else
-            SetMCColor(i, col);
+            SetIndexedColor(i, col);
 
         m_aBitmap[y][x] = i;
-        return true;
+        return;
     }
 
-    /* Die 4 Farben durchgehen und nachsehen, ob geeignet */
+    /* Die vorhandenen Farben durchgehen und nachsehen, ob geeignet */
     /* HG-Farbe immer verwenden, wenn moeglich */
     if (m_c64Color[0] == col)
     {
         m_aBitmap[y][x] = 0;
-        return true;
+        return;
     }
     /* Dann alle benutzte Farben durchgehen */
     for (i = 1; i < 4; ++i)
     {
-        if ((CountMCIndex(i) != 0) && (m_c64Color[i] == col))
+        if ((CountIndexedColor(i) != 0) && (m_c64Color[i] == col))
         {
             m_aBitmap[y][x] = i;
-            return true;
+            return;
         }
     }
     /* Sonst eine unbenutzte Farbe belegen */
     for (i = 1; i < 4; ++i)
     {
-        if (CountMCIndex(i) == 0)
+        if (CountIndexedColor(i) == 0)
         {
             m_aBitmap[y][x] = i;
             m_c64Color[i] = col;
-            return true;
+            return;
         }
     }
     /* Color Clash, je nach Modus weiterverfahren */
     if (mode == MCDrawingModeIgnore)
-        return false;
+        return;
 
     if (mode == MCDrawingModeForce)
     {
@@ -189,12 +187,12 @@ bool MCBlock::SetPixel(unsigned x, unsigned y,
     {
         /* COLMODE_LEAST -> Am wenigsten benutzte Vordergrundfarbe nehmen */
         i = 1;
-        if (CountMCIndex(2) < CountMCIndex(1))
+        if (CountIndexedColor(2) < CountIndexedColor(1))
             i = 2;
-        if (CountMCIndex(3) < CountMCIndex(1))
+        if (CountIndexedColor(3) < CountIndexedColor(1))
             i = 3;
         m_aBitmap[y][x] = i;
         m_c64Color[i] = col;
     }
-    return true;
+    return;
 }

@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2009 Thomas Giesel
+ * (c) 2003-2010 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -106,7 +106,11 @@ int MCBitmap::GetNIndexes() const
 const C64Color* MCBitmap::GetColorByIndex(int x, int y, int index) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
-        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetMCColor(index);
+    {
+        x /= MCBLOCK_WIDTH;
+        y /= MCBLOCK_HEIGHT;
+        return m_aMCBlock[y][x].GetIndexedColor(index);
+    }
     else
         return &black;
 }
@@ -120,7 +124,11 @@ const C64Color* MCBitmap::GetColorByIndex(int x, int y, int index) const
 int MCBitmap::CountColorByIndex(int x, int y, int index) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
-        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].CountMCIndex(index);
+    {
+        y /= MCBLOCK_HEIGHT;
+        x /= MCBLOCK_WIDTH;
+        return m_aMCBlock[y][x].CountIndexedColor(index);
+    }
     else
         return 0;
 }
@@ -134,7 +142,10 @@ int MCBitmap::CountColorByIndex(int x, int y, int index) const
 const C64Color* MCBitmap::GetColor(int x, int y) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
-        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].GetColor(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
+    {
+        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].
+                GetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
+    }
     else
         return &black;
 }
@@ -145,7 +156,7 @@ void MCBitmap::SetBackground(C64Color col)
 {
     int x;
     for (x = 0; x < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS; ++x)
-        m_aMCBlock[0][x].SetMCColor(0, col);
+        m_aMCBlock[0][x].SetIndexedColor(0, col);
 
     // this may change the whole bitmap
     Dirty(0, 0, MC_X, MC_Y);
@@ -154,7 +165,7 @@ void MCBitmap::SetBackground(C64Color col)
 /*****************************************************************************/
 unsigned char MCBitmap::GetBackground() const
 {
-    return (unsigned char) m_aMCBlock[0][0].GetMCColor(0)->GetColor();
+    return (unsigned char) m_aMCBlock[0][0].GetIndexedColor(0)->GetColor();
 }
 
 /*****************************************************************************/
@@ -162,14 +173,11 @@ void MCBitmap::SetScreenRAM(unsigned offset, unsigned char val)
 {
     C64Color col;
 
-    if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
-    {
-        col.SetColor((val >> 4) & 0x0f);
-        m_aMCBlock[0][offset].SetMCColor(1, col);
+    col.SetColor((val >> 4) & 0x0f);
+    m_aMCBlock[0][offset].SetIndexedColor(1, col);
 
-        col.SetColor(val & 0x0f);
-        m_aMCBlock[0][offset].SetMCColor(2, col);
-    }
+    col.SetColor(val & 0x0f);
+    m_aMCBlock[0][offset].SetIndexedColor(2, col);
 }
 
 /*****************************************************************************/
@@ -177,11 +185,8 @@ unsigned char MCBitmap::GetScreenRAM(unsigned offset) const
 {
     unsigned char v;
 
-    if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
-    {
-        v  = m_aMCBlock[0][offset].GetMCColor(1)->GetColor() << 4;
-        v |= m_aMCBlock[0][offset].GetMCColor(2)->GetColor();
-    }
+    v  = m_aMCBlock[0][offset].GetIndexedColor(1)->GetColor() << 4;
+    v |= m_aMCBlock[0][offset].GetIndexedColor(2)->GetColor();
     return v;
 }
 
@@ -190,11 +195,8 @@ void MCBitmap::SetColorRAM(unsigned offset, unsigned char val)
 {
     C64Color col;
 
-    if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
-    {
-        col.SetColor(val & 0x0f);
-        m_aMCBlock[0][offset].SetMCColor(3, col);
-    }
+    col.SetColor(val & 0x0f);
+    m_aMCBlock[0][offset].SetIndexedColor(3, col);
 }
 
 /*****************************************************************************/
@@ -202,19 +204,15 @@ unsigned char MCBitmap::GetColorRAM(unsigned offset) const
 {
     unsigned char v;
 
-    if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS)
-    {
-        v = m_aMCBlock[0][offset].GetMCColor(3)->GetColor();
-    }
+    v = m_aMCBlock[0][offset].GetIndexedColor(3)->GetColor();
     return v;
 }
 
 /*****************************************************************************/
 void MCBitmap::SetBitmapRAM(unsigned offset, unsigned char val)
 {
-    if (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS * MCBITMAP_BYTES_PER_BLOCK)
-        m_aMCBlock[0][offset / MCBITMAP_BYTES_PER_BLOCK].SetBitmapRAM(
-            offset % MCBITMAP_BYTES_PER_BLOCK, val);
+    m_aMCBlock[0][offset / MCBITMAP_BYTES_PER_BLOCK].SetBitmapRAM(
+        offset % MCBITMAP_BYTES_PER_BLOCK, val);
 }
 
 /*****************************************************************************/
@@ -242,7 +240,7 @@ const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
 }
 
 /*****************************************************************************
- * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon 3 Vordergrund-
+ * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon alle Vordergrund-
  * farben, wird je nach "mode" verfahren. Siehe MCBlock::SetPixel
  */
 void MCBitmap::SetPixel(int x, int y,
