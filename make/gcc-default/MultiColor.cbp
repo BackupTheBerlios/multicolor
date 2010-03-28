@@ -50,10 +50,6 @@
 		<Linker>
 			<Add option="`wx-config --libs`" />
 		</Linker>
-		<Unit filename="../common/filelist.mk" />
-		<Unit filename="../common/rules.mk" />
-		<Unit filename="Makefile" />
-		<Unit filename="PixelSource.cpp" />
 		<Unit filename="../../src/BitmapBase.cpp" />
 		<Unit filename="../../src/BitmapBase.h" />
 		<Unit filename="../../src/C64Color.cpp" />
@@ -63,6 +59,12 @@
 		<Unit filename="../../src/DocRenderer.h" />
 		<Unit filename="../../src/FormatInfo.cpp" />
 		<Unit filename="../../src/FormatInfo.h" />
+		<Unit filename="../../src/HiResBitmap.cpp" />
+		<Unit filename="../../src/HiResBitmap.h" />
+		<Unit filename="../../src/HiResBlock.cpp" />
+		<Unit filename="../../src/HiResBlock.h" />
+		<Unit filename="../../src/HiResDoc.cpp" />
+		<Unit filename="../../src/HiResDoc.h" />
 		<Unit filename="../../src/MCApp.cpp" />
 		<Unit filename="../../src/MCApp.h" />
 		<Unit filename="../../src/MCBitmap.cpp" />
@@ -74,31 +76,16 @@
 		<Unit filename="../../src/MCCanvas.cpp" />
 		<Unit filename="../../src/MCCanvas.h" />
 		<Unit filename="../../src/MCDoc.cpp" />
-		<Unit filename="../../src/MCDoc.cpp.orig" />
 		<Unit filename="../../src/MCDoc.h" />
 		<Unit filename="../../src/MCDrawingModePanel.cpp" />
 		<Unit filename="../../src/MCDrawingModePanel.h" />
 		<Unit filename="../../src/MCMainFrame.cpp" />
 		<Unit filename="../../src/MCMainFrame.h" />
-		<Unit filename="../../src/MCToolCloneBrush.cpp" />
-		<Unit filename="../../src/MCToolCloneBrush.h" />
-		<Unit filename="../../src/MCToolColorPicker.cpp" />
-		<Unit filename="../../src/MCToolColorPicker.h" />
-		<Unit filename="../../src/MCToolDots.cpp" />
-		<Unit filename="../../src/MCToolDots.h" />
-		<Unit filename="../../src/MCToolFill.cpp" />
-		<Unit filename="../../src/MCToolFill.h" />
-		<Unit filename="../../src/MCToolFreehand.cpp" />
-		<Unit filename="../../src/MCToolFreehand.h" />
-		<Unit filename="../../src/MCToolLines.cpp" />
-		<Unit filename="../../src/MCToolLines.h" />
-		<Unit filename="../../src/MCToolPanel.cpp" />
-		<Unit filename="../../src/MCToolPanel.h" />
+		<Unit filename="../../src/NewFileDialog.cpp" />
+		<Unit filename="../../src/NewFileDialog.h" />
 		<Unit filename="../../src/PalettePanel.cpp" />
 		<Unit filename="../../src/PalettePanel.h" />
 		<Unit filename="../../src/ToolBase.cpp" />
-		<Unit filename="../../src/ToolBase.cpp" />
-		<Unit filename="../../src/ToolBase.h" />
 		<Unit filename="../../src/ToolBase.h" />
 		<Unit filename="../../src/ToolCloneBrush.cpp" />
 		<Unit filename="../../src/ToolCloneBrush.h" />

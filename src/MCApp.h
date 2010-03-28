@@ -32,6 +32,9 @@
 #include "MCMainFrame.h"
 #include "ToolPanel.h"
 
+#define MC_MAX_FILE_BUFF_SIZE 0x10000
+
+
 class PalettePanel;
 class ToolBase;
 class DocBase;

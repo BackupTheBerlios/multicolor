@@ -33,7 +33,6 @@
 #include "DocRenderer.h"
 
 #define AMICA_SIG_BYTE 0xc2
-#define MC_MAX_FILE_BUFF_SIZE 0x10000
 
 /* File structure of a Koala image including start address */
 typedef struct KOALA_S
@@ -73,8 +72,6 @@ FormatInfo MCDoc::m_formatInfo(
 MCDoc::MCDoc()
     : m_bitmap()
     , m_bitmapBackup()
-    , m_listUndo()
-    , m_nRedoPos(0)
 {
     PrepareUndo();
 
@@ -84,21 +81,6 @@ MCDoc::MCDoc()
     if (sizeof(KOALA_T) != 10003)
     {
         wxMessageBox(wxT("Warning: Koala structure has wrong size. This is not good at all."));
-    }
-}
-
-
-/******************************************************************************/
-/**
- * Tell all my renderers that I'm going to go.
- */
-MCDoc::~MCDoc()
-{
-    std::list<DocRenderer*>::iterator i;
-
-    for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
-    {
-        (*i)->OnDocDestroy(this);
     }
 }
 
@@ -115,98 +97,13 @@ DocBase* MCDoc::Factory()
 
 /******************************************************************************/
 /**
- * Refresh all renderers associated with this document.
+ * Copy the contents of the given bitmap to our one. The pointer must point to
+ * an object which has actually the same type as our bitmap.
  */
-void MCDoc::Refresh(int x1, int y1, int x2, int y2)
+void MCDoc::SetBitmap(const BitmapBase* pB)
 {
-    std::list<DocRenderer*>::iterator i;
-
-    // bring them to the right order
-    GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
-
-    for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
-    {
-        (*i)->OnDocChanged(x1, y1, x2, y2);
-    }
+    m_bitmap = *(MCBitmap*) pB;
 }
-
-
-/******************************************************************************/
-/**
- * Save the current bitmap as undo step.
- */
-void MCDoc::PrepareUndo()
-{
-    unsigned i;
-
-    Modify(true);
-
-    // if we are not at the end of the undo list, discard the rest
-    while (m_nRedoPos < m_listUndo.size())
-        m_listUndo.pop_back();
-
-    // if the list is full, remove the first entry
-    if (m_listUndo.size() >= MC_UNDO_LEN)
-    {
-        for (i = 1; i < m_listUndo.size(); ++i)
-        {
-            m_listUndo[i - 1] = m_listUndo[i];
-        }
-        m_listUndo.pop_back();
-        --m_nRedoPos;
-    }
-
-    // append current state
-    m_listUndo.push_back(m_bitmap);
-    m_nRedoPos++;
-
-}
-
-/******************************************************************************/
-/*
- * Undo, if possible.
- */
-void MCDoc::Undo()
-{
-   if (CanUndo())
-   {
-      m_nRedoPos--;
-      m_bitmap = m_listUndo[m_nRedoPos - 1];
-   }
-   Refresh();
-}
-
-/******************************************************************************/
-/*
- * Redo, if possible.
- */
-void MCDoc::Redo()
-{
-   if (CanRedo())
-   {
-      m_bitmap = m_listUndo[m_nRedoPos];
-      m_nRedoPos++;
-   }
-   Refresh();
-}
-
-/******************************************************************************/
-/*
- * Return true if we can undo.
- */
-bool MCDoc::CanUndo()
-{
-    return m_nRedoPos > 1;
-};
-
-/******************************************************************************/
-/*
- * Return true if we can redo.
- */
-bool MCDoc::CanRedo()
-{
-    return m_nRedoPos < m_listUndo.size();
-};
 
 
 /******************************************************************************/
@@ -216,49 +113,19 @@ bool MCDoc::Load(const wxString& stringFilename)
 {
     bool           bLoaded = false;
     unsigned char* pBuff;
-    wxFileOffset   pos;
-    wxFile         file(stringFilename);
+    size_t         size;
 
-    if (!file.IsOpened())
-    {
-        wxMessageBox(wxT("Could not open \"%s\" for reading."),
-                stringFilename);
+    pBuff = DocBase::LoadToBuffer(&size, stringFilename);
+    if (!pBuff)
         return false;
-    }
 
-    pos = file.Length();
-    if (pos > (wxFileOffset)(MC_MAX_FILE_BUFF_SIZE))
-    {
-        ::wxMessageBox(wxT("File format unknown."), wxT("Load Error"),
-            wxOK | wxICON_ERROR);
-    }
-    else
-    {
-        pBuff = new unsigned char[pos];
-        file.Read(pBuff, pos);
-        bLoaded = LoadKoala(pBuff, (unsigned)pos);
-
-        if (!bLoaded)
-            bLoaded = LoadAmica(pBuff, (unsigned)pos);
-
-        delete[] pBuff;
-    };
+    bLoaded = LoadKoala(pBuff, (unsigned)size);
 
     if (!bLoaded)
-    {
-        ::wxMessageBox(wxT("Could not load this file."),
-            wxT("Load Error"), wxOK | wxICON_ERROR);
-    }
+        bLoaded = LoadAmica(pBuff, (unsigned)size);
 
-    m_listUndo.clear();
-    m_nRedoPos = 0;
-    PrepareUndo();
-
-    m_fileName.Assign(stringFilename);
-    Modify(false);
-
-    Refresh();
-    return true;
+    delete[] pBuff;
+    return PostLoad(stringFilename, bLoaded);
 }
 
 

@@ -33,6 +33,7 @@
 #include "FormatInfo.h"
 #include "MCApp.h"
 #include "MCDoc.h"
+#include "HiResDoc.h"
 #include "MCMainFrame.h"
 #include "MCCanvas.h"
 #include "PalettePanel.h"

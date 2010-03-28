@@ -36,6 +36,7 @@ class BitmapBase
 {
 public:
     BitmapBase();
+    virtual BitmapBase* Copy() const = 0;
 
     virtual int GetWidth() const = 0;
     virtual int GetHeight() const = 0;

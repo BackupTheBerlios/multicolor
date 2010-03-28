@@ -32,34 +32,22 @@
 #include "DocBase.h"
 #include "FormatInfo.h"
 
-#define MC_UNDO_LEN 100
-
 class DocRenderer;
 
 class MCDoc : public DocBase
 {
 public:
     MCDoc();
-    virtual ~MCDoc();
     static DocBase* Factory();
 
     const BitmapBase* GetBitmap() const;
     virtual BitmapBase* GetBitmap();
+    virtual void SetBitmap(const BitmapBase*);
     virtual void BackupBitmap();
     virtual void RestoreBitmap();
 
-    virtual void Refresh(int x1 = 0, int y1 = 0, int x2 = 4096, int y2 = 4096);
-    virtual void PrepareUndo();
-    virtual void Undo();
-    virtual void Redo();
-    virtual bool CanUndo();
-    virtual bool CanRedo();
-
     bool Load(const wxString& stringFilename);
     bool Save(const wxString& stringFilename);
-
-    std::vector<MCBitmap> m_listUndo;
-    unsigned       m_nRedoPos;
 
 protected:
     static FormatInfo m_formatInfo;

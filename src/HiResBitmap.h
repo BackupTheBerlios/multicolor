@@ -2,7 +2,7 @@
  * MultiColor - An image manipulation tool for Commodore 8-bit computers'
  *              graphic formats
  *
- * (c) 2003-2009 Thomas Giesel
+ * (c) 2003-2010 Thomas Giesel
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,34 +23,30 @@
  * Thomas Giesel skoe@directbox.com
  */
 
-#ifndef MCBITMAP_H
-#define MCBITMAP_H
+#ifndef HIRESBITMAP_H
+#define HIRESBITMAP_H
 
-#include "MCBlock.h"
+#include "HiResBlock.h"
 #include "ToolBase.h"
 #include "BitmapBase.h"
 
-#define MCBITMAP_BYTES_PER_BLOCK 8
+#define HIRESBITMAP_BYTES_PER_BLOCK 8
 
-#define MC_X 160
-#define MC_Y 200
+#define HIRES_X 320
+#define HIRES_Y 200
 
-#define MCBITMAP_XBLOCKS (MC_X / 4)
-#define MCBITMAP_YBLOCKS (MC_Y / 8)
+#define HIRESBITMAP_XBLOCKS (HIRES_X / 8)
+#define HIRESBITMAP_YBLOCKS (HIRES_Y / 8)
 
-class MCBitmap : public BitmapBase
+class HiResBitmap: public BitmapBase
 {
 public:
-    MCBitmap(void);
-    ~MCBitmap(void);
+    HiResBitmap(void);
+    ~HiResBitmap(void);
     virtual BitmapBase* Copy() const;
 
     virtual int GetWidth() const;
     virtual int GetHeight() const;
-
-    virtual int GetCellWidth() const;
-
-    virtual int GetPixelXFactor() const;
 
     virtual int GetNIndexes() const;
     virtual const C64Color* GetColorByIndex(int x, int y, int index) const;
@@ -72,12 +68,12 @@ public:
     void SetBitmapRAM(unsigned offset, unsigned char val);
     unsigned char GetBitmapRAM(unsigned offset);
 
-    const MCBlock* GetMCBlock(unsigned x, unsigned y) const;
+    const HiResBlock* GetHiResBlock(unsigned x, unsigned y) const;
 
     static const C64Color black;
 
 protected:
-    MCBlock m_aMCBlock[MCBITMAP_YBLOCKS][MCBITMAP_XBLOCKS];
+    HiResBlock m_aHiResBlock[HIRESBITMAP_YBLOCKS][HIRESBITMAP_XBLOCKS];
 };
 
-#endif
+#endif // HIRESBITMAP_H

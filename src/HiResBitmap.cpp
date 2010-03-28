@@ -25,23 +25,23 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "MCBitmap.h"
+#include "HiResBitmap.h"
 #include "ToolBase.h"
 
 
-const C64Color MCBitmap::black;
+const C64Color HiResBitmap::black;
 
 
 /*****************************************************************************/
-MCBitmap::MCBitmap(void)
+HiResBitmap::HiResBitmap(void)
 {
     int x;
-    for (x = 0; x < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS; ++x)
-        m_aMCBlock[0][x].SetParent(this);
+    for (x = 0; x < HIRESBITMAP_XBLOCKS * HIRESBITMAP_YBLOCKS; ++x)
+        m_aHiResBlock[0][x].SetParent(this);
 }
 
 /*****************************************************************************/
-MCBitmap::~MCBitmap(void)
+HiResBitmap::~HiResBitmap(void)
 {
 }
 
@@ -50,9 +50,9 @@ MCBitmap::~MCBitmap(void)
 /**
  * Return a pointer to a copy of this bitmap created with "new".
  */
-BitmapBase* MCBitmap::Copy() const
+BitmapBase* HiResBitmap::Copy() const
 {
-    return new MCBitmap(*this);
+    return new HiResBitmap(*this);
 }
 
 
@@ -60,9 +60,9 @@ BitmapBase* MCBitmap::Copy() const
 /**
  * Return the width of this image.
  */
-int MCBitmap::GetWidth() const
+int HiResBitmap::GetWidth() const
 {
-    return MC_X;
+    return HIRES_X;
 }
 
 
@@ -70,30 +70,9 @@ int MCBitmap::GetWidth() const
 /**
  * Return the height of this image.
  */
-int MCBitmap::GetHeight() const
+int HiResBitmap::GetHeight() const
 {
-    return MC_Y;
-}
-
-
-/*****************************************************************************/
-/**
- * Return the width of a attribute cell, if applicable. Return (todo) if
- * this bitmap has no cells.
- */
-int MCBitmap::GetCellWidth() const
-{
-    return 4;
-}
-
-
-/******************************************************************************/
-/**
- * Return the pixel factor in X-direction. 2 for MC.
- */
-int MCBitmap::GetPixelXFactor() const
-{
-    return 2;
+    return HIRES_Y;
 }
 
 
@@ -101,9 +80,9 @@ int MCBitmap::GetPixelXFactor() const
 /**
  * Return the number of color indexes in this mode.
  */
-int MCBitmap::GetNIndexes() const
+int HiResBitmap::GetNIndexes() const
 {
-    return 4;
+    return 2;
 }
 
 
@@ -113,13 +92,13 @@ int MCBitmap::GetNIndexes() const
  * contains the given coordinates. If the coordinates are out of range,
  * return black.
  */
-const C64Color* MCBitmap::GetColorByIndex(int x, int y, int index) const
+const C64Color* HiResBitmap::GetColorByIndex(int x, int y, int index) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
     {
-        x /= MCBLOCK_WIDTH;
-        y /= MCBLOCK_HEIGHT;
-        return m_aMCBlock[y][x].GetIndexedColor(index);
+        x /= HIRESBLOCK_WIDTH;
+        y /= HIRESBLOCK_HEIGHT;
+        return m_aHiResBlock[y][x].GetIndexedColor(index);
     }
     else
         return &black;
@@ -131,13 +110,13 @@ const C64Color* MCBitmap::GetColorByIndex(int x, int y, int index) const
  * Return the number of pixels of an index for the macro cell which contains
  * the given coordinates. If the coordinates are out of range, return 0.
  */
-int MCBitmap::CountColorByIndex(int x, int y, int index) const
+int HiResBitmap::CountColorByIndex(int x, int y, int index) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
     {
-        y /= MCBLOCK_HEIGHT;
-        x /= MCBLOCK_WIDTH;
-        return m_aMCBlock[y][x].CountIndexedColor(index);
+        x /= HIRESBLOCK_WIDTH;
+        y /= HIRESBLOCK_HEIGHT;
+        return m_aHiResBlock[y][x].CountIndexedColor(index);
     }
     else
         return 0;
@@ -149,12 +128,12 @@ int MCBitmap::CountColorByIndex(int x, int y, int index) const
  * Return the color of a pixel. If the coordinates are out of range, return
  * black.
  */
-const C64Color* MCBitmap::GetColor(int x, int y) const
+const C64Color* HiResBitmap::GetColor(int x, int y) const
 {
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
     {
-        return m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH].
-                GetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT);
+        return m_aHiResBlock[y / HIRESBLOCK_HEIGHT][x / HIRESBLOCK_WIDTH].
+                GetPixel(x % HIRESBLOCK_WIDTH, y % HIRESBLOCK_HEIGHT);
     }
     else
         return &black;
@@ -162,88 +141,54 @@ const C64Color* MCBitmap::GetColor(int x, int y) const
 
 
 /*****************************************************************************/
-void MCBitmap::SetBackground(C64Color col)
-{
-    int x;
-    for (x = 0; x < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS; ++x)
-        m_aMCBlock[0][x].SetIndexedColor(0, col);
-
-    // this may change the whole bitmap
-    Dirty(0, 0, MC_X, MC_Y);
-}
-
-/*****************************************************************************/
-unsigned char MCBitmap::GetBackground() const
-{
-    return (unsigned char) m_aMCBlock[0][0].GetIndexedColor(0)->GetColor();
-}
-
-/*****************************************************************************/
-void MCBitmap::SetScreenRAM(unsigned offset, unsigned char val)
+void HiResBitmap::SetScreenRAM(unsigned offset, unsigned char val)
 {
     C64Color col;
 
     col.SetColor((val >> 4) & 0x0f);
-    m_aMCBlock[0][offset].SetIndexedColor(1, col);
+    m_aHiResBlock[0][offset].SetIndexedColor(0, col);
 
     col.SetColor(val & 0x0f);
-    m_aMCBlock[0][offset].SetIndexedColor(2, col);
+    m_aHiResBlock[0][offset].SetIndexedColor(1, col);
 }
 
+
 /*****************************************************************************/
-unsigned char MCBitmap::GetScreenRAM(unsigned offset) const
+unsigned char HiResBitmap::GetScreenRAM(unsigned offset) const
 {
     unsigned char v;
 
-    v  = m_aMCBlock[0][offset].GetIndexedColor(1)->GetColor() << 4;
-    v |= m_aMCBlock[0][offset].GetIndexedColor(2)->GetColor();
+    v  = m_aHiResBlock[0][offset].GetIndexedColor(0)->GetColor() << 4;
+    v |= m_aHiResBlock[0][offset].GetIndexedColor(1)->GetColor();
     return v;
 }
 
-/*****************************************************************************/
-void MCBitmap::SetColorRAM(unsigned offset, unsigned char val)
-{
-    C64Color col;
 
-    col.SetColor(val & 0x0f);
-    m_aMCBlock[0][offset].SetIndexedColor(3, col);
+/*****************************************************************************/
+void HiResBitmap::SetBitmapRAM(unsigned offset, unsigned char val)
+{
+    m_aHiResBlock[0][offset / HIRESBITMAP_BYTES_PER_BLOCK].SetBitmapRAM(
+        offset % HIRESBITMAP_BYTES_PER_BLOCK, val);
+}
+
+
+/*****************************************************************************/
+unsigned char HiResBitmap::GetBitmapRAM(unsigned offset)
+{
+    return m_aHiResBlock[0][offset / HIRESBITMAP_BYTES_PER_BLOCK].GetBitmapRAM(
+         offset % HIRESBITMAP_BYTES_PER_BLOCK);
 }
 
 /*****************************************************************************/
-unsigned char MCBitmap::GetColorRAM(unsigned offset) const
-{
-    unsigned char v;
-
-    v = m_aMCBlock[0][offset].GetIndexedColor(3)->GetColor();
-    return v;
-}
-
-/*****************************************************************************/
-void MCBitmap::SetBitmapRAM(unsigned offset, unsigned char val)
-{
-    m_aMCBlock[0][offset / MCBITMAP_BYTES_PER_BLOCK].SetBitmapRAM(
-        offset % MCBITMAP_BYTES_PER_BLOCK, val);
-}
-
-/*****************************************************************************/
-unsigned char MCBitmap::GetBitmapRAM(unsigned offset)
-{
-    //ASSERT (offset < MCBITMAP_XBLOCKS * MCBITMAP_YBLOCKS * MCBITMAP_BYTES_PER_BLOCK);
-
-    return m_aMCBlock[0][offset / MCBITMAP_BYTES_PER_BLOCK].GetBitmapRAM(
-         offset % MCBITMAP_BYTES_PER_BLOCK);
-}
-
-/*****************************************************************************/
-/*
- * Get a const reference to the block containing the given coordinates.
+/**
+ * Get a the block containing the given coordinates.
  * Return NULL if the coordinates are out of range
  */
-const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
+const HiResBlock* HiResBitmap::GetHiResBlock(unsigned x, unsigned y) const
 {
     if ((x < GetWidth()) && (y < GetHeight()))
     {
-        return &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
+        return &(m_aHiResBlock[y / HIRESBLOCK_HEIGHT][x / HIRESBLOCK_WIDTH]);
     }
     else
         return NULL;
@@ -251,21 +196,21 @@ const MCBlock* MCBitmap::GetMCBlock(unsigned x, unsigned y) const
 
 /*****************************************************************************
  * Setzt einen Pixel an x/y in der Farbe col. Gibt es schon alle Vordergrund-
- * farben, wird je nach "mode" verfahren. Siehe MCBlock::SetPixel
+ * farben, wird je nach "mode" verfahren. Siehe HiResBlock::SetPixel
  */
-void MCBitmap::SetPixel(int x, int y,
+void HiResBitmap::SetPixel(int x, int y,
                         const C64Color& col, MCDrawingMode mode)
 {
-    MCBlock* pBlock;
+    HiResBlock* pBlock;
 
     if ((x >= 0) && (y >= 0) && (x < GetWidth()) && (y < GetHeight()))
     {
-        pBlock = &(m_aMCBlock[y / MCBLOCK_HEIGHT][x / MCBLOCK_WIDTH]);
-        pBlock->SetPixel(x % MCBLOCK_WIDTH, y % MCBLOCK_HEIGHT,
+        pBlock = &(m_aHiResBlock[y / HIRESBLOCK_HEIGHT][x / HIRESBLOCK_WIDTH]);
+        pBlock->SetPixel(x % HIRESBLOCK_WIDTH, y % HIRESBLOCK_HEIGHT,
                          col, mode);
 
         // this may change the whole block
-        Dirty(x & ~(MCBLOCK_WIDTH - 1), y & ~(MCBLOCK_HEIGHT - 1),
-              MCBLOCK_WIDTH, MCBLOCK_HEIGHT);
+        Dirty(x & ~(HIRESBLOCK_WIDTH - 1), y & ~(HIRESBLOCK_HEIGHT - 1),
+              HIRESBLOCK_WIDTH, HIRESBLOCK_HEIGHT);
     }
 }
