@@ -38,11 +38,13 @@
  */
 MCBlockPanel::MCBlockPanel(wxWindow* pParent) :
         wxWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(m_nWTotal, m_nHTotal)),
-        m_pDoc(NULL)
+        m_pDoc(NULL),
+        m_timerRefresh(this, MCBLOCKPANEL_REFRESH_TIMER_ID)
 {
     SetMinSize(GetSize());
     SetMaxSize(GetSize());
 
+    Connect(wxEVT_TIMER, wxTimerEventHandler(MCBlockPanel::OnTimer));
     Connect(wxEVT_PAINT, wxPaintEventHandler(MCBlockPanel::OnPaint));
 }
 
@@ -72,7 +74,8 @@ void MCBlockPanel::OnDocChanged(int x1, int y1, int x2, int y2)
  */
 void MCBlockPanel::OnDocMouseMoved(int x, int y)
 {
-    Refresh(false);
+    if (!m_timerRefresh.IsRunning())
+        m_timerRefresh.Start(MCBLOCKPANEL_UPDATE_INTERVAL, wxTIMER_ONE_SHOT);
 }
 
 
@@ -100,6 +103,19 @@ void MCBlockPanel::OnPaint(wxPaintEvent& event)
 
     if (m_pDoc)
         DrawBlock(&dc, m_pDoc, m_pDoc->GetMousePos().x, m_pDoc->GetMousePos().y);
+}
+
+
+/*****************************************************************************/
+/**
+ * This is called when the timer elapses. The block will be refreshed.
+ */
+void MCBlockPanel::OnTimer(wxTimerEvent& event)
+{
+    if (event.GetId() == MCBLOCKPANEL_REFRESH_TIMER_ID)
+    {
+        Refresh(false);
+    }
 }
 
 

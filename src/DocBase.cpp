@@ -43,6 +43,7 @@ unsigned DocBase::m_nDocNumber;
 DocBase::DocBase() :
     m_fileName(),
     m_bModified(false),
+    m_pointMousePos(-1, -1),
     m_listUndo(),
     m_nRedoPos(0)
 {
@@ -153,17 +154,21 @@ void DocBase::RefreshDirty()
  */
 void DocBase::SetMousePos(int x, int y)
 {
-    std::list<DocRenderer*>::iterator i;
-
-    m_pointMousePos.x = x;
-    m_pointMousePos.y = y;
-
-    wxGetApp().GetMainFrame()->ShowMousePos(x, y);
-    for (i  = m_listDocRenderers.begin();
-         i != m_listDocRenderers.end();
-         ++i)
+    if ((m_pointMousePos.x != x) || (m_pointMousePos.y != y))
     {
-        (*i)->OnDocMouseMoved(x, y);
+        std::list<DocRenderer*>::iterator i;
+
+        m_pointMousePos.x = x;
+        m_pointMousePos.y = y;
+
+        wxGetApp().GetMainFrame()->ShowMousePos(x, y);
+
+        for (i  = m_listDocRenderers.begin();
+             i != m_listDocRenderers.end();
+             ++i)
+        {
+            (*i)->OnDocMouseMoved(x, y);
+        }
     }
 }
 

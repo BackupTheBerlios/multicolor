@@ -26,11 +26,14 @@
 #define MCBLOCKPANEL_H_
 
 #include <wx/window.h>
+#include <wx/timer.h>
 #include <wx/dc.h>
 
 #include "MCBlock.h"
 #include "DocRenderer.h"
 
+#define MCBLOCKPANEL_REFRESH_TIMER_ID 1
+#define MCBLOCKPANEL_UPDATE_INTERVAL 200
 
 class MCBlockPanel : public wxWindow, public DocRenderer
 {
@@ -55,7 +58,10 @@ protected:
 
     DocBase* m_pDoc;
 
+    wxTimer  m_timerRefresh;
+
     void OnPaint(wxPaintEvent& event);
+    void OnTimer(wxTimerEvent& event);
     void DrawBlock(wxDC* pDC, DocBase* pDoc, unsigned x, unsigned y);
 };
 

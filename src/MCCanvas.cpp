@@ -46,7 +46,7 @@
 #define PAINT_FILTER(F,X,CONST) ( (F)+=(X)-(F) - (((X)-(F))>>(CONST)) )
 
 /* define this to get some extra debug effects */
-// #define MC_DEBUG_REDRAW
+#define MC_DEBUG_REDRAW
 
 std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 
@@ -61,6 +61,7 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     m_nScale(1),
     m_pointLastMousePos(-1, -1),
     m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID),
+    m_timerRefresh(this, MCCANVAS_REFRESH_TIMER_ID),
     m_bDragScrollActive(false),
     m_pointDragScrollStart(0, 0),
     m_xDragScrollStart(0),
@@ -144,10 +145,18 @@ void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
  */
 void MCCanvas::OnDocMouseMoved(int x, int y)
 {
-    InvalidateMouseRect();
-    m_pointLastMousePos.x = x;
-    m_pointLastMousePos.y = y;
-    InvalidateMouseRect();
+    if (m_timerRefresh.IsRunning())
+    {
+    }
+    else
+    {
+        m_timerRefresh.Start(50, wxTIMER_ONE_SHOT);
+
+        InvalidateMouseRect();
+        m_pointLastMousePos.x = x;
+        m_pointLastMousePos.y = y;
+        InvalidateMouseRect();
+    }
 }
 
 /*****************************************************************************/
@@ -269,15 +278,17 @@ void MCCanvas::OnDraw(wxDC& rDC)
         rDC.DrawRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight());
     }
 
+    DrawMousePos(&rDC);
+
 #ifdef MC_DEBUG_REDRAW
     wxCoord x, y, w, h;
     GetUpdateRegion().GetBox(x, y, w, h);
     rDC.SetPen(*wxRED_PEN);
-    rDC.SetBrush(*wxTRANSPARENT_BRUSH);
-    rDC.DrawRectangle(x, y, w, h);
+    // rDC.SetBrush(*wxTRANSPARENT_BRUSH);
+    // rDC.DrawRectangle(x, y, w, h);
+    rDC.DrawLine(x, y, x + w, y + h);
+    rDC.DrawLine(x + w, y, x, y + h);
 #endif
-
-    DrawMousePos(&rDC);
 }
 
 
@@ -541,10 +552,10 @@ void MCCanvas::InvalidateMouseRect()
     y = m_pointLastMousePos.y;
     ToCanvasCoord(&x, &y, x, y);
 
-    rect.SetLeft(x - 8 * m_nScale);
-    rect.SetTop(y - 8 * m_nScale);
-    rect.SetWidth(16 * m_nScale);
-    rect.SetHeight(16 * m_nScale);
+    rect.SetLeft(x - m_nScale);
+    rect.SetTop(y - m_nScale);
+    rect.SetWidth(3 * m_nScale);
+    rect.SetHeight(3 * m_nScale);
     RefreshRect(rect, false);
 }
 
@@ -653,7 +664,7 @@ bool MCCanvas::CheckScrolling(int xMouse, int yMouse)
         {
             // Scroll now and restart the timer
             Scroll(xScroll, yScroll);
-            m_timerScrolling.Start(MCCANVAS_SCROLL_INTERVAL, true);
+            m_timerScrolling.Start(MCCANVAS_SCROLL_INTERVAL, wxTIMER_ONE_SHOT);
             return true;
         }
     }

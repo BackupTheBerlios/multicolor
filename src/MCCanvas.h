@@ -36,7 +36,8 @@
 #include "MCBitmap.h"
 #include "DocRenderer.h"
 
-#define MCCANVAS_SCROLL_TIMER_ID 1
+#define MCCANVAS_SCROLL_TIMER_ID  1
+#define MCCANVAS_REFRESH_TIMER_ID 2
 
 // If we are closer as that many (screen) pixels to the border, we scroll
 #define MCCANVAS_SCROLL_THRESHOLD 48
@@ -138,6 +139,8 @@ protected:
 
     // When this timer is still running, auto scroll is disabled
     wxTimer     m_timerScrolling;
+
+    wxTimer     m_timerRefresh;
 
     //// Drag Scrolling
     // true if we are dragging the image for scrolling
