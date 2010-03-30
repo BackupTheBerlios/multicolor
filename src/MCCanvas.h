@@ -134,6 +134,9 @@ protected:
     // Position where the mouse has been drawn (bitmap coord), -1/-1 for none
     wxPoint     m_pointLastMousePos;
 
+    // Position where the mouse will be drawn next (bitmap coord), -1/-1 for none
+    wxPoint     m_pointNextMousePos;
+
     // This image is used as cache at zoom levels 1:1 and 2:1
     wxImage     m_image;
 

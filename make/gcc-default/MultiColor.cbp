@@ -21,6 +21,8 @@
 					<CompileFile command="$make -f $makefile $file DEBUG=YES" />
 					<Clean command="$make -f $makefile clean DEBUG=YES" />
 					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile DEBUG=YES" />
+					<SilentBuild command="$make -s -f $makefile DEBUG=YES" />
 				</MakeCommands>
 			</Target>
 			<Target title="Release">
@@ -40,6 +42,8 @@
 					<CompileFile command="$make -f $makefile $file" />
 					<Clean command="$make -f $makefile clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -s -f $makefile $target" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -50,6 +54,90 @@
 		<Linker>
 			<Add option="`wx-config --libs`" />
 		</Linker>
+		<Unit filename="../common/filelist.mk" />
+		<Unit filename="../common/rules.mk" />
+		<Unit filename="Makefile" />
+		<Unit filename="debug/MultiColor/multicolor" />
+		<Unit filename="debug/MultiColor/res/16x16/clone.png" />
+		<Unit filename="debug/MultiColor/res/16x16/color_fill.png" />
+		<Unit filename="debug/MultiColor/res/16x16/colorpicker.png" />
+		<Unit filename="debug/MultiColor/res/16x16/dots.png" />
+		<Unit filename="debug/MultiColor/res/16x16/fileclose.png" />
+		<Unit filename="debug/MultiColor/res/16x16/filenew.png" />
+		<Unit filename="debug/MultiColor/res/16x16/fileopen.png" />
+		<Unit filename="debug/MultiColor/res/16x16/filesave.png" />
+		<Unit filename="debug/MultiColor/res/16x16/filesaveas.png" />
+		<Unit filename="debug/MultiColor/res/16x16/freeline_unfilled.png" />
+		<Unit filename="debug/MultiColor/res/16x16/line.png" />
+		<Unit filename="debug/MultiColor/res/16x16/mouse.png" />
+		<Unit filename="debug/MultiColor/res/16x16/quit.png" />
+		<Unit filename="debug/MultiColor/res/16x16/redo.png" />
+		<Unit filename="debug/MultiColor/res/16x16/tv.png" />
+		<Unit filename="debug/MultiColor/res/16x16/undo.png" />
+		<Unit filename="debug/MultiColor/res/16x16/zoomin.png" />
+		<Unit filename="debug/MultiColor/res/16x16/zoomout.png" />
+		<Unit filename="debug/MultiColor/res/24x24/clone.png" />
+		<Unit filename="debug/MultiColor/res/24x24/color_fill.png" />
+		<Unit filename="debug/MultiColor/res/24x24/colorpicker.png" />
+		<Unit filename="debug/MultiColor/res/24x24/dots.png" />
+		<Unit filename="debug/MultiColor/res/24x24/fileclose.png" />
+		<Unit filename="debug/MultiColor/res/24x24/filenew.png" />
+		<Unit filename="debug/MultiColor/res/24x24/fileopen.png" />
+		<Unit filename="debug/MultiColor/res/24x24/filesave.png" />
+		<Unit filename="debug/MultiColor/res/24x24/filesaveas.png" />
+		<Unit filename="debug/MultiColor/res/24x24/freeline_unfilled.png" />
+		<Unit filename="debug/MultiColor/res/24x24/line.png" />
+		<Unit filename="debug/MultiColor/res/24x24/mouse.png" />
+		<Unit filename="debug/MultiColor/res/24x24/quit.png" />
+		<Unit filename="debug/MultiColor/res/24x24/redo.png" />
+		<Unit filename="debug/MultiColor/res/24x24/save_all.png" />
+		<Unit filename="debug/MultiColor/res/24x24/tv.png" />
+		<Unit filename="debug/MultiColor/res/24x24/undo.png" />
+		<Unit filename="debug/MultiColor/res/24x24/zoomin.png" />
+		<Unit filename="debug/MultiColor/res/24x24/zoomout.png" />
+		<Unit filename="debug/MultiColor/res/README.icons.txt" />
+		<Unit filename="debug/MultiColor/res/cursors/clonebrush.png" />
+		<Unit filename="debug/MultiColor/res/cursors/colorpicker.png" />
+		<Unit filename="debug/MultiColor/res/cursors/dots.png" />
+		<Unit filename="debug/MultiColor/res/cursors/floodfill.png" />
+		<Unit filename="debug/MultiColor/res/cursors/freehand.png" />
+		<Unit filename="debug/MultiColor/res/cursors/lines.png" />
+		<Unit filename="debug/MultiColor/res/lgpl-2.1.txt" />
+		<Unit filename="debug/obj/BitmapBase.o" />
+		<Unit filename="debug/obj/C64Color.o" />
+		<Unit filename="debug/obj/DocBase.o" />
+		<Unit filename="debug/obj/FormatInfo.o" />
+		<Unit filename="debug/obj/HiResBitmap.o" />
+		<Unit filename="debug/obj/HiResBlock.o" />
+		<Unit filename="debug/obj/HiResDoc.o" />
+		<Unit filename="debug/obj/MCApp.o" />
+		<Unit filename="debug/obj/MCBitmap.o" />
+		<Unit filename="debug/obj/MCBlock.o" />
+		<Unit filename="debug/obj/MCBlockPanel.o" />
+		<Unit filename="debug/obj/MCCanvas.o" />
+		<Unit filename="debug/obj/MCDoc.o" />
+		<Unit filename="debug/obj/MCDrawingModePanel.o" />
+		<Unit filename="debug/obj/MCMainFrame.o" />
+		<Unit filename="debug/obj/NewFileDialog.o" />
+		<Unit filename="debug/obj/PalettePanel.o" />
+		<Unit filename="debug/obj/ToolBase.o" />
+		<Unit filename="debug/obj/ToolCloneBrush.o" />
+		<Unit filename="debug/obj/ToolColorPicker.o" />
+		<Unit filename="debug/obj/ToolDots.o" />
+		<Unit filename="debug/obj/ToolFill.o" />
+		<Unit filename="debug/obj/ToolFreehand.o" />
+		<Unit filename="debug/obj/ToolLines.o" />
+		<Unit filename="debug/obj/ToolPanel.o" />
+		<Unit filename="../mac-darwin-cross/cross-gcc.mk" />
+		<Unit filename="../mac-darwin-cross/patches/gcc-4.0.1-collect2-open.patch" />
+		<Unit filename="../mac-darwin-cross/patches/odcctools-as.patch" />
+		<Unit filename="../mac-darwin-cross/patches/odcctools-no-long-double.patch" />
+		<Unit filename="../mac-darwin-cross/patches/odcctools-qsort_r.patch" />
+		<Unit filename="../msvc2008/MultiColor/MultiColor.sln" />
+		<Unit filename="../msvc2008/MultiColor/MultiColor.vcproj" />
+		<Unit filename="../win32-cross-mingw/Makefile" />
+		<Unit filename="../win32-cross-mingw/cross-mingw.mk" />
+		<Unit filename="../win32-cross-mingw/cross-wx.mk" />
 		<Unit filename="../../src/BitmapBase.cpp" />
 		<Unit filename="../../src/BitmapBase.h" />
 		<Unit filename="../../src/C64Color.cpp" />

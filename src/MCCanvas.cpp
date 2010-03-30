@@ -53,13 +53,15 @@ std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 
 /*****************************************************************************/
 MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
-    wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition, wxSize(320, 200), nStyle),
+    wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition,
+                     wxSize(320, 200), nStyle | wxBG_STYLE_CUSTOM),
     m_pDoc(NULL),
     m_pActiveTool(NULL),
     m_bPreviewWindow(bPreview),
     m_bEmulateTV(true),
     m_nScale(1),
     m_pointLastMousePos(-1, -1),
+    m_pointNextMousePos(-1, -1),
     m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID),
     m_timerRefresh(this, MCCANVAS_REFRESH_TIMER_ID),
     m_bDragScrollActive(false),
@@ -139,23 +141,21 @@ void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 }
 
 /*****************************************************************************/
-/*
+/**
  * This is called when the mouse has been moved in one of the views.
  * Coordinates are in bitmap space.
  */
 void MCCanvas::OnDocMouseMoved(int x, int y)
 {
-    if (m_timerRefresh.IsRunning())
-    {
-    }
-    else
-    {
-        m_timerRefresh.Start(50, wxTIMER_ONE_SHOT);
+    m_pointNextMousePos.x = x;
+    m_pointNextMousePos.y = y;
 
-        InvalidateMouseRect();
-        m_pointLastMousePos.x = x;
-        m_pointLastMousePos.y = y;
-        InvalidateMouseRect();
+    if (!m_timerRefresh.IsRunning())
+    {
+        if (m_bPreviewWindow)
+            m_timerRefresh.Start(200, wxTIMER_ONE_SHOT);
+        else
+            m_timerRefresh.Start(20, wxTIMER_ONE_SHOT);
     }
 }
 
@@ -286,6 +286,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
     rDC.SetPen(*wxRED_PEN);
     // rDC.SetBrush(*wxTRANSPARENT_BRUSH);
     // rDC.DrawRectangle(x, y, w, h);
+    CalcUnscrolledPosition(x, y, &x, &y);
     rDC.DrawLine(x, y, x + w, y + h);
     rDC.DrawLine(x + w, y, x, y + h);
 #endif
@@ -407,7 +408,6 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
 
             rgb = pB->GetColor(x, y)->GetRGB();
             brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
-
             pDC->SetBrush(brush);
             pDC->DrawRectangle(rect);
         }
@@ -449,6 +449,7 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
         }
     }
 }
+
 
 
 /******************************************************************************
@@ -539,7 +540,7 @@ void MCCanvas::UpdateAllCursorTypes()
 
 
 /******************************************************************************/
-/*
+/**
  * Invalidate the rectangle around the current mouse position.
  */
 void MCCanvas::InvalidateMouseRect()
@@ -551,11 +552,11 @@ void MCCanvas::InvalidateMouseRect()
     x = m_pointLastMousePos.x;
     y = m_pointLastMousePos.y;
     ToCanvasCoord(&x, &y, x, y);
-
-    rect.SetLeft(x - m_nScale);
-    rect.SetTop(y - m_nScale);
-    rect.SetWidth(3 * m_nScale);
-    rect.SetHeight(3 * m_nScale);
+    rect.SetLeft(x - 5);
+    rect.SetTop(y - 5);
+    // 2 * => for double-wide pixels
+    rect.SetWidth(2 * m_nScale + 10);
+    rect.SetHeight(m_nScale + 10);
     RefreshRect(rect, false);
 }
 
@@ -815,7 +816,7 @@ void MCCanvas::StartTool(int x, int y, bool bSecondary)
 
 
 /*****************************************************************************/
-/*
+/**
  * Update display and tool with our new cursor position.
  *
  * x and y are window coordinates if bCanvasCoordinates is set. Otherwise
@@ -1128,5 +1129,11 @@ void MCCanvas::OnTimer(wxTimerEvent& event)
         {
             UpdateCursorPosition(pos.x, pos.y, true);
         }
+    }
+    else if (event.GetId() == MCCANVAS_REFRESH_TIMER_ID)
+    {
+        InvalidateMouseRect();
+        m_pointLastMousePos = m_pointNextMousePos;
+        InvalidateMouseRect();
     }
 }
