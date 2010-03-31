@@ -183,7 +183,7 @@ wxImage MCApp::GetImage(const wxString& dir, const wxString& name)
         fileName.Assign(paths.GetExecutablePath());
         fileName.RemoveLastDir();
         fileName.AppendDir(wxT("share"));
-        fileName.AppendDir(wxT("MultiColor"));
+        fileName.AppendDir(wxT("multicolor"));
         fileName.AppendDir(wxT("res"));
         fileName.AppendDir(dir);
         fileName.SetFullName(name);

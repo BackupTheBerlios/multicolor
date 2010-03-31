@@ -1,5 +1,5 @@
 
-outdir        := $(outbase)/MultiColor
+outdir        := $(outbase)/multicolor
 objdir        := $(outbase)/obj
 
 ifneq "$(release)" "yes"

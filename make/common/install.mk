@@ -22,8 +22,6 @@
 # Thomas Giesel skoe@directbox.com
 #
 
-app_name_lcase  := $(shell echo $(app_name) | tr [:upper:] [:lower:])
-
 
 ###############################################################################
 #
@@ -32,12 +30,12 @@ app_name_lcase  := $(shell echo $(app_name) | tr [:upper:] [:lower:])
 check_uninstall :=
 
 # old installation names/paths
-check_uninstall += /usr/local/share/applications/$(app_name_lcase).desktop
-check_uninstall += /usr/local/share/$(app_name_lcase)
-check_uninstall += /usr/local/bin/$(app_name_lcase)
-check_uninstall += /usr/share/applications/$(app_name_lcase).desktop
-check_uninstall += /usr/share/$(app_name_lcase)
-check_uninstall += /usr/bin/$(app_name_lcase)
+check_uninstall += /usr/local/share/applications/$(app_name).desktop
+check_uninstall += /usr/local/share/$(app_name)
+check_uninstall += /usr/local/bin/$(app_name)
+check_uninstall += /usr/share/applications/$(app_name).desktop
+check_uninstall += /usr/share/$(app_name)
+check_uninstall += /usr/bin/$(app_name)
 
 # current installation names/paths
 check_uninstall += $(desktop_inst_dir)/$(app_name).desktop
@@ -45,7 +43,7 @@ check_uninstall += $(res_inst_dir)/$(app_name)
 check_uninstall += $(doc_inst_dir)/$(app_name)
 check_uninstall += $(bin_inst_dir)/$(app_name)
 
-uninstall_entries := $(foreach x,$(check_uninstall),$(wildcard $(x)))
+uninstall_entries := $(sort $(foreach x,$(check_uninstall),$(wildcard $(x))))
 
 ###############################################################################
 #

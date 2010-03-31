@@ -1,7 +1,7 @@
 
 # Where to install on "make install"?
 inst_prefix   := /usr/local
-app_name      := MultiColor
+app_name      := multicolor
 
 cxx           := c++
 cc            := gcc

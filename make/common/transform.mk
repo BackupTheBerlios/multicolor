@@ -31,7 +31,7 @@ doc_inst_dir  := $(inst_prefix)/share/doc
 desktop_inst_dir := $(inst_prefix)/share/applications
 
 ###############################################################################
-# Transform all names from $(src)/*.cpp|c|png to out/obj/foo.o or 
+# Transform all names from $(src)/*.cpp|c|png to out/obj/foo.o or
 # out/obj/foo.xpm
 #
 src_cpp := $(filter %.cpp,$(src))
