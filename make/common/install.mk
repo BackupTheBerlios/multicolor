@@ -30,12 +30,12 @@
 check_uninstall :=
 
 # old installation names/paths
-check_uninstall += /usr/local/share/applications/$(app_name).desktop
-check_uninstall += /usr/local/share/$(app_name)
-check_uninstall += /usr/local/bin/$(app_name)
-check_uninstall += /usr/share/applications/$(app_name).desktop
-check_uninstall += /usr/share/$(app_name)
-check_uninstall += /usr/bin/$(app_name)
+check_uninstall += /usr/local/share/applications/$(app_name_old).desktop
+check_uninstall += /usr/local/share/$(app_name_old)
+check_uninstall += /usr/local/bin/$(app_name_old)
+check_uninstall += /usr/share/applications/$(app_name_old).desktop
+check_uninstall += /usr/share/$(app_name_old)
+check_uninstall += /usr/bin/$(app_name_old)
 
 # current installation names/paths
 check_uninstall += $(desktop_inst_dir)/$(app_name).desktop
@@ -62,7 +62,7 @@ else
 	@echo ''
 	@echo 'Following files and directories will be deleted:'
 	@echo $(uninstall_entries)
-ifneq "$shell(id -u)" "0"
+ifneq "$(shell id -u)" "0"
 	@echo 'If it fails you may want to try again as root'
 endif
 	@echo
@@ -87,7 +87,7 @@ ifneq "$(strip $(uninstall_entries))" ""
 	@read ans && test "$${ans}" = "y" || kill 0
 	@echo
 endif
-ifneq "$shell(id -u)" "0"
+ifneq "$(shell id -u)" "0"
 	@echo 'If it fails you may want to try again as root'
 	@echo
 endif

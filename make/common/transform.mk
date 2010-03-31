@@ -30,6 +30,10 @@ res_inst_dir  := $(inst_prefix)/share
 doc_inst_dir  := $(inst_prefix)/share/doc
 desktop_inst_dir := $(inst_prefix)/share/applications
 
+outdir        := $(outbase)/$(app_name)
+objdir        := $(outbase)/obj
+srcdir        := src
+
 ###############################################################################
 # Transform all names from $(src)/*.cpp|c|png to out/obj/foo.o or
 # out/obj/foo.xpm
