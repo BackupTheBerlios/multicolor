@@ -541,28 +541,6 @@ void MCCanvas::UpdateAllCursorTypes()
 
 
 /******************************************************************************/
-/**
- * Invalidate the rectangle around the current mouse position.
- */
-void MCCanvas::InvalidateMouseRect()
-{
-    int    x, y;
-    wxRect rect;
-
-    // Calculate the rectangle around the cursor
-    x = m_pointLastMousePos.x;
-    y = m_pointLastMousePos.y;
-    ToCanvasCoord(&x, &y, x, y);
-    rect.SetLeft(x - 5);
-    rect.SetTop(y - 5);
-    // 2 * => for double-wide pixels
-    rect.SetWidth(2 * m_nScale + 10);
-    rect.SetHeight(m_nScale + 10);
-    RefreshRect(rect, false);
-}
-
-
-/******************************************************************************/
 /*
  * Draw the mouse position or remove the drawing.
  */
@@ -628,7 +606,7 @@ void MCCanvas::UpdateVirtualSize()
 
 
 /*****************************************************************************/
-/*
+/**
  * Check if we have to scroll. If yes, do it.
  * This is called upon mouse movement and when the scroll timer elapsed.
  * If we have to scroll we will start the timer (again) to re-check later.
