@@ -165,7 +165,7 @@ ToolBase* MCApp::GetDrawingTool(int idTool /* = 0 */)
 /*****************************************************************************/
 /*
  * Load an image from our ressources. If our executable is located in $(X),
- * search in $(X)/res first and then in $(X)/../share/multicolor.
+ * search in $(X)/res first and then in $(X)/../share/MultiColor.
  */
 wxImage MCApp::GetImage(const wxString& dir, const wxString& name)
 {
@@ -183,7 +183,7 @@ wxImage MCApp::GetImage(const wxString& dir, const wxString& name)
         fileName.Assign(paths.GetExecutablePath());
         fileName.RemoveLastDir();
         fileName.AppendDir(wxT("share"));
-        fileName.AppendDir(wxT("multicolor"));
+        fileName.AppendDir(wxT("MultiColor"));
         fileName.AppendDir(wxT("res"));
         fileName.AppendDir(dir);
         fileName.SetFullName(name);

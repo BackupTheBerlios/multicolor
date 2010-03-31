@@ -7,5 +7,5 @@ syntax: glob
 *.obj
 *.orig
 
-debug/*
-release/*
+out/*
+out_debug/*

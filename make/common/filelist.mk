@@ -1,7 +1,14 @@
 
 outdir        := $(outbase)/MultiColor
 objdir        := $(outbase)/obj
-srcdir        := ../../src
+
+ifneq "$(release)" "yes"
+	version        := $(shell date +%y%m%d-%H%M)
+	version_suffix :=
+else
+	version        := 1.0.0
+	version_suffix := -$(version)
+endif
 
 ###############################################################################
 # This is the list of source files to be compiled
@@ -84,16 +91,6 @@ res += README.icons.txt
 res += lgpl-2.1.txt
 
 ###############################################################################
-# Transform all names foo.cpp in $src to out/obj/foo.o
+# This is a list of documents to be copied
 #
-obj := $(addprefix $(objdir)/, $(src:.cpp=.o))
-
-###############################################################################
-# Transform all names in $res to out/MultiColor/res/*
-#
-outres := $(addprefix $(outdir)/res/, $(res))
-
-###############################################################################
-# Poor men's dependencies: Let all files depend from all header files
-#
-headers := $(wildcard $(srcdir)/*.h)
+doc := CHANGES COPYING README
