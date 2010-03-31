@@ -25,6 +25,7 @@
 
 #include <wx/event.h>
 #include <wx/dc.h>
+#include <wx/dcclient.h>
 #include <wx/image.h>
 #include <wx/msgdlg.h>
 #include <wx/utils.h>
@@ -46,7 +47,7 @@
 #define PAINT_FILTER(F,X,CONST) ( (F)+=(X)-(F) - (((X)-(F))>>(CONST)) )
 
 /* define this to get some extra debug effects */
-#define MC_DEBUG_REDRAW
+//#define MC_DEBUG_REDRAW
 
 std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 
@@ -580,6 +581,7 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
     x = m_pointLastMousePos.x * xFactor;
     y = m_pointLastMousePos.y * yFactor;
 
+    pDC->SetLogicalFunction(wxXOR);
     pDC->SetBrush(*wxTRANSPARENT_BRUSH);
     pDC->SetPen(*wxWHITE_PEN);
 
@@ -599,6 +601,8 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
                   c, y);
     pDC->DrawLine(c, y + yFactor,
                   c, y + yFactor + 3);
+
+    pDC->SetLogicalFunction(wxCOPY);
 }
 
 
@@ -1132,8 +1136,11 @@ void MCCanvas::OnTimer(wxTimerEvent& event)
     }
     else if (event.GetId() == MCCANVAS_REFRESH_TIMER_ID)
     {
-        InvalidateMouseRect();
+        wxClientDC dc(this);
+        DoPrepareDC(dc);
+
+        DrawMousePos(&dc);
         m_pointLastMousePos = m_pointNextMousePos;
-        InvalidateMouseRect();
+        DrawMousePos(&dc);
     }
 }
