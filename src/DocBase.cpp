@@ -29,6 +29,7 @@
 
 #include "DocRenderer.h"
 #include "DocBase.h"
+#include "FormatInfo.h"
 #include "BitmapBase.h"
 #include "MCApp.h"
 
@@ -273,31 +274,49 @@ bool DocBase::CanRedo()
 
 /******************************************************************************/
 /**
- * Load the file into a buffer and return it. If there is an error, show an
- * error message and return NULL and size 0.
- *
- * The caller must release the memory using delete[].
+ * Clear the Undo buffer.
  */
-uint8_t* DocBase::LoadToBuffer(size_t* pSize, const wxString& stringFilename)
+void DocBase::ClearUndoBuffer()
 {
-    unsigned char* pBuff;
-    wxFileOffset   len;
-    wxFile         file(stringFilename);
+    if (m_listUndo.size())
+    {
+        delete m_listUndo.front();
+        m_listUndo.pop_front();
+    }
+    m_nRedoPos = 0;
+}
+
+/******************************************************************************/
+/**
+ * Load a document. This is a static function intended to be called from
+ * anywhere.
+ *
+ * Return a pointer to a DocBase derived object if the file has been loaded,
+ * NULL otherwise.
+ */
+DocBase* DocBase::Load(const wxString& stringFileName)
+{
+    uint8_t*     pBuff;
+    wxFileOffset len;
+    wxFile       file(stringFileName);
+    wxFileName   fileName(stringFileName);
+    bool         bLoaded = false;
+    const FormatInfo* pFormat;
+    DocBase*     pDoc = NULL;
 
     if (!file.IsOpened())
     {
-        wxMessageBox(wxT("Could not open \"%s\" for reading."),
-                stringFilename);
+        ::wxMessageBox(wxT("Could not open this file for reading."),
+            wxT("Load Error"), wxOK | wxICON_ERROR);
         return NULL;
     }
 
     len = file.Length();
     if (len > (wxFileOffset)(MC_MAX_FILE_BUFF_SIZE))
     {
-        ::wxMessageBox(wxT("File format unknown."), wxT("Load Error"),
+        ::wxMessageBox(wxT("File too large."), wxT("Load Error"),
             wxOK | wxICON_ERROR);
 
-        *pSize = 0;
         return NULL;
     }
 
@@ -305,41 +324,89 @@ uint8_t* DocBase::LoadToBuffer(size_t* pSize, const wxString& stringFilename)
     if (file.Read(pBuff, len) != len)
     {
         ::wxMessageBox(wxT("File could not be read, it may be broken."),
-                       wxT("Load Error"),
-            wxOK | wxICON_ERROR);
+            wxT("Load Error"), wxOK | wxICON_ERROR);
+        return NULL;
     }
-    *pSize = (size_t) len;
-    return pBuff;
-}
 
-/******************************************************************************/
-/**
- * Do everything that has to be done after a file has been loaded or after
- * loading a file failed.
- *
- * in:
- *          stringFilename  file name
- *          bLoaded         true if the file was loaded successfully
- * return:
- *          bLoaded
- */
-bool DocBase::PostLoad(const wxString& stringFilename, bool bLoaded)
-{
+    pFormat = FormatInfo::FindBestFormat(pBuff, len, fileName);
+    if (pFormat)
+    {
+        pDoc = pFormat->Factory();
+        bLoaded = pDoc->Load(pBuff, len);
+    }
+
+    delete[] pBuff;
     if (bLoaded)
     {
-        m_listUndo.clear();
-        m_nRedoPos = 0;
-        PrepareUndo();
+        pDoc->ClearUndoBuffer();
+        pDoc->PrepareUndo();
 
-        m_fileName.Assign(stringFilename);
-        Modify(false);
-
-        Refresh();
+//        m_fileName.Assign(stringFileName);
+//        Modify(false);
+//        Refresh();
     }
     else
     {
         ::wxMessageBox(wxT("Could not load this file."),
             wxT("Load Error"), wxOK | wxICON_ERROR);
     }
-    return bLoaded;
+    return pDoc;
+}
+
+
+/******************************************************************************
+ **
+ * Save the given buffer into a file. Use the given name if not empty,
+ * otherwise use the current name.
+ *
+ * Return true for success.
+ */
+bool DocBase::Save(const wxString& stringFileName)
+{
+    unsigned char* pBuff;
+    size_t         len;
+    size_t         written;
+    wxFile         file;
+    bool           bRet = false;
+    wxFileName     fileNameTmp(m_fileName);
+
+    if (stringFileName.length())
+        fileNameTmp.Assign(stringFileName);
+
+    pBuff = new unsigned char[MC_MAX_FILE_BUFF_SIZE];
+    len = Save(pBuff, fileNameTmp);
+
+    if (len <= 0)
+    {
+        ::wxMessageBox(wxT("Could not save this file."),
+            wxT("Save Error"), wxOK | wxICON_ERROR);
+        delete[] pBuff;
+        return false;
+    }
+
+    file.Open(fileNameTmp.GetFullPath(), wxFile::write);
+
+    if (!file.IsOpened())
+    {
+        wxMessageBox(wxT("Could not open \"%s\" for writing."),
+                fileNameTmp.GetFullPath());
+        delete[] pBuff;
+        return false;
+    }
+
+    written = file.Write(pBuff, len);
+
+    if (written == len)
+    {
+        Modify(false);
+        bRet = true;
+    }
+    else
+    {
+        ::wxMessageBox(wxT("An error occurred while saving."),
+                wxT("Save Error"), wxOK | wxICON_ERROR);
+    }
+
+    delete[] pBuff;
+	return bRet;
 }

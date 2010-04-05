@@ -50,7 +50,8 @@ static FormatInfo::Filter m_aFilters[] =
 FormatInfo HiResDoc::m_formatInfo(
     wxT("HiRes Bitmap"),
     m_aFilters,
-    HiResDoc::Factory);
+    HiResDoc::Factory,
+    HiResDoc::CheckFormat);
 
 
 /******************************************************************************/
@@ -82,6 +83,17 @@ DocBase* HiResDoc::Factory()
 
 /******************************************************************************/
 /**
+ *
+ */
+int HiResDoc::CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName)
+{
+    int match = 0;
+
+    return match;
+}
+
+/******************************************************************************/
+/**
  * Copy the contents of the given bitmap to our one. The pointer must point to
  * an object which has actually the same type as our bitmap.
  */
@@ -92,89 +104,36 @@ void HiResDoc::SetBitmap(const BitmapBase* pB)
 
 
 /******************************************************************************/
-/*
+/**
+ * Try to load the file from the given memory buffer. Return true for success.
  */
-bool HiResDoc::Load(const wxString& stringFilename)
+bool HiResDoc::Load(uint8_t* pBuff, unsigned size)
 {
-    bool           bLoaded = false;
-    unsigned char* pBuff;
-    size_t         size;
-
-    pBuff = DocBase::LoadToBuffer(&size, stringFilename);
-    if (!pBuff)
-        return false;
+    bool bLoaded = false;
 #if 0
     bLoaded = LoadKoala(pBuff, (unsigned)size);
 
     if (!bLoaded)
         bLoaded = LoadAmica(pBuff, (unsigned)size);
 #endif
-
-    delete[] pBuff;
-    return PostLoad(stringFilename, bLoaded);
+    return bLoaded;
 }
 
 
 /******************************************************************************
- *
- * Save the file. If a name is given, use this one. Otherwise use the
- * current name.
+ **
+ * Save the file to the memory buffer. Return the number of bytes used.
+ * The file name is for informational purposes only, e.g. to decide
+ * which sub-format to use.
  */
-bool HiResDoc::Save(const wxString& stringFilename)
+unsigned HiResDoc::Save(uint8_t* pBuff, const wxFileName& fileName)
 {
-    bool           bRet = false;
+    unsigned len = 0;
 #if 0
-    unsigned char* pBuff;
-    size_t         len;
-    size_t         written;
-    wxFile         file;
-    wxFileName     fileNameTmp(m_fileName);
-
-    if (stringFilename.Length())
-    {
-        fileNameTmp.Assign(stringFilename);
-    }
-
-    file.Open(fileNameTmp.GetFullPath(), wxFile::write);
-
-    if (!file.IsOpened())
-    {
-        wxMessageBox(wxT("Could not open \"%s\" for writing."),
-                fileNameTmp.GetFullPath());
-        return false;
-    }
-
-    pBuff = new unsigned char[MC_MAX_FILE_BUFF_SIZE];
-
-    if (fileNameTmp.GetExt().CmpNoCase(wxT("ami")) == 0)
+    if (fileName.GetExt().CmpNoCase(wxT("ami")) == 0)
         len = SaveAmica(pBuff);
     else
         len = SaveKoala(pBuff);
-
-    if (len <= 0)
-    {
-        ::wxMessageBox(wxT("Could not save this file."),
-            wxT("Save Error"), wxOK | wxICON_ERROR);
-    }
-    else
-    {
-        written = file.Write(pBuff, len);
-
-        if (written == len)
-        {
-            // remember name only if it went well
-            m_fileName = fileNameTmp;
-            Modify(false);
-            bRet = true;
-        }
-        else
-        {
-            ::wxMessageBox(wxT("An error occurred while saving."),
-                    wxT("Save Error"), wxOK | wxICON_ERROR);
-        }
-    }
-
-    delete[] pBuff;
 #endif
-	return bRet;
+    return len;
 }

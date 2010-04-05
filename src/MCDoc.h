@@ -39,6 +39,7 @@ class MCDoc : public DocBase
 public:
     MCDoc();
     static DocBase* Factory();
+    static int CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName);
 
     const BitmapBase* GetBitmap() const;
     virtual BitmapBase* GetBitmap();
@@ -46,10 +47,10 @@ public:
     virtual void BackupBitmap();
     virtual void RestoreBitmap();
 
-    bool Load(const wxString& stringFilename);
-    bool Save(const wxString& stringFilename);
-
 protected:
+    virtual bool Load(uint8_t* pBuff, unsigned size);
+    virtual unsigned Save(uint8_t* pBuff, const wxFileName& fileName);
+
     static FormatInfo m_formatInfo;
 
     /// The bitmap under work

@@ -32,8 +32,7 @@
 
 #include "FormatInfo.h"
 #include "MCApp.h"
-#include "MCDoc.h"
-#include "HiResDoc.h"
+#include "DocBase.h"
 #include "MCMainFrame.h"
 #include "MCCanvas.h"
 #include "PalettePanel.h"
@@ -333,12 +332,14 @@ void MCMainFrame::SetDocName(const DocBase* pDoc, const wxString name)
 void MCMainFrame::LoadDoc(const wxString& name)
 {
     // Create a new document and load the file into it
-    MCDoc* pDoc = new MCDoc();
-    MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
-    pCanvas->SetDoc(pDoc);
-    m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
-    pDoc->Load(name);
-    pCanvas->Show();
+    DocBase* pDoc = DocBase::Load(name);
+    if (pDoc)
+    {
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
+        pCanvas->SetDoc(pDoc);
+        m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
+        pCanvas->Show();
+    }
 }
 
 
@@ -428,13 +429,7 @@ void MCMainFrame::OnOpen(wxCommandEvent &event)
 
     if (pFileDialog->ShowModal() == wxID_OK)
     {
-        // Create a new document and load the file into it
-        MCDoc* pDoc = new MCDoc();
-        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
-        pCanvas->SetDoc(pDoc);
-        m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
-        pDoc->Load(pFileDialog->GetPath());
-        pCanvas->Show();
+        LoadDoc(pFileDialog->GetPath());
     }
     delete pFileDialog;
 }
@@ -461,7 +456,7 @@ void MCMainFrame::OnUpdateSave(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnSave(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
 
 
     if (pDoc)
@@ -471,7 +466,7 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
             OnSaveAs(event);
         }
         else
-            pDoc->Save(wxString());
+            pDoc->Save(wxT(""));
     }
 }
 
@@ -479,9 +474,9 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
 	wxString stringFilter;
-
+#if 0
     /* !!! Keep the filter list in sync with the code below !!! */
     stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
     stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));
@@ -511,6 +506,7 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
         pDoc->Save(name.GetFullPath());
     }
     delete pFileDialog;
+#endif
 }
 
 
@@ -603,7 +599,7 @@ void MCMainFrame::OnQuit(wxCommandEvent &event)
  */
 void MCMainFrame::OnUpdateUndo(wxUpdateUIEvent& event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
     event.Enable(pDoc && pDoc->CanUndo());
 
 #ifdef MC_TOOLS_ALWAYS_ENABLED
@@ -618,7 +614,7 @@ void MCMainFrame::OnUpdateUndo(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnUndo(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
 
     if (pDoc)
         pDoc->Undo();
@@ -631,7 +627,7 @@ void MCMainFrame::OnUndo(wxCommandEvent &event)
  */
 void MCMainFrame::OnUpdateRedo(wxUpdateUIEvent& event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
     event.Enable(pDoc && pDoc->CanRedo());
 
 #ifdef MC_TOOLS_ALWAYS_ENABLED
@@ -646,7 +642,7 @@ void MCMainFrame::OnUpdateRedo(wxUpdateUIEvent& event)
  */
 void MCMainFrame::OnRedo(wxCommandEvent &event)
 {
-    MCDoc* pDoc = (MCDoc*) GetActiveDoc();
+    DocBase* pDoc = GetActiveDoc();
 
     if (pDoc)
         pDoc->Redo();

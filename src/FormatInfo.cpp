@@ -28,13 +28,15 @@
 
 std::list<const FormatInfo*>* FormatInfo::m_pListFormatInfo;
 
-FormatInfo::FormatInfo(
-    const wxChar* pStrName,
-    Filter* pFilters,
-    DocBase* (*docFactory)() ) :
+FormatInfo::FormatInfo(const wxChar* pStrName,
+                       Filter* pFilters,
+                       DocBase* (*docFactory)(),
+                       int (*checkFormat)(uint8_t* pBuff, unsigned len,
+                                          const wxFileName& fileName)) :
         m_stringName(pStrName),
         m_pFilters(pFilters),
-        m_docFactory(docFactory)
+        m_docFactory(docFactory),
+        m_checkFormat(checkFormat)
 {
     if (!m_pListFormatInfo)
     {
@@ -159,3 +161,31 @@ const std::list<const FormatInfo*>* FormatInfo::GetFormatList()
     return m_pListFormatInfo;
 }
 
+
+/*****************************************************************************/
+/**
+ * Find the format which matches the data best. Return the format or NULL if
+ * none of them fits.
+ */
+const FormatInfo* FormatInfo::FindBestFormat(uint8_t* pBuff,
+                                             unsigned len,
+                                             const wxFileName& fileName)
+{
+    const FormatInfo*  pBestFormat;
+    int          nMostPoints, nPoints;
+    std::list<const FormatInfo*>::const_iterator i;
+
+    pBestFormat = NULL;
+    nMostPoints = 0;
+    for (i = m_pListFormatInfo->begin(); i != m_pListFormatInfo->end(); ++i)
+    {
+        nPoints = (*i)->CheckFormat(pBuff, len, fileName);
+        if (nPoints > nMostPoints)
+        {
+            nMostPoints = nPoints;
+            pBestFormat = *i;
+        }
+    }
+
+    return pBestFormat;
+}

@@ -49,6 +49,7 @@ public:
     void Modify(bool bModified);
 
     const wxFileName& GetFileName() const;
+    void SetFileName(const wxFileName& fileName);
 
     virtual BitmapBase* GetBitmap() = 0;
     virtual void SetBitmap(const BitmapBase*) = 0;
@@ -57,18 +58,22 @@ public:
 
     void RefreshDirty();
 
-    virtual void PrepareUndo();
-    virtual void Undo();
-    virtual void Redo();
-    virtual bool CanUndo();
-    virtual bool CanRedo();
+    void PrepareUndo();
+    void Undo();
+    void Redo();
+    bool CanUndo();
+    bool CanRedo();
+    void ClearUndoBuffer();
+
+    static DocBase* Load(const wxString& stringFileName);
+    bool Save(const wxString& stringFileName);
 
     void SetMousePos(int x, int y);
     const wxPoint& GetMousePos() const;
 
 protected:
-    uint8_t* LoadToBuffer(size_t* pSize, const wxString& stringFilename);
-    bool PostLoad(const wxString& stringFilename, bool bLoaded);
+    virtual bool Load(uint8_t* pBuff, unsigned size) = 0;
+    virtual unsigned Save(uint8_t* pBuff, const wxFileName& fileName) = 0;
 
     /// the full path and file name
     wxFileName                  m_fileName;
@@ -113,7 +118,17 @@ inline const wxFileName& DocBase::GetFileName() const
 
 
 /******************************************************************************/
-/*
+/**
+ * Set the file name.
+ */
+inline void DocBase::SetFileName(const wxFileName& fileName)
+{
+    m_fileName = fileName;
+}
+
+
+/******************************************************************************/
+/**
  * Get the last mouse position reported by one of my views (bitmap coordinates)
  */
 inline const wxPoint& DocBase::GetMousePos() const

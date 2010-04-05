@@ -26,8 +26,10 @@
 #ifndef FORMATINFO_H
 #define FORMATINFO_H
 
-#include <wx/string.h>
+#include <stdint.h>
 #include <list>
+#include <wx/string.h>
+#include <wx/filename.h>
 
 /*
  * -------------------             -------------------
@@ -40,6 +42,15 @@
  * Koala files / *.koa;*.kla       Multi Color Bitmap
  * Amica files / *.ami
  */
+
+/**
+ * These values will be added to find out how good a file matches a certain
+ * format. Higher values mean higher priority.
+ */
+#define MC_FORMAT_MAGIC_MATCH       20
+#define MC_FORMAT_EXTENSION_MATCH   10
+#define MC_FORMAT_SIZE_MATCH         5
+#define MC_FORMAT_ADDR_MATCH         1
 
 class MCDoc;
 class DocBase;
@@ -55,7 +66,8 @@ public:
 
     FormatInfo(const wxChar* pStrName,
                Filter* pFilters,
-               DocBase* (*docFactory)() );
+               DocBase* (*docFactory)(),
+               int (*checkFile)(uint8_t* pBuff, unsigned len, const wxFileName& fileName));
 
     const wxString& GetName() const;
     wxString GetFilterWildcards() const;
@@ -63,13 +75,18 @@ public:
 
     static wxString GetFullFilterString();
     static const std::list<const FormatInfo*>* GetFormatList();
+    static const FormatInfo* FindBestFormat(uint8_t* pBuff,
+                                            unsigned len,
+                                            const wxFileName& fileName);
 
     DocBase* Factory() const;
+    int CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName) const;
 
 protected:
     wxString m_stringName;
     Filter* m_pFilters;
     DocBase* (*m_docFactory)();
+    int (*m_checkFormat)(uint8_t* pBuff, unsigned len, const wxFileName& fileName);
 
 private:
     static std::list<const FormatInfo*>* m_pListFormatInfo;
@@ -84,6 +101,18 @@ private:
 inline DocBase* FormatInfo::Factory() const
 {
     return m_docFactory();
+}
+
+
+/*****************************************************************************/
+/**
+ * Check how good data matches our document format. Return a sum of
+ * MC_FORMAT_*_MATCH.
+ */
+inline int FormatInfo::CheckFormat(uint8_t* pBuff, unsigned len,
+                                 const wxFileName& fileName) const
+{
+    return m_checkFormat(pBuff, len, fileName);
 }
 
 #endif // FORMATINFO_H

@@ -44,6 +44,8 @@ typedef struct KOALA_S
    unsigned char background;
 } KOALA_T;
 
+#define AMICA_START_ADDR 0x4000
+#define KOALA_START_ADDR 0x6000
 
 /******************************************************************************/
 /**
@@ -62,7 +64,8 @@ static FormatInfo::Filter m_aFilters[] =
 FormatInfo MCDoc::m_formatInfo(
     wxT("Multi Color Bitmap"),
     m_aFilters,
-    MCDoc::Factory);
+    MCDoc::Factory,
+    MCDoc::CheckFormat);
 
 
 /******************************************************************************/
@@ -97,6 +100,37 @@ DocBase* MCDoc::Factory()
 
 /******************************************************************************/
 /**
+ * Check how good data matches our document format. Return a sum of
+ * MC_FORMAT_*_MATCH.
+ */
+int MCDoc::CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName)
+{
+    uint16_t addr;
+    int      match = 0;
+
+    if (fileName.GetExt().CmpNoCase(wxT("ami")) == 0 ||
+        fileName.GetExt().CmpNoCase(wxT("kla")) == 0 ||
+        fileName.GetExt().CmpNoCase(wxT("koa")) == 0)
+    {
+        match += MC_FORMAT_EXTENSION_MATCH;
+    }
+
+    if (len == sizeof(KOALA_T))
+        match += MC_FORMAT_SIZE_MATCH;
+
+    addr = pBuff[0] + pBuff[1] * 256;
+    if (addr == KOALA_START_ADDR ||
+        addr == AMICA_START_ADDR)
+    {
+        match += MC_FORMAT_ADDR_MATCH;
+    }
+
+    return match;
+}
+
+
+/******************************************************************************/
+/**
  * Copy the contents of the given bitmap to our one. The pointer must point to
  * an object which has actually the same type as our bitmap.
  */
@@ -107,88 +141,38 @@ void MCDoc::SetBitmap(const BitmapBase* pB)
 
 
 /******************************************************************************/
-/*
+/**
+ * Try to load the file from the given memory buffer. Return true for success.
  */
-bool MCDoc::Load(const wxString& stringFilename)
+bool MCDoc::Load(uint8_t* pBuff, unsigned size)
 {
-    bool           bLoaded = false;
-    unsigned char* pBuff;
-    size_t         size;
-
-    pBuff = DocBase::LoadToBuffer(&size, stringFilename);
-    if (!pBuff)
-        return false;
+    bool bLoaded = false;
 
     bLoaded = LoadKoala(pBuff, (unsigned)size);
 
     if (!bLoaded)
         bLoaded = LoadAmica(pBuff, (unsigned)size);
 
-    delete[] pBuff;
-    return PostLoad(stringFilename, bLoaded);
+    return bLoaded;
 }
 
 
 /******************************************************************************
- *
- * Save the file. If a name is given, use this one. Otherwise use the
- * current name.
+ **
+ * Save the file to the memory buffer. Return the number of bytes used.
+ * The file name is for informational purposes only, e.g. to decide
+ * which sub-format to use.
  */
-bool MCDoc::Save(const wxString& stringFilename)
+unsigned MCDoc::Save(uint8_t* pBuff, const wxFileName& fileName)
 {
-    unsigned char* pBuff;
-    size_t         len;
-    size_t         written;
-    wxFile         file;
-    bool           bRet = false;
-    wxFileName     fileNameTmp(m_fileName);
+    unsigned len = 0;
 
-    if (stringFilename.Length())
-    {
-        fileNameTmp.Assign(stringFilename);
-    }
-
-    file.Open(fileNameTmp.GetFullPath(), wxFile::write);
-
-    if (!file.IsOpened())
-    {
-        wxMessageBox(wxT("Could not open \"%s\" for writing."),
-                fileNameTmp.GetFullPath());
-        return false;
-    }
-
-    pBuff = new unsigned char[MC_MAX_FILE_BUFF_SIZE];
-
-    if (fileNameTmp.GetExt().CmpNoCase(wxT("ami")) == 0)
+    if (fileName.GetExt().CmpNoCase(wxT("ami")) == 0)
         len = SaveAmica(pBuff);
     else
         len = SaveKoala(pBuff);
 
-    if (len <= 0)
-    {
-        ::wxMessageBox(wxT("Could not save this file."),
-            wxT("Save Error"), wxOK | wxICON_ERROR);
-    }
-    else
-    {
-        written = file.Write(pBuff, len);
-
-        if (written == len)
-        {
-            // remember name only if it went well
-            m_fileName = fileNameTmp;
-            Modify(false);
-            bRet = true;
-        }
-        else
-        {
-            ::wxMessageBox(wxT("An error occurred while saving."),
-                    wxT("Save Error"), wxOK | wxICON_ERROR);
-        }
-    }
-
-    delete[] pBuff;
-	return bRet;
+    return len;
 }
 
 
@@ -331,8 +315,8 @@ int MCDoc::SaveKoala(unsigned char* pBuff)
     int i;
 
     // start addr
-    *p++ = 0x00;
-    *p++ = 0x60;
+    *p++ = KOALA_START_ADDR % 0x100;
+    *p++ = KOALA_START_ADDR / 0x100;
 
     // bitmap
     for (i = 0; i < 8000; i++)
@@ -376,8 +360,8 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
 
     // save start address
     p = pBuff;
-    *p++ = 0x00;
-    *p++ = 0x40;
+    *p++ = AMICA_START_ADDR % 0x100;
+    *p++ = AMICA_START_ADDR / 0x100;
 
     // start reading behind the loading address of the koala buffer
     nPos = 2;

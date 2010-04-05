@@ -17,9 +17,9 @@
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="$make -f $makefile DEBUG=YES" />
-					<CompileFile command="$make -f $makefile $file DEBUG=YES" />
-					<Clean command="$make -f $makefile clean DEBUG=YES" />
+					<Build command="$make -f $makefile debug=yes" />
+					<CompileFile command="$make -f $makefile $file debug=yes" />
+					<Clean command="$make -f $makefile clean debug=yes" />
 					<DistClean command="$make -f $makefile distclean$target" />
 				</MakeCommands>
 			</Target>
