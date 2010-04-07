@@ -340,10 +340,8 @@ DocBase* DocBase::Load(const wxString& stringFileName)
     {
         pDoc->ClearUndoBuffer();
         pDoc->PrepareUndo();
-
-//        m_fileName.Assign(stringFileName);
-//        Modify(false);
-//        Refresh();
+        pDoc->SetFileName(fileName);
+        pDoc->Modify(false);
     }
     else
     {
@@ -398,6 +396,7 @@ bool DocBase::Save(const wxString& stringFileName)
 
     if (written == len)
     {
+        m_fileName = fileNameTmp.GetFullPath();
         Modify(false);
         bRet = true;
     }

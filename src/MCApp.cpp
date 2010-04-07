@@ -88,7 +88,7 @@ bool MCApp::OnInit()
 
     wxInitAllImageHandlers();
 
-    m_pMainFrame = new MCMainFrame(m_pMainFrame, _("MultiColor"));
+    m_pMainFrame = new MCMainFrame(m_pMainFrame, wxT("MultiColor"));
 
     m_pMainFrame->Show();
     SetTopWindow(m_pMainFrame);

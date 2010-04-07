@@ -29,11 +29,13 @@
 std::list<const FormatInfo*>* FormatInfo::m_pListFormatInfo;
 
 FormatInfo::FormatInfo(const wxChar* pStrName,
+                       const wxChar* pStrDefaultExtension,
                        Filter* pFilters,
                        DocBase* (*docFactory)(),
                        int (*checkFormat)(uint8_t* pBuff, unsigned len,
                                           const wxFileName& fileName)) :
         m_stringName(pStrName),
+        m_stringDefaultExtension(pStrDefaultExtension),
         m_pFilters(pFilters),
         m_docFactory(docFactory),
         m_checkFormat(checkFormat)
@@ -54,6 +56,16 @@ FormatInfo::FormatInfo(const wxChar* pStrName,
 const wxString& FormatInfo::GetName() const
 {
     return m_stringName;
+}
+
+
+/*****************************************************************************/
+/**
+ * Return the default file name extension for this format.
+ */
+const wxString& FormatInfo::GetDefaultExtension() const
+{
+    return m_stringDefaultExtension;
 }
 
 

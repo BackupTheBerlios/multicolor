@@ -41,6 +41,8 @@ public:
     static DocBase* Factory();
     static int CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName);
 
+    virtual const FormatInfo* GetFormatInfo() const;
+
     const BitmapBase* GetBitmap() const;
     virtual BitmapBase* GetBitmap();
     virtual void SetBitmap(const BitmapBase*);

@@ -65,11 +65,13 @@ public:
     } Filter;
 
     FormatInfo(const wxChar* pStrName,
+               const wxChar* pStrDefaultExtension,
                Filter* pFilters,
                DocBase* (*docFactory)(),
                int (*checkFile)(uint8_t* pBuff, unsigned len, const wxFileName& fileName));
 
     const wxString& GetName() const;
+    const wxString& GetDefaultExtension() const;
     wxString GetFilterWildcards() const;
     wxString GetFilters() const;
 
@@ -84,6 +86,7 @@ public:
 
 protected:
     wxString m_stringName;
+    wxString m_stringDefaultExtension;
     Filter* m_pFilters;
     DocBase* (*m_docFactory)();
     int (*m_checkFormat)(uint8_t* pBuff, unsigned len, const wxFileName& fileName);

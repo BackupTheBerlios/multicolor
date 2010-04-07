@@ -34,6 +34,7 @@
 
 class DocRenderer;
 class BitmapBase;
+class FormatInfo;
 
 class DocBase
 {
@@ -50,6 +51,8 @@ public:
 
     const wxFileName& GetFileName() const;
     void SetFileName(const wxFileName& fileName);
+
+    virtual const FormatInfo* GetFormatInfo() const = 0;
 
     virtual BitmapBase* GetBitmap() = 0;
     virtual void SetBitmap(const BitmapBase*) = 0;

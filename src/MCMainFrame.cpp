@@ -60,8 +60,8 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     InitToolBar();
 
     CreateStatusBar(2);
-    SetStatusText(_("?!"), 0);
-    SetStatusText(_("!?"), 1);
+    SetStatusText(wxT("?!"), 0);
+    SetStatusText(wxT("!?"), 1);
 
     Connect(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxCommandEventHandler(MCMainFrame::OnPageChanged));
     Connect(wxEVT_SET_FOCUS, wxFocusEventHandler(MCMainFrame::OnFocus));
@@ -475,14 +475,7 @@ void MCMainFrame::OnSave(wxCommandEvent &event)
 void MCMainFrame::OnSaveAs(wxCommandEvent &event)
 {
     DocBase* pDoc = GetActiveDoc();
-	wxString stringFilter;
-#if 0
-    /* !!! Keep the filter list in sync with the code below !!! */
-    stringFilter.append(wxT("All image files (*.koa;*.kla;*.ami)|*.koa;*.kla;*.ami|"));
-    stringFilter.append(wxT("Koala files (*.koa;*.kla)|*.koa;*.kla|"));
-	stringFilter.append(wxT("Amica files (*.ami)|*.ami|"));
-    stringFilter.append(wxT("All files (*)|*"));
-    /* !!! Keep the filter list in sync with the code below !!! */
+	wxString stringFilter = FormatInfo::GetFullFilterString();
 
     wxFileDialog* pFileDialog = new wxFileDialog(
             this, wxT("Save File"), wxT(""), wxT(""), stringFilter,
@@ -495,18 +488,13 @@ void MCMainFrame::OnSaveAs(wxCommandEvent &event)
         // didn't the user supply an extension?
         if (name.GetExt() == wxT(""))
         {
-            // then add .koa, except if .ami is selected
-            if (pFileDialog->GetFilterIndex() == 2)
-                name.SetExt(wxT("ami"));
-            else
-                name.SetExt(wxT("koa"));
+            name.SetExt(pDoc->GetFormatInfo()->GetDefaultExtension());
         }
 
         // Try to save the file
         pDoc->Save(name.GetFullPath());
     }
     delete pFileDialog;
-#endif
 }
 
 
@@ -697,7 +685,7 @@ void MCMainFrame::OnSize(wxSizeEvent& event)
 /*****************************************************************************/
 void MCMainFrame::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox(_("MultiColor 0.2.1"), _("Welcome to..."));
+    wxMessageBox(wxT("MultiColor 0.2.1"), wxT("Welcome to..."));
 }
 
 

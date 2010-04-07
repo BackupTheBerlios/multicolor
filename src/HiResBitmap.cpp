@@ -145,10 +145,10 @@ void HiResBitmap::SetScreenRAM(unsigned offset, unsigned char val)
 {
     C64Color col;
 
-    col.SetColor((val >> 4) & 0x0f);
+    col.SetColor(val & 0x0f);
     m_aHiResBlock[0][offset].SetIndexedColor(0, col);
 
-    col.SetColor(val & 0x0f);
+    col.SetColor((val >> 4) & 0x0f);
     m_aHiResBlock[0][offset].SetIndexedColor(1, col);
 }
 
@@ -158,8 +158,8 @@ unsigned char HiResBitmap::GetScreenRAM(unsigned offset) const
 {
     unsigned char v;
 
-    v  = m_aHiResBlock[0][offset].GetIndexedColor(0)->GetColor() << 4;
-    v |= m_aHiResBlock[0][offset].GetIndexedColor(1)->GetColor();
+    v  = m_aHiResBlock[0][offset].GetIndexedColor(0)->GetColor();
+    v |= m_aHiResBlock[0][offset].GetIndexedColor(1)->GetColor() << 4;
     return v;
 }
 

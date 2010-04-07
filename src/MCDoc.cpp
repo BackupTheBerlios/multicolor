@@ -35,14 +35,14 @@
 #define AMICA_SIG_BYTE 0xc2
 
 /* File structure of a Koala image including start address */
-typedef struct KOALA_S
+typedef struct koala_s
 {
    unsigned char ptr[2]; /* start address */
    unsigned char bitmap[8000]; /* 160 * 200 * 2 bit*/
    unsigned char scr_ram[25 * 40];      /* both nibbles used */
    unsigned char col_ram[25 * 40];      /* low-nibble only */
    unsigned char background;
-} KOALA_T;
+} koala_t;
 
 #define AMICA_START_ADDR 0x4000
 #define KOALA_START_ADDR 0x6000
@@ -63,6 +63,7 @@ static FormatInfo::Filter m_aFilters[] =
  */
 FormatInfo MCDoc::m_formatInfo(
     wxT("Multi Color Bitmap"),
+    wxT("koa"),
     m_aFilters,
     MCDoc::Factory,
     MCDoc::CheckFormat);
@@ -81,7 +82,7 @@ MCDoc::MCDoc()
     // PrepareUndo sets m_bModified, reset it
     m_bModified = false;
 
-    if (sizeof(KOALA_T) != 10003)
+    if (sizeof(koala_t) != 10003)
     {
         wxMessageBox(wxT("Warning: Koala structure has wrong size. This is not good at all."));
     }
@@ -115,7 +116,7 @@ int MCDoc::CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName)
         match += MC_FORMAT_EXTENSION_MATCH;
     }
 
-    if (len == sizeof(KOALA_T))
+    if (len == sizeof(koala_t))
         match += MC_FORMAT_SIZE_MATCH;
 
     addr = pBuff[0] + pBuff[1] * 256;
@@ -126,6 +127,16 @@ int MCDoc::CheckFormat(uint8_t* pBuff, unsigned len, const wxFileName& fileName)
     }
 
     return match;
+}
+
+
+/******************************************************************************/
+/**
+ * Return a pointer to our FormatInfo.
+ */
+const FormatInfo* MCDoc::GetFormatInfo() const
+{
+    return &m_formatInfo;
 }
 
 
@@ -148,10 +159,10 @@ bool MCDoc::Load(uint8_t* pBuff, unsigned size)
 {
     bool bLoaded = false;
 
-    bLoaded = LoadKoala(pBuff, (unsigned)size);
+    bLoaded = LoadKoala(pBuff, size);
 
     if (!bLoaded)
-        bLoaded = LoadAmica(pBuff, (unsigned)size);
+        bLoaded = LoadAmica(pBuff, size);
 
     return bLoaded;
 }
@@ -177,7 +188,7 @@ unsigned MCDoc::Save(uint8_t* pBuff, const wxFileName& fileName)
 
 
 /*****************************************************************************/
-/*
+/**
  * Try to load a Koala picture from the given buffer into this document.
  * Return true if it worked and false otherwise. False could also mean that
  * it isn't Koala.
@@ -188,13 +199,13 @@ unsigned MCDoc::Save(uint8_t* pBuff, const wxFileName& fileName)
  */
 bool MCDoc::LoadKoala(unsigned char* pBuff, unsigned nSize)
 {
-    KOALA_T* pKoala;
+    koala_t* pKoala;
     int      i;
 
-    if (nSize != sizeof(KOALA_T))
+    if (nSize != sizeof(koala_t))
         return false;
 
-    pKoala = (KOALA_T*) pBuff;
+    pKoala = (koala_t*) pBuff;
 
     // ignore start addr, 2 bytes
 
@@ -224,7 +235,7 @@ bool MCDoc::LoadKoala(unsigned char* pBuff, unsigned nSize)
  */
 bool MCDoc::LoadAmica(unsigned char* pBuff, unsigned nSize)
 {
-    KOALA_T        koala;
+    koala_t        koala;
     unsigned       nRead, nCount, i;
     unsigned char  nByte;
     unsigned char* p;
@@ -232,7 +243,7 @@ bool MCDoc::LoadAmica(unsigned char* pBuff, unsigned nSize)
 
     // could be a union...
     p    = (unsigned char*) &koala;
-    pEnd = p + sizeof(KOALA_T);
+    pEnd = p + sizeof(koala_t);
 
     // ignore start addr, read next byte at offset 2
     nRead  = 2;
@@ -352,7 +363,7 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
 
     // make it easy for me and create a koala buffer first
     pSource = new unsigned char[MC_MAX_FILE_BUFF_SIZE];
-    if (SaveKoala(pSource) != sizeof(KOALA_T))
+    if (SaveKoala(pSource) != sizeof(koala_t))
     {
         delete[] pSource;
         return 0;
@@ -387,7 +398,7 @@ int MCDoc::SaveAmica(unsigned char* pBuff)
             ++nCount;
         }
     }
-    while (nPos < (sizeof(KOALA_T)));
+    while (nPos < (sizeof(koala_t)));
 
     // save remaining bytes, if there are any
     if (nCount)
