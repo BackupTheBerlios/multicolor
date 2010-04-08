@@ -720,7 +720,7 @@ void MCMainFrame::OnZoom(wxCommandEvent& event)
     if (!pCanvas)
         return;
 
-    nScale = pCanvas->GetScale();
+    nScale = pCanvas->GetZoom();
 
     switch (event.GetId())
     {
@@ -759,7 +759,7 @@ void MCMainFrame::OnZoom(wxCommandEvent& event)
         break;
     }
 
-    pCanvas->SetScale(nScale);
+    pCanvas->SetZoom(nScale);
 }
 
 /*****************************************************************************/
@@ -777,7 +777,7 @@ void MCMainFrame::OnTVMode(wxCommandEvent& event)
 void MCMainFrame::OnUpdateZoomIn(wxUpdateUIEvent& event)
 {
     MCCanvas* pCanvas = GetActiveCanvas();
-    event.Enable(pCanvas ? (pCanvas->GetScale() < MC_MAX_ZOOM) : false);
+    event.Enable(pCanvas ? (pCanvas->GetZoom() < MC_MAX_ZOOM) : false);
 
 #ifdef MC_TOOLS_ALWAYS_ENABLED
     event.Enable(true);
@@ -789,7 +789,7 @@ void MCMainFrame::OnUpdateZoomIn(wxUpdateUIEvent& event)
 void MCMainFrame::OnUpdateZoomOut(wxUpdateUIEvent& event)
 {
     MCCanvas* pCanvas = GetActiveCanvas();
-    event.Enable(pCanvas ? (pCanvas->GetScale() > 1) : false);
+    event.Enable(pCanvas ? (pCanvas->GetZoom() > 1) : false);
 
 #ifdef MC_TOOLS_ALWAYS_ENABLED
     event.Enable(true);
@@ -805,7 +805,7 @@ void MCMainFrame::OnUpdateZoom(wxUpdateUIEvent& event)
     if (pCanvas)
     {
         event.Enable(true);
-        switch (pCanvas->GetScale())
+        switch (pCanvas->GetZoom())
         {
         case 1:
             event.Check(event.GetId() == MC_ID_ZOOM_1);

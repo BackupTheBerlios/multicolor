@@ -39,13 +39,6 @@
 #include "MCMainFrame.h"
 #include "MCDoc.h"
 
-#define FIXP_SHIFT 16
-
-/* Ein EWMA-Filter.
- * CONST ist der Exponent fuer die Filterkonstante 1 - 1/(2^CONST)
- */
-#define PAINT_FILTER(F,X,CONST) ( (F)+=(X)-(F) - (((X)-(F))>>(CONST)) )
-
 /* define this to get some extra debug effects */
 //#define MC_DEBUG_REDRAW
 
@@ -56,11 +49,8 @@ std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition,
                      wxSize(320, 200), nStyle | wxBG_STYLE_CUSTOM),
-    m_pDoc(NULL),
     m_pActiveTool(NULL),
     m_bPreviewWindow(bPreview),
-    m_bEmulateTV(true),
-    m_nScale(1),
     m_pointLastMousePos(-1, -1),
     m_pointNextMousePos(-1, -1),
     m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID),
@@ -134,8 +124,8 @@ void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
 
     // x2 = x1 is a rect with width = 1, that's why + 1
     // 2 extra pixels to b e refreshed in x direction because of TV emulation
-    rect.SetWidth ((x2 - x1 + 3) * pB->GetPixelXFactor() * m_nScale);
-    rect.SetHeight((y2 - y1 + 1) * pB->GetPixelYFactor() * m_nScale);
+    rect.SetWidth ((x2 - x1 + 3) * pB->GetPixelXFactor() * m_nZoom);
+    rect.SetHeight((y2 - y1 + 1) * pB->GetPixelYFactor() * m_nZoom);
 
     RefreshRect(rect, false);
     Update();
@@ -174,23 +164,15 @@ void MCCanvas::OnDocDestroy(DocBase* pDoc)
 }
 
 /*****************************************************************************/
-/*
- * Set the Document this view refers to. If it is NULL, this canvas just
- * shows a black screen from now.
+/**
+ * Set the document this renderer has to show from now. May be NULL if
+ * there is no document attached.
+ *
+ * If it is NULL, this canvas just shows a black screen.
  */
 void MCCanvas::SetDoc(DocBase* pDoc)
 {
     BitmapBase* pB;
-
-    // remove me from the previous document
-    if (m_pDoc)
-        m_pDoc->RemoveRenderer(this);
-
-    m_pDoc = pDoc;
-
-    // add me to the new document
-    if (m_pDoc)
-        m_pDoc->AddRenderer(this);
 
     // set min size incl. borders so the preview won't get scroll bars
     pB = pDoc->GetBitmap();
@@ -199,37 +181,9 @@ void MCCanvas::SetDoc(DocBase* pDoc)
                pB->GetPixelYFactor() * pB->GetHeight());
     SetMinSize(size);
 
-    // make sure the image will be reallocated next time it must be drawn
-    m_image.Destroy();
-    Refresh(false);
+    FullDocRenderer::SetDoc(pDoc);
 }
 
-/*****************************************************************************/
-/*
- * Enable/Disable TV emulation and delete the cache.
- */
-void MCCanvas::SetEmulateTV(bool bTV)
-{
-    m_bEmulateTV = bTV;
-
-    // make sure the image will be reallocated next time it must be drawn
-    m_image.Destroy();
-    Refresh(false);
-}
-
-/*****************************************************************************/
-/*
- * Set zoom factor and delete the cache.
- */
-void MCCanvas::SetScale(unsigned nScale)
-{
-    m_nScale = nScale;
-
-    // make sure the image will be reallocated next time it must be drawn
-    m_image.Destroy();
-    UpdateVirtualSize();
-    Refresh(false);
-}
 
 /*****************************************************************************/
 void MCCanvas::OnDraw(wxDC& rDC)
@@ -252,7 +206,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
 
             m_pDoc->GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
-            if (m_nScale <= 2)
+            if (m_nZoom <= 2)
                 DrawScaleSmall(&rDC, x1, y1, x2, y2);
             else
                 DrawScaleBig(&rDC, x1, y1, x2, y2);
@@ -265,10 +219,10 @@ void MCCanvas::OnDraw(wxDC& rDC)
         rDC.SetBrush(*wxGREY_BRUSH);
         rDC.DrawRectangle(
             rDC.DeviceToLogicalX(0),
-            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale,
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nZoom,
             GetSize().GetWidth(), GetSize().GetHeight());
         rDC.DrawRectangle(
-            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale, rDC.DeviceToLogicalY(0),
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nZoom, rDC.DeviceToLogicalY(0),
             GetSize().GetWidth(), GetSize().GetHeight());
     }
     else
@@ -296,85 +250,6 @@ void MCCanvas::OnDraw(wxDC& rDC)
 
 /******************************************************************************
  *
- * Paint the scaled bitmap into the cache image at scale 1:1 and 2:1.
- *
- * The caller must make sure that:
- * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
- *
- * x1, y1, x2, y2 are in bitmap space
- */
-void MCCanvas::DrawScaleSmall(wxDC* pDC,
-        unsigned x1, unsigned y1, unsigned x2, unsigned y2)
-{
-    const BitmapBase* pB = m_pDoc->GetBitmap();
-    MC_RGB   col;
-    int      fixr, fixg, fixb, tmpr, tmpg, tmpb;
-    const int aFilters[] = {0, 2, 1};
-    int      filter;
-    unsigned        x, y, w, xFactor;
-    unsigned char*  pPixels;
-    unsigned char*  p;
-    unsigned        nPitch;
-
-    filter = aFilters[m_nScale];
-
-    if (!m_image.IsOk())
-    {
-        m_image.Create(
-            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale,
-            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale, false);
-        // in this case we have to render the whole image
-        x1 = 0;
-        y1 = 0;
-        x2 = pB->GetWidth() - 1;
-        y2 = pB->GetHeight() - 1;
-    }
-
-    pPixels = m_image.GetData();
-    nPitch  = m_image.GetWidth() * 3;
-    xFactor = pB->GetPixelXFactor() * m_nScale;
-    w       = xFactor * pB->GetWidth();
-
-    // We draw all full lines of the area so the blur has the right effect
-    for (y =  y1 * pB->GetPixelYFactor();
-         y <= y2 * pB->GetPixelYFactor() * m_nScale;
-         ++y)
-    {
-        fixr = fixg = fixb = 64 << FIXP_SHIFT;
-        p = pPixels + y * nPitch;
-
-        for (x = 0; x < w; ++x)
-        {
-            if (x % xFactor == 0)
-            {
-                col = pB->GetColor(x / xFactor, y / m_nScale)->GetRGB();
-                tmpr = (col & 0xff) << FIXP_SHIFT;
-                tmpg = ((col >> 8) & 0xff) << FIXP_SHIFT;
-                tmpb = ((col >> 16) & 0xff) << FIXP_SHIFT;
-            }
-            if (m_bEmulateTV)
-            {
-                PAINT_FILTER(fixr, tmpr, filter);
-                PAINT_FILTER(fixg, tmpg, filter);
-                PAINT_FILTER(fixb, tmpb, filter);
-                *p++ = fixb >> FIXP_SHIFT;
-                *p++ = fixg >> FIXP_SHIFT;
-                *p++ = fixr >> FIXP_SHIFT;
-            }
-            else
-            {
-                *p++ = tmpb >> FIXP_SHIFT;
-                *p++ = tmpg >> FIXP_SHIFT;
-                *p++ = tmpr >> FIXP_SHIFT;
-            }
-        } /* x */
-    } /* y */
-
-    pDC->DrawBitmap(m_image, 0, 0, false);
-}
-
-/******************************************************************************
- *
  * Draw the scaled bitmap at scale 4:1 and higher.
  *
  * The caller must make sure that:
@@ -392,17 +267,17 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     wxRect         rect;
     unsigned       x, y, i, xFactor;
 
-    xFactor = pB->GetPixelXFactor() * m_nScale;
+    xFactor = pB->GetPixelXFactor() * m_nZoom;
 
     pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
 
     // Draw blocks for pixels
     pDC->SetPen(*wxTRANSPARENT_PEN);
-    rect.height = m_nScale - 1;
+    rect.height = m_nZoom - 1;
     rect.width  = xFactor - 1;
     for (y = y1; y <= y2; ++y)
     {
-        rect.y = m_nScale * y + 1;
+        rect.y = m_nZoom * y + 1;
         for (x = x1; x <= x2; ++x)
         {
             rect.x = xFactor * x + 1;
@@ -419,11 +294,11 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     for (x = x1; x <= x2; ++x)
     {
         i = xFactor * x;
-        pDC->DrawLine(i, m_nScale * y1, i, m_nScale * (y2 + 1));
+        pDC->DrawLine(i, m_nZoom * y1, i, m_nZoom * (y2 + 1));
     }
     for (y = y1; y <= y2; ++y)
     {
-        i = m_nScale * y;
+        i = m_nZoom * y;
         pDC->DrawLine(xFactor * x1, i, xFactor * (x2 + 1), i);
     }
 
@@ -432,21 +307,21 @@ void MCCanvas::DrawScaleBig(wxDC* pDC,
     x1 -= x1 % pB->GetCellWidth();
     x1 *= xFactor;
     y1 -= y1 % pB->GetCellHeight();
-    y1 *= m_nScale;
+    y1 *= m_nZoom;
 
     x2 *= xFactor;
-    y2 *= m_nScale;
-    for (y = y1; y <= y2; y += 8 * m_nScale)
+    y2 *= m_nZoom;
+    for (y = y1; y <= y2; y += 8 * m_nZoom)
     {
-        for (x = x1; x < x2; x += 8 * m_nScale)
+        for (x = x1; x < x2; x += 8 * m_nZoom)
         {
             rgb = pB->GetColor(
-                x / xFactor, y / m_nScale)->GetContrastRGB();
+                x / xFactor, y / m_nZoom)->GetContrastRGB();
             pen.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
             pDC->SetPen(pen);
 
-            pDC->DrawLine(x - m_nScale / 2, y, x + m_nScale / 2, y);
-            pDC->DrawLine(x, y - m_nScale / 2, x, y + m_nScale / 2);
+            pDC->DrawLine(x - m_nZoom / 2, y, x + m_nZoom / 2, y);
+            pDC->DrawLine(x, y - m_nZoom / 2, x, y + m_nZoom / 2);
         }
     }
 }
@@ -474,8 +349,8 @@ void MCCanvas::ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll)
 
     CalcUnscrolledPosition(x, y, px, py);
 
-    *px /= pB->GetPixelXFactor() * (int)m_nScale;
-    *py /= pB->GetPixelYFactor() * (int)m_nScale;
+    *px /= pB->GetPixelXFactor() * (int)m_nZoom;
+    *py /= pB->GetPixelYFactor() * (int)m_nZoom;
 
     if (*px < 0) *px = 0;
     if (*py < 0) *py = 0;
@@ -492,8 +367,8 @@ void MCCanvas::ToCanvasCoord(int* px, int* py, int x, int y)
     BitmapBase* pB;
     pB = m_pDoc->GetBitmap();
 
-    *px = x * pB->GetPixelXFactor() * m_nScale;
-    *py = y * pB->GetPixelYFactor() * m_nScale;
+    *px = x * pB->GetPixelXFactor() * m_nZoom;
+    *py = y * pB->GetPixelYFactor() * m_nZoom;
     CalcScrolledPosition(*px, *py, px, py);
 }
 
@@ -515,8 +390,8 @@ void MCCanvas::CenterBitmapPoint(int x, int y)
     GetClientSize(&wClient, &hClient);
     GetScrollPixelsPerUnit(&xFactor, &yFactor);
 
-    x *= pB->GetPixelXFactor() * m_nScale;
-    y *= pB->GetPixelYFactor() * m_nScale;
+    x *= pB->GetPixelXFactor() * m_nZoom;
+    y *= pB->GetPixelYFactor() * m_nZoom;
 
     xScroll = (x - wClient / 2) / xFactor;
     yScroll = (y - hClient / 2) / yFactor;
@@ -553,8 +428,8 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
         return;
 
     pB = m_pDoc->GetBitmap();
-    xFactor = pB->GetPixelXFactor() * m_nScale;
-    yFactor = pB->GetPixelYFactor() * m_nScale;
+    xFactor = pB->GetPixelXFactor() * m_nZoom;
+    yFactor = pB->GetPixelYFactor() * m_nZoom;
 
     x = m_pointLastMousePos.x * xFactor;
     y = m_pointLastMousePos.y * yFactor;
@@ -563,7 +438,7 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
     pDC->SetBrush(*wxTRANSPARENT_BRUSH);
     pDC->SetPen(*wxWHITE_PEN);
 
-    if (m_nScale >= 4)
+    if (m_nZoom >= 4)
     {
         pDC->DrawRectangle(x, y, xFactor + 1, yFactor + 1);
     }
@@ -585,10 +460,11 @@ void MCCanvas::DrawMousePos(wxDC* pDC)
 
 
 /*****************************************************************************/
-/*
+/**
+ * Is called when the zoom scale changed, e.g. through SetZoom.
  * Calculate and set the virtual size to get the scrollbars to the right size.
  */
-void MCCanvas::UpdateVirtualSize()
+void MCCanvas::OnZoomChanged()
 {
     BitmapBase* pB;
 
@@ -596,12 +472,14 @@ void MCCanvas::UpdateVirtualSize()
     {
         pB = m_pDoc->GetBitmap();
         SetVirtualSize(
-            pB->GetPixelXFactor() * pB->GetWidth() * m_nScale,
-            pB->GetPixelYFactor() * pB->GetHeight() * m_nScale);
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nZoom,
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nZoom);
         SetScrollRate(
-            pB->GetPixelXFactor() * m_nScale,
-            pB->GetPixelYFactor() * m_nScale);
+            pB->GetPixelXFactor() * m_nZoom,
+            pB->GetPixelYFactor() * m_nZoom);
     }
+
+    FullDocRenderer::OnZoomChanged();
 }
 
 
@@ -986,26 +864,26 @@ void MCCanvas::OnEraseBackground(wxEraseEvent& event)
  */
 void MCCanvas::OnMouseWheel(wxMouseEvent& event)
 {
-    unsigned nScale = m_nScale;
+    unsigned nZoom = m_nZoom;
     int x, y;
 
     if (m_pDoc)
     {
         ToBitmapCoord(&x, &y, event.GetX(), event.GetY(), true);
 
-        if ((event.GetWheelRotation() > 0) && (nScale > 1))
+        if ((event.GetWheelRotation() > 0) && (nZoom > 1))
         {
-            nScale /= 2;
+            nZoom /= 2;
         }
 
-        if ((event.GetWheelRotation() < 0) && (nScale < MC_MAX_ZOOM))
+        if ((event.GetWheelRotation() < 0) && (nZoom < MC_MAX_ZOOM))
         {
-            nScale *= 2;
+            nZoom *= 2;
         }
 
-        if (m_nScale != nScale)
+        if (m_nZoom != nZoom)
         {
-            SetScale(nScale);
+            SetZoom(nZoom);
             CenterBitmapPoint(x, y);
         }
     }

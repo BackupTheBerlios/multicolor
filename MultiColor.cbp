@@ -8,7 +8,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="out/multicolor/multicolor" prefix_auto="1" extension_auto="1" />
+				<Option output="out_debug/multicolor/multicolor" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -20,11 +20,11 @@
 					<Build command="$make -f $makefile debug=yes" />
 					<CompileFile command="$make -f $makefile $file debug=yes" />
 					<Clean command="$make -f $makefile clean debug=yes" />
-					<DistClean command="$make -f $makefile distclean$target" />
+					<DistClean command="$make -f $makefile distclean" />
 				</MakeCommands>
 			</Target>
 			<Target title="Release">
-				<Option output="release/MultiColor/multicolor" prefix_auto="1" extension_auto="1" />
+				<Option output="out/MultiColor/multicolor" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -61,9 +61,12 @@
 		<Unit filename="src/C64Color.h" />
 		<Unit filename="src/DocBase.cpp" />
 		<Unit filename="src/DocBase.h" />
+		<Unit filename="src/DocRenderer.cpp" />
 		<Unit filename="src/DocRenderer.h" />
 		<Unit filename="src/FormatInfo.cpp" />
 		<Unit filename="src/FormatInfo.h" />
+		<Unit filename="src/FullDocRenderer.cpp" />
+		<Unit filename="src/FullDocRenderer.h" />
 		<Unit filename="src/HiResBitmap.cpp" />
 		<Unit filename="src/HiResBitmap.h" />
 		<Unit filename="src/HiResBlock.cpp" />

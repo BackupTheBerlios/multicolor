@@ -34,7 +34,7 @@
 #include <wx/cursor.h>
 
 #include "MCBitmap.h"
-#include "DocRenderer.h"
+#include "FullDocRenderer.h"
 
 #define MCCANVAS_SCROLL_TIMER_ID  1
 #define MCCANVAS_REFRESH_TIMER_ID 2
@@ -52,7 +52,7 @@
 class ToolBase;
 class DocBase;
 
-class MCCanvas: public wxScrolledWindow, public DocRenderer
+class MCCanvas: public wxScrolledWindow, public FullDocRenderer
 {
 public:
     MCCanvas(wxWindow* pParent, int nStyle, bool bPreview);
@@ -65,12 +65,6 @@ public:
     virtual void OnDraw(wxDC& dc);
 
     void SetDoc(DocBase* pDoc);
-    DocBase* GetDoc();
-
-    void SetEmulateTV(bool bTV);
-    bool GetEmulateTV();
-    void SetScale(unsigned nScale);
-    unsigned GetScale();
 
     void CenterBitmapPoint(int x, int y);
 
@@ -79,9 +73,6 @@ public:
 protected:
     static std::list<MCCanvas*> m_listCanvasInstances;
 
-    // Pointer to Document to be rendered or NULL
-    DocBase* m_pDoc;
-
     typedef struct
     {
         unsigned char b;
@@ -89,17 +80,14 @@ protected:
         unsigned char r;
     } RGBPixel;
 
-    void InvalidateMouseRect();
+    virtual void OnZoomChanged();
 
-    void DrawScaleSmall(wxDC* pDC,
-            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
     void DrawScaleBig(wxDC* pDC,
             unsigned x1, unsigned y1, unsigned x2, unsigned y2);
 
     void ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll);
     void ToCanvasCoord(int* px, int* py, int x, int y);
     void DrawMousePos(wxDC* pDC);
-    void UpdateVirtualSize();
     bool CheckScrolling(int xMouse, int yMouses);
     int CheckScrollingOneDirection(
             int nScroll, int nMousePos, int nAreaMax, int nScrollMax);
@@ -128,17 +116,11 @@ protected:
     // true if this is the small preview window
     bool        m_bPreviewWindow;
 
-    bool        m_bEmulateTV;
-    unsigned    m_nScale;
-
     // Position where the mouse has been drawn (bitmap coord), -1/-1 for none
     wxPoint     m_pointLastMousePos;
 
     // Position where the mouse will be drawn next (bitmap coord), -1/-1 for none
     wxPoint     m_pointNextMousePos;
-
-    // This image is used as cache at zoom levels 1:1 and 2:1
-    wxImage     m_image;
 
     // When this timer is still running, auto scroll is disabled
     wxTimer     m_timerScrolling;
@@ -170,36 +152,6 @@ protected:
     wxCursor    m_cursorFreehand;
     wxCursor    m_cursorLines;
 };
-
-
-/*****************************************************************************/
-/*
- * Return the state of the TV emulation (on/off).
- */
-inline bool MCCanvas::GetEmulateTV()
-{
-    return m_bEmulateTV;
-}
-
-
-/*****************************************************************************/
-/*
- * Return the current zoom factor.
- */
-inline unsigned MCCanvas::GetScale()
-{
-    return m_nScale;
-}
-
-
-/*****************************************************************************/
-/*
- * Return the pointer to the document related to this Canvas.
- */
-inline DocBase* MCCanvas::GetDoc()
-{
-    return m_pDoc;
-}
 
 
 #endif /* MCCANVAS_H */

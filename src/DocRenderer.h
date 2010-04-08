@@ -26,10 +26,10 @@
 #ifndef DOCRENDERER_H_
 #define DOCRENDERER_H_
 
-class DocBase;
+#include "DocBase.h"
 
 /*****************************************************************************/
-/*
+/**
  * This abstract class defines an interface for Classes which want to be
  * notified if a document has changed.
  *
@@ -39,7 +39,9 @@ class DocBase;
 class DocRenderer
 {
 public:
-    /*
+    DocRenderer();
+
+    /**
      * This is called when the document contents has changed, the parameters
      * report the area to be updated. Coordinates are in bitmap space.
      * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
@@ -48,16 +50,45 @@ public:
      */
     virtual void OnDocChanged(int x1, int y1, int x2, int y2) = 0;
 
-    /*
+    /**
      * This is called when the mouse has been moved in one of the views.
      * Coordinates are in bitmap space.
      */
     virtual void OnDocMouseMoved(int x, int y) = 0;
 
-    /*
+    /**
      * This is called when a document is destroyed which is rendered by me
      */
     virtual void OnDocDestroy(DocBase* pDoc) = 0;
+
+    /**
+     * Set the document this renderer has to show from now. May be NULL if
+     * there is no document attached.
+     */
+    virtual void SetDoc(DocBase* pDoc);
+
+    DocBase* GetDoc();
+
+    /**
+     * Call this to redraw the whole document in this renderer.
+     * The default implementation is just a shortcut to
+     * OnDocChanged(int x1, int y1, int x2, int y2).
+     */
+    virtual void RedrawAll();
+
+protected:
+    // Pointer to Document to be rendered or NULL
+    DocBase* m_pDoc;
 };
+
+
+/*****************************************************************************/
+/**
+ * Return the pointer to the document related to this Renderer.
+ */
+inline DocBase* DocRenderer::GetDoc()
+{
+    return m_pDoc;
+}
 
 #endif /*DOCRENDERER_H_*/
