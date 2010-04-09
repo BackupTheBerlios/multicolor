@@ -34,7 +34,7 @@
 #include <wx/cursor.h>
 
 #include "MCBitmap.h"
-#include "FullDocRenderer.h"
+#include "DocRenderer.h"
 
 #define MCCANVAS_SCROLL_TIMER_ID  1
 #define MCCANVAS_REFRESH_TIMER_ID 2
@@ -52,15 +52,14 @@
 class ToolBase;
 class DocBase;
 
-class MCCanvas: public wxScrolledWindow, public FullDocRenderer
+class MCCanvas: public wxScrolledWindow, public DocRenderer
 {
 public:
     MCCanvas(wxWindow* pParent, int nStyle, bool bPreview);
     virtual ~MCCanvas(void);
 
-    virtual void OnDocChanged(int x1, int y1, int x2, int y2);
+    virtual void RedrawDoc(int x1, int y1, int x2, int y2);
     virtual void OnDocMouseMoved(int x, int y);
-    virtual void OnDocDestroy(DocBase* pDoc);
 
     virtual void OnDraw(wxDC& dc);
 
@@ -69,6 +68,11 @@ public:
     void CenterBitmapPoint(int x, int y);
 
     static void UpdateAllCursorTypes();
+
+    void SetEmulateTV(bool bTV);
+    bool GetEmulateTV();
+    void SetZoom(unsigned nZoom);
+    unsigned GetZoom();
 
 protected:
     static std::list<MCCanvas*> m_listCanvasInstances;
@@ -80,14 +84,8 @@ protected:
         unsigned char r;
     } RGBPixel;
 
-    virtual void OnZoomChanged();
-
-    void DrawScaleBig(wxDC* pDC,
-            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
-
     void ToBitmapCoord(int* px, int* py, int x, int y, bool bScroll);
     void ToCanvasCoord(int* px, int* py, int x, int y);
-    void DrawMousePos(wxDC* pDC);
     bool CheckScrolling(int xMouse, int yMouses);
     int CheckScrollingOneDirection(
             int nScroll, int nMousePos, int nAreaMax, int nScrollMax);
@@ -109,6 +107,9 @@ protected:
     void OnEnter(wxMouseEvent& event);
     void OnLeave(wxMouseEvent& event);
     void OnTimer(wxTimerEvent& event);
+
+    bool        m_bEmulateTV;
+    unsigned    m_nZoom;
 
     // Points to the currently active tool or NULL
     ToolBase* m_pActiveTool;
@@ -153,5 +154,24 @@ protected:
     wxCursor    m_cursorLines;
 };
 
+
+/*****************************************************************************/
+/**
+ * Return the state of the TV emulation (on/off).
+ */
+inline bool MCCanvas::GetEmulateTV()
+{
+    return m_bEmulateTV;
+}
+
+
+/*****************************************************************************/
+/**
+ * Return the current zoom factor.
+ */
+inline unsigned MCCanvas::GetZoom()
+{
+    return m_nZoom;
+}
 
 #endif /* MCCANVAS_H */

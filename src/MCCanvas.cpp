@@ -49,6 +49,8 @@ std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
 MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition,
                      wxSize(320, 200), nStyle | wxBG_STYLE_CUSTOM),
+    m_bEmulateTV(true),
+    m_nZoom(1),
     m_pActiveTool(NULL),
     m_bPreviewWindow(bPreview),
     m_pointLastMousePos(-1, -1),
@@ -106,28 +108,34 @@ MCCanvas::~MCCanvas()
  * This is called when the document contents has changed, the parameters
  * report the area to be updated. Coordinates are in bitmap space.
  * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
- * It may by possible that x1 == x2 or y1 == y2. All coordinates are
- * clipped to the image size already.
+ * It may by possible that x1 == x2 or y1 == y2 and it may be larger than
+ * the actual image.
  *
  * We must force a redraw immediately, otherwise it may take a while
  * until we get to the event loop again
  *
  */
-void MCCanvas::OnDocChanged(int x1, int y1, int x2, int y2)
+void MCCanvas::RedrawDoc(int x1, int y1, int x2, int y2)
 {
     wxRect      rect;
     BitmapBase* pB;
 
-    // Calculate the rectangle to be redrawn in screen coordinates
-    ToCanvasCoord(&rect.x, &rect.y, x1, y1);
-    pB = m_pDoc->GetBitmap();
+    if (m_pDoc)
+    {
+        // Calculate the rectangle to be redrawn in screen coordinates
+        ToCanvasCoord(&rect.x, &rect.y, x1, y1);
+        pB = m_pDoc->GetBitmap();
 
-    // x2 = x1 is a rect with width = 1, that's why + 1
-    // 2 extra pixels to b e refreshed in x direction because of TV emulation
-    rect.SetWidth ((x2 - x1 + 3) * pB->GetPixelXFactor() * m_nZoom);
-    rect.SetHeight((y2 - y1 + 1) * pB->GetPixelYFactor() * m_nZoom);
+        // x2 = x1 is a rect with width = 1, that's why + 1
+        // 2 extra pixels to b e refreshed in x direction because of TV emulation
+        rect.SetWidth ((x2 - x1 + 3) * pB->GetPixelXFactor() * m_nZoom);
+        rect.SetHeight((y2 - y1 + 1) * pB->GetPixelYFactor() * m_nZoom);
 
-    RefreshRect(rect, false);
+        RefreshRect(rect, false);
+    }
+    else
+        Refresh(false);
+
     Update();
 }
 
@@ -150,18 +158,6 @@ void MCCanvas::OnDocMouseMoved(int x, int y)
     }
 }
 
-/*****************************************************************************/
-/**
- * This is called when a document is destroyed which is rendered by me
- */
-void MCCanvas::OnDocDestroy(DocBase* pDoc)
-{
-    if (m_pDoc == pDoc)
-    {
-        m_pDoc = NULL;
-        Refresh(false);
-    }
-}
 
 /*****************************************************************************/
 /**
@@ -174,14 +170,17 @@ void MCCanvas::SetDoc(DocBase* pDoc)
 {
     BitmapBase* pB;
 
-    // set min size incl. borders so the preview won't get scroll bars
-    pB = pDoc->GetBitmap();
-    wxSize size(GetWindowBorderSize());
-    size.IncBy(pB->GetPixelXFactor() * pB->GetWidth(),
-               pB->GetPixelYFactor() * pB->GetHeight());
-    SetMinSize(size);
+    if (pDoc)
+    {
+        // set min size incl. borders so the preview won't get scroll bars
+        pB = pDoc->GetBitmap();
+        wxSize size(GetWindowBorderSize());
+        size.IncBy(pB->GetPixelXFactor() * pB->GetWidth(),
+                   pB->GetPixelYFactor() * pB->GetHeight());
+        SetMinSize(size);
+    }
 
-    FullDocRenderer::SetDoc(pDoc);
+    DocRenderer::SetDoc(pDoc);
 }
 
 
@@ -207,9 +206,9 @@ void MCCanvas::OnDraw(wxDC& rDC)
             m_pDoc->GetBitmap()->SortAndClip(&x1, &y1, &x2, &y2);
 
             if (m_nZoom <= 2)
-                DrawScaleSmall(&rDC, x1, y1, x2, y2);
+                DrawScaleSmall(&rDC, m_nZoom, m_bEmulateTV, x1, y1, x2, y2);
             else
-                DrawScaleBig(&rDC, x1, y1, x2, y2);
+                DrawScaleBig(&rDC, m_nZoom, x1, y1, x2, y2);
             upd++;
         }
 
@@ -233,7 +232,7 @@ void MCCanvas::OnDraw(wxDC& rDC)
         rDC.DrawRectangle(0, 0, GetSize().GetWidth(), GetSize().GetHeight());
     }
 
-    DrawMousePos(&rDC);
+    DrawMousePos(&rDC, m_pointLastMousePos.x, m_pointLastMousePos.y, m_nZoom);
 
 #ifdef MC_DEBUG_REDRAW
     wxCoord x, y, w, h;
@@ -246,86 +245,6 @@ void MCCanvas::OnDraw(wxDC& rDC)
     rDC.DrawLine(x + w, y, x, y + h);
 #endif
 }
-
-
-/******************************************************************************
- *
- * Draw the scaled bitmap at scale 4:1 and higher.
- *
- * The caller must make sure that:
- * x1 <= x2, y1 <= y2, 0 <= x < w, 0 <= y <= h
- *
- * x1, y1, x2, y2 are in bitmap space
- */
-void MCCanvas::DrawScaleBig(wxDC* pDC,
-        unsigned x1, unsigned y1, unsigned x2, unsigned y2)
-{
-    const BitmapBase* pB = m_pDoc->GetBitmap();
-    wxBrush        brush(*wxBLACK);
-    wxPen          pen(*wxBLACK);
-    MC_RGB         rgb;
-    wxRect         rect;
-    unsigned       x, y, i, xFactor;
-
-    xFactor = pB->GetPixelXFactor() * m_nZoom;
-
-    pen.SetColour(MC_GRID_COL_R, MC_GRID_COL_G, MC_GRID_COL_B);
-
-    // Draw blocks for pixels
-    pDC->SetPen(*wxTRANSPARENT_PEN);
-    rect.height = m_nZoom - 1;
-    rect.width  = xFactor - 1;
-    for (y = y1; y <= y2; ++y)
-    {
-        rect.y = m_nZoom * y + 1;
-        for (x = x1; x <= x2; ++x)
-        {
-            rect.x = xFactor * x + 1;
-
-            rgb = pB->GetColor(x, y)->GetRGB();
-            brush.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
-            pDC->SetBrush(brush);
-            pDC->DrawRectangle(rect);
-        }
-    }
-
-    // Draw the fine grid
-    pDC->SetPen(pen);
-    for (x = x1; x <= x2; ++x)
-    {
-        i = xFactor * x;
-        pDC->DrawLine(i, m_nZoom * y1, i, m_nZoom * (y2 + 1));
-    }
-    for (y = y1; y <= y2; ++y)
-    {
-        i = m_nZoom * y;
-        pDC->DrawLine(xFactor * x1, i, xFactor * (x2 + 1), i);
-    }
-
-    // Draw the cell grid, we extend the area to the next border at the
-    // upper left corner
-    x1 -= x1 % pB->GetCellWidth();
-    x1 *= xFactor;
-    y1 -= y1 % pB->GetCellHeight();
-    y1 *= m_nZoom;
-
-    x2 *= xFactor;
-    y2 *= m_nZoom;
-    for (y = y1; y <= y2; y += 8 * m_nZoom)
-    {
-        for (x = x1; x < x2; x += 8 * m_nZoom)
-        {
-            rgb = pB->GetColor(
-                x / xFactor, y / m_nZoom)->GetContrastRGB();
-            pen.SetColour(MC_RGB_R(rgb), MC_RGB_G(rgb), MC_RGB_B(rgb));
-            pDC->SetPen(pen);
-
-            pDC->DrawLine(x - m_nZoom / 2, y, x + m_nZoom / 2, y);
-            pDC->DrawLine(x, y - m_nZoom / 2, x, y + m_nZoom / 2);
-        }
-    }
-}
-
 
 
 /******************************************************************************
@@ -412,74 +331,6 @@ void MCCanvas::UpdateAllCursorTypes()
     {
         (*i)->UpdateCursorType();
     }
-}
-
-
-/******************************************************************************/
-/*
- * Draw the mouse position or remove the drawing.
- */
-void MCCanvas::DrawMousePos(wxDC* pDC)
-{
-    int x, y, xFactor, yFactor, c;
-    BitmapBase* pB;
-
-    if (!m_pDoc)
-        return;
-
-    pB = m_pDoc->GetBitmap();
-    xFactor = pB->GetPixelXFactor() * m_nZoom;
-    yFactor = pB->GetPixelYFactor() * m_nZoom;
-
-    x = m_pointLastMousePos.x * xFactor;
-    y = m_pointLastMousePos.y * yFactor;
-
-    pDC->SetLogicalFunction(wxXOR);
-    pDC->SetBrush(*wxTRANSPARENT_BRUSH);
-    pDC->SetPen(*wxWHITE_PEN);
-
-    if (m_nZoom >= 4)
-    {
-        pDC->DrawRectangle(x, y, xFactor + 1, yFactor + 1);
-    }
-
-    c = y + yFactor / 2;
-    pDC->DrawLine(x - 3,           c,
-                  x,               c);
-    pDC->DrawLine(x + xFactor,     c,
-                  x + xFactor + 3, c);
-
-    c = x + xFactor / 2;
-    pDC->DrawLine(c, y - 3,
-                  c, y);
-    pDC->DrawLine(c, y + yFactor,
-                  c, y + yFactor + 3);
-
-    pDC->SetLogicalFunction(wxCOPY);
-}
-
-
-/*****************************************************************************/
-/**
- * Is called when the zoom scale changed, e.g. through SetZoom.
- * Calculate and set the virtual size to get the scrollbars to the right size.
- */
-void MCCanvas::OnZoomChanged()
-{
-    BitmapBase* pB;
-
-    if (m_pDoc)
-    {
-        pB = m_pDoc->GetBitmap();
-        SetVirtualSize(
-            pB->GetPixelXFactor() * pB->GetWidth() * m_nZoom,
-            pB->GetPixelYFactor() * pB->GetHeight() * m_nZoom);
-        SetScrollRate(
-            pB->GetPixelXFactor() * m_nZoom,
-            pB->GetPixelYFactor() * m_nZoom);
-    }
-
-    FullDocRenderer::OnZoomChanged();
 }
 
 
@@ -672,6 +523,42 @@ void MCCanvas::StartTool(int x, int y, bool bSecondary)
         m_pActiveTool->Start(x, y, bSecondary);
         m_pDoc->RefreshDirty();
     }
+}
+
+
+/*****************************************************************************/
+/**
+ * Enable/Disable TV emulation and delete the cache.
+ */
+void MCCanvas::SetEmulateTV(bool bTV)
+{
+    m_bEmulateTV = bTV;
+    Refresh(false);
+}
+
+
+/*****************************************************************************/
+/**
+ * Set zoom factor and delete the cache.
+ */
+void MCCanvas::SetZoom(unsigned nZoom)
+{
+    BitmapBase* pB;
+
+    m_nZoom = nZoom;
+
+    if (m_pDoc)
+    {
+        pB = m_pDoc->GetBitmap();
+        SetVirtualSize(
+            pB->GetPixelXFactor() * pB->GetWidth() * m_nZoom,
+            pB->GetPixelYFactor() * pB->GetHeight() * m_nZoom);
+        SetScrollRate(
+            pB->GetPixelXFactor() * m_nZoom,
+            pB->GetPixelYFactor() * m_nZoom);
+    }
+
+    Refresh(false);
 }
 
 
@@ -995,8 +882,8 @@ void MCCanvas::OnTimer(wxTimerEvent& event)
         wxClientDC dc(this);
         DoPrepareDC(dc);
 
-        DrawMousePos(&dc);
+        DrawMousePos(&dc, m_pointLastMousePos.x, m_pointLastMousePos.y, m_nZoom);
+        DrawMousePos(&dc, m_pointNextMousePos.x, m_pointNextMousePos.y, m_nZoom);
         m_pointLastMousePos = m_pointNextMousePos;
-        DrawMousePos(&dc);
     }
 }

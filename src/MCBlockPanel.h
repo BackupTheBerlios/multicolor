@@ -41,11 +41,8 @@ public:
     MCBlockPanel(wxWindow* pParent);
     virtual ~MCBlockPanel();
 
-    virtual void OnDocChanged(int x1, int y1, int x2, int y2);
+    virtual void RedrawDoc(int x1, int y1, int x2, int y2);
     virtual void OnDocMouseMoved(int x, int y);
-    virtual void OnDocDestroy(DocBase* pDoc);
-
-    void SetDoc(DocBase* pDoc);
 
 protected:
     static const int m_nWTotal = 160;

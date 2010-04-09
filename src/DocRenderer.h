@@ -26,6 +26,9 @@
 #ifndef DOCRENDERER_H_
 #define DOCRENDERER_H_
 
+#include <wx/dc.h>
+#include <wx/image.h>
+
 #include "DocBase.h"
 
 /*****************************************************************************/
@@ -45,21 +48,16 @@ public:
      * This is called when the document contents has changed, the parameters
      * report the area to be updated. Coordinates are in bitmap space.
      * x1/y1 is the upper left corner, x2/y2 is the bottom right corner.
-     * It may by possible that x1 == x2 or y1 == y2. All coordinates are
-     * clipped to the image size already.
+     * It may by possible that x1 == x2 or y1 == y2 and it may be larger than
+     * the actual image.
      */
-    virtual void OnDocChanged(int x1, int y1, int x2, int y2) = 0;
+    virtual void RedrawDoc(int x1, int y1, int x2, int y2) = 0;
 
     /**
      * This is called when the mouse has been moved in one of the views.
      * Coordinates are in bitmap space.
      */
     virtual void OnDocMouseMoved(int x, int y) = 0;
-
-    /**
-     * This is called when a document is destroyed which is rendered by me
-     */
-    virtual void OnDocDestroy(DocBase* pDoc) = 0;
 
     /**
      * Set the document this renderer has to show from now. May be NULL if
@@ -69,16 +67,22 @@ public:
 
     DocBase* GetDoc();
 
-    /**
-     * Call this to redraw the whole document in this renderer.
-     * The default implementation is just a shortcut to
-     * OnDocChanged(int x1, int y1, int x2, int y2).
-     */
-    virtual void RedrawAll();
-
 protected:
+
+    void DrawMousePos(wxDC* pDC, int x, int y, unsigned nZoom);
+
+    void DrawScaleSmall(wxDC* pDC, unsigned nZoom, bool bEmulateTV,
+            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
+
+    void DrawScaleBig(wxDC* pDC, unsigned nZoom,
+            unsigned x1, unsigned y1, unsigned x2, unsigned y2);
+
     // Pointer to Document to be rendered or NULL
-    DocBase* m_pDoc;
+    DocBase*    m_pDoc;
+
+private:
+    /// This image is used as cache at zoom levels 1:1 and 2:1
+    wxImage     m_image;
 };
 
 

@@ -545,8 +545,8 @@ void MCMainFrame::OnFileClose(wxCommandEvent &event)
 
     if (bReallyClose)
     {
-        m_pNotebook->DeletePage(nSelected);
         delete pDoc;
+        m_pNotebook->DeletePage(nSelected);
     }
 }
 

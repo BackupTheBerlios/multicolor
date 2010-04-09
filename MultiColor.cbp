@@ -65,8 +65,6 @@
 		<Unit filename="src/DocRenderer.h" />
 		<Unit filename="src/FormatInfo.cpp" />
 		<Unit filename="src/FormatInfo.h" />
-		<Unit filename="src/FullDocRenderer.cpp" />
-		<Unit filename="src/FullDocRenderer.h" />
 		<Unit filename="src/HiResBitmap.cpp" />
 		<Unit filename="src/HiResBitmap.h" />
 		<Unit filename="src/HiResBlock.cpp" />

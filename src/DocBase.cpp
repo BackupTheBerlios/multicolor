@@ -59,11 +59,16 @@ DocBase::DocBase() :
  */
 DocBase::~DocBase()
 {
-    std::list<DocRenderer*>::iterator i;
+    DocRenderer* pDocRenderer;
 
-    for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
+    while (m_listDocRenderers.size())
     {
-        (*i)->OnDocDestroy(this);
+        pDocRenderer = *m_listDocRenderers.begin();
+
+        // the DocRenderers will remove themselfes normally, but to be sure...
+        m_listDocRenderers.remove(pDocRenderer);
+
+        pDocRenderer->SetDoc(NULL);
     }
 }
 
@@ -103,7 +108,7 @@ void DocBase::Refresh(int x1, int y1, int x2, int y2)
 
     for (i = m_listDocRenderers.begin(); i != m_listDocRenderers.end(); ++i)
     {
-        (*i)->OnDocChanged(x1, y1, x2, y2);
+        (*i)->RedrawDoc(x1, y1, x2, y2);
     }
 }
 

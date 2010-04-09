@@ -61,7 +61,7 @@ MCBlockPanel::~MCBlockPanel()
  * This is called when the document contents has changed, the parameters
  * report the area to be updated. Coordinates are in bitmap space.
  */
-void MCBlockPanel::OnDocChanged(int x1, int y1, int x2, int y2)
+void MCBlockPanel::RedrawDoc(int x1, int y1, int x2, int y2)
 {
     Refresh(false);
 }
@@ -76,20 +76,6 @@ void MCBlockPanel::OnDocMouseMoved(int x, int y)
 {
     if (!m_timerRefresh.IsRunning())
         m_timerRefresh.Start(MCBLOCKPANEL_UPDATE_INTERVAL, wxTIMER_ONE_SHOT);
-}
-
-
-/*****************************************************************************/
-/**
- * This is called when a document is destroyed which is rendered by me
- */
-void MCBlockPanel::OnDocDestroy(DocBase* pDoc)
-{
-    if (m_pDoc == pDoc)
-    {
-        m_pDoc = NULL;
-        Refresh(false);
-    }
 }
 
 
@@ -116,27 +102,6 @@ void MCBlockPanel::OnTimer(wxTimerEvent& event)
     {
         Refresh(false);
     }
-}
-
-
-/*****************************************************************************/
-/**
- * Set the Document this view refers to. If it is NULL, this preview just
- * shows a black block from now.
- */
-void MCBlockPanel::SetDoc(DocBase* pDoc)
-{
-    // remove me from the previous document
-    if (m_pDoc)
-        m_pDoc->RemoveRenderer(this);
-
-    m_pDoc = pDoc;
-
-    // add me to the new document
-    if (m_pDoc)
-        m_pDoc->AddRenderer(this);
-
-    Refresh(false);
 }
 
 

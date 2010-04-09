@@ -71,7 +71,6 @@ src += HiResDoc.cpp
 src += MCCanvas.cpp
 src += DocBase.cpp
 src += DocRenderer.cpp
-src += FullDocRenderer.cpp
 src += MCDoc.cpp
 src += MCMainFrame.cpp
 src += NewFileDialog.cpp
