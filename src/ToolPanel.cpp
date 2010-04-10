@@ -26,7 +26,7 @@
 #include <wx/sizer.h>
 
 #include "ToolPanel.h"
-#include "MCCanvas.h"
+#include "PreviewWindow.h"
 #include "PalettePanel.h"
 #include "MCDrawingModePanel.h"
 #include "MCBlockPanel.h"
@@ -41,8 +41,8 @@ ToolPanel::ToolPanel(wxWindow* parent):
 
     pBoxSizerOuter = new wxBoxSizer(wxVERTICAL);
 
-    m_pCanvas = new MCCanvas(this, wxBORDER_SUNKEN, true);
-    pBoxSizerOuter->Add(m_pCanvas);
+    m_pPreviewWindow = new PreviewWindow(this, wxBORDER_SUNKEN);
+    pBoxSizerOuter->Add(m_pPreviewWindow);
 
     pBoxSizerOuter->AddSpacer(4);
     pGridSizerColors = new wxGridSizer(2, 1, 10);
@@ -82,12 +82,12 @@ void ToolPanel::SetActiveDoc(DocBase* pDoc)
 {
     if (pDoc)
     {
-        m_pCanvas->SetDoc(pDoc);
+        m_pPreviewWindow->SetDoc(pDoc);
         m_pBlockPanel->SetDoc(pDoc);
     }
     else
     {
-        m_pCanvas->SetDoc(NULL);
+        m_pPreviewWindow->SetDoc(NULL);
         m_pBlockPanel->SetDoc(NULL);
     }
 }
@@ -99,5 +99,5 @@ void ToolPanel::SetActiveDoc(DocBase* pDoc)
  */
 void ToolPanel::Refresh()
 {
-    m_pCanvas->Refresh();
+    m_pPreviewWindow->Refresh();
 }

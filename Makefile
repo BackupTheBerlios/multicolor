@@ -69,6 +69,7 @@ src += HiResBlock.cpp
 src += HiResBitmap.cpp
 src += HiResDoc.cpp
 src += MCCanvas.cpp
+src += PreviewWindow.cpp
 src += DocBase.cpp
 src += DocRenderer.cpp
 src += MCDoc.cpp

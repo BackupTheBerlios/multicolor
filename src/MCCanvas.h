@@ -55,8 +55,7 @@ class DocBase;
 class MCCanvas: public wxScrolledWindow, public DocRenderer
 {
 public:
-    MCCanvas(wxWindow* pParent, int nStyle, bool bPreview);
-    virtual ~MCCanvas(void);
+    MCCanvas(wxWindow* pParent, int nStyle);
 
     virtual void RedrawDoc(int x1, int y1, int x2, int y2);
     virtual void OnDocMouseMoved(int x, int y);
@@ -73,6 +72,8 @@ public:
     bool GetEmulateTV();
     void SetZoom(unsigned nZoom);
     unsigned GetZoom();
+
+    void UpdateCursorType();
 
 protected:
     static std::list<MCCanvas*> m_listCanvasInstances;
@@ -93,7 +94,6 @@ protected:
     void StartTool(int x, int y, bool bSecondary);
     void UpdateCursorPosition(int x, int y, bool bCanvasCoordinates);
     void EndTool(int x, int y);
-    void UpdateCursorType();
 
     void OnButtonDown(wxMouseEvent& event);
     void OnMouseMove(wxMouseEvent& event);

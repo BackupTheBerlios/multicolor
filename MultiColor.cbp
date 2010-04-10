@@ -91,6 +91,8 @@
 		<Unit filename="src/NewFileDialog.h" />
 		<Unit filename="src/PalettePanel.cpp" />
 		<Unit filename="src/PalettePanel.h" />
+		<Unit filename="src/PreviewWindow.cpp" />
+		<Unit filename="src/PreviewWindow.h" />
 		<Unit filename="src/ToolBase.cpp" />
 		<Unit filename="src/ToolBase.h" />
 		<Unit filename="src/ToolCloneBrush.cpp" />

@@ -29,7 +29,7 @@
 #include <wx/panel.h>
 
 class DocBase;
-class MCCanvas;
+class PreviewWindow;
 class PalettePanel;
 class MCDrawingModePanel;
 class MCBlockPanel;
@@ -47,7 +47,7 @@ public:
     MCDrawingModePanel* GetDrawingModePanel();
 
 protected:
-    MCCanvas*     m_pCanvas;
+    PreviewWindow*     m_pPreviewWindow;
     PalettePanel* m_pPalettePanel;
     MCDrawingModePanel* m_pDrawingModePanel;
     MCBlockPanel* m_pBlockPanel;

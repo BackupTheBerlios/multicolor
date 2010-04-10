@@ -42,6 +42,16 @@ DocRenderer::DocRenderer() :
 {
 }
 
+
+
+/*****************************************************************************/
+DocRenderer::~DocRenderer()
+{
+    if (m_pDoc)
+        m_pDoc->RemoveRenderer(this);
+}
+
+
 /*****************************************************************************/
 /**
  * Set the document this renderer has to show from now. May be NULL if

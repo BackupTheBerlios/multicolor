@@ -335,7 +335,7 @@ void MCMainFrame::LoadDoc(const wxString& name)
     DocBase* pDoc = DocBase::Load(name);
     if (pDoc)
     {
-        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
         pCanvas->SetDoc(pDoc);
         m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
         pCanvas->Show();
@@ -408,7 +408,7 @@ void MCMainFrame::OnNew(wxCommandEvent &event)
     {
         pDoc = dlg.GetSelectedFormatInfo()->Factory();
 
-        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0, false);
+        MCCanvas* pCanvas = new MCCanvas(m_pNotebook, 0);
         pCanvas->SetDoc(pDoc);
         m_pNotebook->AddPage(pCanvas, pDoc->GetFileName().GetFullName(), true);
         pCanvas->Show();
@@ -706,8 +706,12 @@ void MCMainFrame::OnUpdateTool(wxUpdateUIEvent &event)
 /*****************************************************************************/
 void MCMainFrame::OnTool(wxCommandEvent &event)
 {
+    MCCanvas* pCanvas = GetActiveCanvas();
+
     wxGetApp().SetDrawingTool(event.GetId());
-    MCCanvas::UpdateAllCursorTypes();
+
+    if (pCanvas)
+        pCanvas->UpdateCursorType();
 }
 
 

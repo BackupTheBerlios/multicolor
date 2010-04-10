@@ -42,17 +42,14 @@
 /* define this to get some extra debug effects */
 //#define MC_DEBUG_REDRAW
 
-std::list<MCCanvas*> MCCanvas::m_listCanvasInstances;
-
 
 /*****************************************************************************/
-MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
+MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     wxScrolledWindow(pParent, wxID_ANY, wxDefaultPosition,
                      wxSize(320, 200), nStyle | wxBG_STYLE_CUSTOM),
     m_bEmulateTV(true),
     m_nZoom(1),
     m_pActiveTool(NULL),
-    m_bPreviewWindow(bPreview),
     m_pointLastMousePos(-1, -1),
     m_pointNextMousePos(-1, -1),
     m_timerScrolling(this, MCCANVAS_SCROLL_TIMER_ID),
@@ -69,8 +66,6 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     m_cursorFreehand(MCApp::GetImage(wxT("cursors"), wxT("freehand.png"))),
     m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png")))
 {
-    m_listCanvasInstances.push_back(this);
-
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_MIDDLE_DOWN, wxMouseEventHandler(MCCanvas::OnMButtonDown));
     Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
@@ -80,11 +75,7 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     Connect(wxEVT_MOTION, wxMouseEventHandler(MCCanvas::OnMouseMove));
 
     Connect(wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(MCCanvas::OnEraseBackground));
-
-    if (!m_bPreviewWindow)
-    {
-        Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
-    }
+    Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(MCCanvas::OnMouseWheel));
 
     Connect(wxEVT_TIMER, wxTimerEventHandler(MCCanvas::OnTimer));
 
@@ -94,14 +85,6 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle, bool bPreview) :
     UpdateCursorType();
 }
 
-/*****************************************************************************/
-MCCanvas::~MCCanvas()
-{
-    m_listCanvasInstances.remove(this);
-
-    if (m_pDoc)
-        m_pDoc->RemoveRenderer(this);
-}
 
 /*****************************************************************************/
 /**
@@ -150,12 +133,7 @@ void MCCanvas::OnDocMouseMoved(int x, int y)
     m_pointNextMousePos.y = y;
 
     if (!m_timerRefresh.IsRunning())
-    {
-        if (m_bPreviewWindow)
-            m_timerRefresh.Start(200, wxTIMER_ONE_SHOT);
-        else
-            m_timerRefresh.Start(20, wxTIMER_ONE_SHOT);
-    }
+        m_timerRefresh.Start(20, wxTIMER_ONE_SHOT);
 }
 
 
@@ -172,7 +150,7 @@ void MCCanvas::SetDoc(DocBase* pDoc)
 
     if (pDoc)
     {
-        // set min size incl. borders so the preview won't get scroll bars
+        // set min size incl. borders
         pB = pDoc->GetBitmap();
         wxSize size(GetWindowBorderSize());
         size.IncBy(pB->GetPixelXFactor() * pB->GetWidth(),
@@ -315,22 +293,6 @@ void MCCanvas::CenterBitmapPoint(int x, int y)
     xScroll = (x - wClient / 2) / xFactor;
     yScroll = (y - hClient / 2) / yFactor;
     Scroll(xScroll, yScroll);
-}
-
-
-/******************************************************************************/
-/*
- * Update the cursors of all Canvases.
- */
-void MCCanvas::UpdateAllCursorTypes()
-{
-    std::list<MCCanvas*>::iterator i;
-
-    for (i = m_listCanvasInstances.begin();
-         i != m_listCanvasInstances.end(); ++i)
-    {
-        (*i)->UpdateCursorType();
-    }
 }
 
 

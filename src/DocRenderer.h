@@ -43,6 +43,7 @@ class DocRenderer
 {
 public:
     DocRenderer();
+    virtual ~DocRenderer();
 
     /**
      * This is called when the document contents has changed, the parameters
