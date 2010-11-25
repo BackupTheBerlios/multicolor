@@ -152,6 +152,7 @@ protected:
     wxCursor    m_cursorFloodFill;
     wxCursor    m_cursorFreehand;
     wxCursor    m_cursorLines;
+    wxCursor    m_cursorRect;
 };
 
 

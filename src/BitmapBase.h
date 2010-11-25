@@ -69,6 +69,9 @@ public:
     virtual void Line(int x1, int y1, int x2, int y2,
                       const C64Color& col, MCDrawingMode mode);
 
+    virtual void Rectangle(int x1, int y1, int x2, int y2,
+                      const C64Color& col, MCDrawingMode mode);
+
 protected:
     wxRect m_rectDirty;
 };

@@ -273,3 +273,40 @@ void BitmapBase::Line(int x1, int y1, int x2, int y2,
         }
     }
 }
+
+/*****************************************************************************/
+/**
+ * Draw a rectangle with color col.
+ * If a color limit is hit, do what the drawing mode requires.
+ */
+void BitmapBase::Rectangle(int x1, int y1, int x2, int y2,
+                      const C64Color& col, MCDrawingMode mode)
+{
+    double fx, fy, step;
+    int    tmp;
+   
+    if (x2 < x1)
+    {  
+        // swap start and end
+        tmp = x1; x1 = x2; x2 = tmp;
+    }
+
+    if (y2 < y1)                                            
+    {                                                       
+        // swap start and end
+        tmp = y1; y1 = y2; y2 = tmp;
+    }
+   
+    for (fx = x1; fx <= x2; fx += 1)
+    {  
+        SetPixel(fx, y1, col, mode);
+        SetPixel(fx, y2, col, mode);
+    }
+
+    for (fy = y1; fy <= y2; fy += 1)
+    {
+        SetPixel(x1, fy, col, mode);
+        SetPixel(x2, fy, col, mode);
+    }
+}
+

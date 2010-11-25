@@ -64,7 +64,8 @@ MCCanvas::MCCanvas(wxWindow* pParent, int nStyle) :
     m_cursorDots(MCApp::GetImage(wxT("cursors"), wxT("dots.png"))),
     m_cursorFloodFill(MCApp::GetImage(wxT("cursors"), wxT("floodfill.png"))),
     m_cursorFreehand(MCApp::GetImage(wxT("cursors"), wxT("freehand.png"))),
-    m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png")))
+    m_cursorLines(MCApp::GetImage(wxT("cursors"), wxT("lines.png"))),
+    m_cursorRect(MCApp::GetImage(wxT("cursors"),wxT("rect.png")))
 {
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(MCCanvas::OnButtonDown));
     Connect(wxEVT_MIDDLE_DOWN, wxMouseEventHandler(MCCanvas::OnMButtonDown));
@@ -609,6 +610,10 @@ void MCCanvas::UpdateCursorType()
 
     case MC_ID_TOOL_LINES:
         SetCursor(m_cursorLines);
+        break;
+
+    case MC_ID_TOOL_RECT:
+        SetCursor(m_cursorRect);
         break;
 
     case MC_ID_TOOL_COLOR_PICKER:

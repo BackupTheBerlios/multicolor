@@ -42,6 +42,7 @@
 #include "ToolDots.h"
 #include "ToolFreehand.h"
 #include "ToolLines.h"
+#include "ToolRect.h"
 #include "ToolFill.h"
 #include "ToolCloneBrush.h"
 #include "ToolColorPicker.h"
@@ -115,6 +116,7 @@ void MCApp::AllocateTools()
     m_listTools.push_back(new ToolDots);
     m_listTools.push_back(new ToolFreehand);
     m_listTools.push_back(new ToolLines);
+    m_listTools.push_back(new ToolRect);
     m_listTools.push_back(new ToolFill);
     m_listTools.push_back(new ToolCloneBrush);
     m_listTools.push_back(new ToolColorPicker);

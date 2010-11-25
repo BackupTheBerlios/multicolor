@@ -128,6 +128,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
 	Connect(MC_ID_TOOL_DOTS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_FREEHAND, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
 	Connect(MC_ID_TOOL_LINES, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
+	Connect(MC_ID_TOOL_RECT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_FILL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
     Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MCMainFrame::OnTool));
 
@@ -135,6 +136,7 @@ MCMainFrame::MCMainFrame(wxFrame* parent, const wxString& title) :
     Connect(MC_ID_TOOL_DOTS, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_FREEHAND, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_LINES, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
+    Connect(MC_ID_TOOL_RECT, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_FILL, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
     Connect(MC_ID_TOOL_CLONE_BRUSH, wxEVT_UPDATE_UI, wxUpdateUIEventHandler(MCMainFrame::OnUpdateTool));
 
@@ -197,6 +199,10 @@ void MCMainFrame::InitToolBar()
     pToolBar->AddRadioTool(MC_ID_TOOL_LINES, _T("Lines"),
             bitmap, bitmap, _T("Draw lines"));
 
+    bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("rect.png"));
+    pToolBar->AddRadioTool(MC_ID_TOOL_RECT, _T("Rectangles"),
+            bitmap, bitmap, _T("Draw rectangles"));
+
     bitmap = MCApp::GetBitmap(wxT("24x24"), wxT("color_fill.png"));
     pToolBar->AddRadioTool(MC_ID_TOOL_FILL, _T("Flood fill"),
             bitmap, bitmap, _T("Fill an area"));
@@ -256,6 +262,7 @@ void MCMainFrame::InitMenuBar()
     pToolsMenu->AppendRadioItem(MC_ID_TOOL_DOTS, _T("&Dots\tF2"));
     pToolsMenu->AppendRadioItem(MC_ID_TOOL_FREEHAND, _T("&Freehand\tF3"));
     pToolsMenu->AppendRadioItem(MC_ID_TOOL_LINES, _T("&Lines\tF4"));
+    pToolsMenu->AppendRadioItem(MC_ID_TOOL_RECT, _T("&Rectangle\tF7"));
     pToolsMenu->AppendRadioItem(MC_ID_TOOL_FILL, _T("Fl&ood fill\tF5"));
     pToolsMenu->AppendRadioItem(MC_ID_TOOL_CLONE_BRUSH, _T("&Clone brush\tF6"));
 
