@@ -23,9 +23,11 @@
 # Thomas Giesel skoe@directbox.com
 #
 
-wx-version     := wxMSW-2.8.9
+here := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+wx-version     := wxMSW-2.8.12
 wx-archive-dir := $(here)/archive
-wx-build-dir  := wx-build
+wx-build-dir   := wx-build
 wx-prefix      := /opt/cross/$(cross)-$(wx-version)
 
 ###############################################################################
@@ -60,7 +62,7 @@ no-wx:
 	$(warning become a pain in the ass to get the config running.)
 	$(warning )
 	$(warning You can install it using this makefile by invoking:)
-	$(warning make install-wxwidgets)
+	$(warning make os=win32 install-wxwidgets)
 	$(warning This needs you to be a sudoer, because some commands use sudo)
 	$(warning ========================================================================)
 	$(error stop.)

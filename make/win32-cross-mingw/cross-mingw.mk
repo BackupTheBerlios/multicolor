@@ -26,20 +26,22 @@
 # information taken from:
 # http://ubuntuforums.org/showthread.php?t=998561&page=2
 
+here := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 mingw-build-dir := $(here)/mingw-build
 archive-dir     := $(here)/archive
 
 binutils  := binutils-2.19.1
 gcc       := gcc-4.3.3
-mingwrt   := mingwrt-3.15.2-mingw32
-w32api    := w32api-3.13-mingw32
+mingwrt   := mingwrt-3.18-mingw32
+w32api    := w32api-3.17-2-mingw32
 
 cross     := i686-pc-mingw32
 gccprefix := /opt/cross/$(cross)-$(gcc)
 
 sudo      := sudo
 
-path      := $(gccprefix)/bin:$(path)
+path      := $(gccprefix)/bin:$(PATH)
 
 .PHONY: install-mingw
 install-mingw: $(mingw-build-dir)/7-gcc-full.done
@@ -142,16 +144,17 @@ $(mingw-build-dir)/5-w32api.done: $(mingw-build-dir)/$(w32api) | $(mingw-build-d
 	touch $@
 
 # unpack win32 api
-$(mingw-build-dir)/$(w32api): $(archive-dir)/$(w32api)-src.tar.gz
+$(mingw-build-dir)/$(w32api): $(archive-dir)/$(w32api)-src.tar.lzma
 	mkdir -p $(mingw-build-dir)
-	tar xzf $(archive-dir)/$(w32api)-src.tar.gz -C $(mingw-build-dir)
+	lzma -dfk $(archive-dir)/$(w32api)-src.tar.lzma
+	tar xf $(archive-dir)/$(w32api)-src.tar -C $(mingw-build-dir)
 	ln -sf $(w32api) $(mingw-build-dir)/w32api
 	touch $@
 
 # download win32 api
-$(archive-dir)/$(w32api)-src.tar.gz:
+$(archive-dir)/$(w32api)-src.tar.lzma:
 	mkdir -p $(archive-dir)
-	cd $(archive-dir) && wget http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/m/mi/mingw/$(w32api)-src.tar.gz
+	cd $(archive-dir) && wget http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/m/project/mi/mingw/MinGW/BaseSystem/RuntimeLibrary/Win32-API/w32api-3.17/$(w32api)-src.tar.lzma
 
 ###############################################################################
 # MinGW runtime
@@ -180,7 +183,7 @@ $(mingw-build-dir)/$(mingwrt): $(archive-dir)/$(mingwrt)-src.tar.gz
 # download mingw runtime
 $(archive-dir)/$(mingwrt)-src.tar.gz:
 	mkdir -p $(archive-dir)
-	cd $(archive-dir) && wget http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/m/mi/mingw/$(mingwrt)-src.tar.gz
+	cd $(archive-dir) && wget http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/m/project/mi/mingw/MinGW/BaseSystem/RuntimeLibrary/MinGW-RT/mingwrt-3.18/$(mingwrt)-src.tar.gz
 
 ###############################################################################
 # Final GCC C and C++ compilers
@@ -195,3 +198,4 @@ $(mingw-build-dir)/7-gcc-full.done: $(mingw-build-dir)/$(gcc) \
 		--enable-languages=c,c++
 	PATH=$(path) make -C $(mingw-build-dir)/obj-full-$(gcc)
 	$(sudo) bash -c "PATH=$(path) make -C $(mingw-build-dir)/obj-full-$(gcc) install"
+	touch $@

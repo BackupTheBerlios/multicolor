@@ -51,7 +51,7 @@
 /**
  */
 NewFileDialog::NewFileDialog(wxWindow* parent) :
-    wxDialog(parent, wxID_ANY, wxT("New file")),
+    wxDialog(parent, wxID_ANY, wxT("New file"), wxDefaultPosition, wxDefaultSize),
     m_pSelectedFormatInfo(NULL)
 {
     wxStaticText*   pText;

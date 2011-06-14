@@ -28,6 +28,12 @@ INCLUDE   += -I$(objdir)
 cflags    += -DVERSION=\"$(version)\"
 cxxflags  += -DVERSION=\"$(version)\"
 
+ifeq ("$(archive_suffix)", "zip")
+archive_cmd := zip -r
+else
+archive_cmd := tar cjf
+endif
+
 # don't delete intermediate files
 .SECONDARY:
 
@@ -35,19 +41,26 @@ cxxflags  += -DVERSION=\"$(version)\"
 # Main targets
 #
 .PHONY: all
-all: $(outbase)/$(app_name)$(version_suffix).tar.bz2
 
-$(outbase)/$(app_name)$(version_suffix).tar.bz2: \
-		$(outdir)/$(app_name) $(outres) $(outdoc)
+all: $(out_archive)
+
+$(out_archive): \
+		$(outdir)/$(app_name)$(app_suffix) $(outres) $(outdoc)
 	rm -f $@
-	cd $(dir $@) && tar cjf $(notdir $@) $(app_name)
+	cd $(dir $@) && $(archive_cmd) $(notdir $@) $(app_name)
 
 ###############################################################################
 # Link the app
 # 
-$(outdir)/$(app_name): $(obj) | $(outdir) check-environment
+$(outdir)/$(app_name)$(app_suffix): $(obj) | $(outdir) check-environment
+ifeq ("$(target)", "win32")
+	$(cxx) --static  $(obj) -o $@ \
+		`$(wx-prefix)/bin/wx-config --static=yes --libs`
+	$(strip) $@
+else
 	$(cxx) $(ldflags) $(obj) -o $@ \
 		`wx-config --libs`
+endif
 
 ###############################################################################
 # This rule can copy files from <base>/res/* to <outdir>/res/*

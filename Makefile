@@ -22,38 +22,54 @@
 # Thomas Giesel skoe@directbox.com
 #
 
-# Where to install on "make install"?
-inst_prefix   := /usr/local
-
-app_name      := multicolor
-
-# to remove old installations
-app_name_old  := MultiColor
-
-cxx           := c++
-cc            := gcc
+.PHONY: default
+default: all
 
 ifeq ($(debug), yes)
-    outbase       := out_debug
+    outbase       := out$(target)_debug
     ccflags       := -g
-    cxxflags      := -g $(shell wx-config --cxxflags)
     ldflags       := -g
 else
-    outbase       := out
+    outbase       := out$(target)
     ccflags       := -O2
-    cxxflags      := -g $(shell wx-config --cxxflags)
     #cxxflags      += -DN2C
     ldflags       :=
 endif
-
 
 ifneq "$(release)" "yes"
 	version        := $(shell date +%y%m%d-%H%M)
 	version_suffix :=
 else
-	version        := 1.0.0
+	version        := 1.0.1
 	version_suffix := -$(version)
 endif
+
+ifeq ("$(target)", "win32")
+include make/win32-cross-mingw/cross-mingw.mk
+include make/win32-cross-mingw/cross-wx.mk
+cxx           := $(gccprefix)/bin/$(cross)-c++
+cc            := $(gccprefix)/bin/$(cross)-cc
+strip         := $(gccprefix)/bin/$(cross)-strip
+cxxflags      := -O2 `$(wx-prefix)/bin/wx-config --static=yes --cxxflags`
+app_name      := MultiColor
+app_suffix    := .exe
+archive_suffix := zip
+out_archive   := $(outbase)/MultiColor$(version_suffix).$(archive_suffix)
+else
+cxx           := c++
+cc            := gcc
+cxxflags      := -g $(shell wx-config --cxxflags)
+app_name      := multicolor
+app_suffix    := 
+archive_suffix := tar.bz2
+out_archive   := $(outbase)/multicolor$(version_suffix).$(archive_suffix)
+endif
+
+# Where to install on "make install"?
+inst_prefix   := /usr/local
+
+# to remove old installations
+app_name_old  := MultiColor
 
 ###############################################################################
 # This is the list of source files to be compiled
